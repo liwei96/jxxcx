@@ -1,5 +1,5 @@
 <template>
-	<view class="path">
+	<view class="path" v-if="issure">
 		<!-- <view class="toptitle" @tap="back">
 			<view class="status_bar">
 			</view>
@@ -14,8 +14,8 @@
 		<view class="hots">
 			<text class="tit">热门城市</text>
 			<view class="hots-con">
-				<view class="item" v-for="item in hots" :key="item.area_id" @tap="setcity(item.area_id,item.short)">
-					{{item.short}}
+				<view class="item" v-for="item in hots" :key="item.id" @tap="setcity(item.id,item.name)">
+					{{item.name}}
 				</view>
 			</view>
 			<view class="allmsg">
@@ -27,8 +27,8 @@
 				{{item}}
 			</view>
 			<view class="box">
-				<view class="cityitem" v-for="(val,index) in lists[item]" :key="val.area_id" @tap="gocity(val.area_id,lists[item],index)">
-					{{val.short}}
+				<view class="cityitem" v-for="(val,index) in lists[item]" :key="val.id" @tap="gocity(val.id,val.name,index)">
+					{{val.name}}
 				</view>
 			</view>
 		</view>
@@ -37,9 +37,17 @@
 				{{item}}
 			</view>
 		</view>
-		<wyb-popup ref="popup" type="center" height="650" width="550" radius="20" :showCloseIcon="true" closeIcon="../../static/close.png" closeIconSize="32">
+		<wyb-popup ref="popup" type="center" height="650" width="550" radius="8" :showCloseIcon="true" closeIcon="../../static/close.png" closeIconSize="32">
 			<view class="bbox">
-				<image class="bbimg" src="../../static/path-null.png" mode=""></image>
+				<image class="bbimg" src="../../static/path-null.jpg" mode=""></image>
+				<view class="tit">
+					没有该城市信息
+				</view>
+				<view class="text">
+					非常遗憾的通知您，您当前选择的城市我们并未涉及
+				</view>
+				<view class="line">
+				</view>
 				<view class="btn" @tap="showff">
 					申请开放
 				</view>
@@ -64,9 +72,9 @@
 			this.name = uni.getStorageSync('cityname')
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-城市选择',
-				keywords: '允家新房-城市选择',
-				description: '允家新房-城市选择',
+				title: '家园新房-城市选择',
+				keywords: '家园新房-城市选择',
+				description: '家园新房-城市选择',
 				success: res => {
 					console.log('setPageInfo success', res);
 				},
@@ -86,7 +94,8 @@
 				lists: [],
 				name: '',
 				bname: '',
-				show:false
+				show:false,
+				issure: false
 			};
 		},
 		methods: {
@@ -125,14 +134,19 @@
 				uni.showLoading({
 					title: "加载中"
 				})
+				let city = uni.getStorageSync('city')
 				uni.request({
-					url: that.putserve + "/api/first/city",
-					method: "POST",
+					url: that.javaserve + "/cities/all",
+					method: "GET",
+					data:{
+						city: city
+					},
 					success: (res) => {
 						console.log(res)
 						that.hots = res.data.data.hots
-						that.lists = res.data.data.city
+						that.lists = res.data.data.cities
 						uni.hideLoading()
+						that.issure = true
 					}
 				})
 			},
@@ -146,10 +160,10 @@
 			gocity(id, name,k) {
 				let type = false
 				for (let item of this.hots) {
-					if (id == item.area_id) {
+					if (id == item.id) {
 						this.setcity(id, name)
 					}else {
-						this.showdd(name[k].short)
+						this.showdd(name[k].name)
 					}
 				}
 			}
@@ -278,12 +292,13 @@
 	.right-list {
 		position: fixed;
 		right: 28rpx;
-		top: 300rpx;
+		top: 50%;
+		transform: translateY(-50%);
 
 		.li {
 			color: #646566;
 			font-size: 20rpx;
-			margin-bottom: 20rpx;
+			margin-bottom: 15rpx;
 		}
 	}
 	
@@ -293,15 +308,35 @@
 		height: 100%;
 		.bbimg {
 			width: 100%;
-			height: 100%;
+			height: 261rpx;
 			border-radius: 20rpx;
+		}
+		.tit {
+			color: #16181A;
+			font-size: 36rpx;
+			text-align: center;
+			margin-top: 20rpx;
+			margin-bottom: 34rpx;
+		}
+		.text {
+			padding: 0 38rpx;
+			color: #626566;
+			font-size: 30rpx;
+			line-height: 44rpx;
+		}
+		.line {
+			width: 408rpx;
+			height: 1rpx;
+			background-color: #EDEDED;
+			margin-top: 40rpx;
+			margin-left: 40rpx;
 		}
 		.btn {
 			width: 300rpx;
 			height: 72rpx;
 			border-radius: 36rpx;
-			background: #3EACF0;
-			box-shadow: 0px 8rpx 16rpx 2rpx rgba(0, 101, 196, 0.16);
+			background: #2AC66D;
+			box-shadow: 0px 8rpx 16rpx 2rpx rgba(42, 198, 109, 0.16);
 			text-align: center;
 			line-height: 72rpx;
 			color: #FFFFFF;

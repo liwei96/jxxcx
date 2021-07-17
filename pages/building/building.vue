@@ -1,7 +1,7 @@
 <template>
 	<view>
 		<!-- <view class="toptitle">
-			<text>允家新房</text>
+			<text>家园新房</text>
 		</view> -->
 		<view class="input">
 			<view class="left">
@@ -19,182 +19,212 @@
 		</view>
 		<view :class="isfixed ? 'icons iconsbox' : 'icons'" id="searchbox">
 			<view class="icons-box">
-				<view :class="shownum==0?'item active':'item'" @tap="shownum = shownum ===0?10:0">
+				<view :class="(shownum==0||search.country!==0||search.railway!=0)?'item active':'item'"
+					@tap="shownum = shownum ===0?10:0">
 					区域<image src="../../static/search/search-down1.png" mode=""></image>
 				</view>
-				<view :class="shownum==1?'item active':'item'" @tap="shownum = shownum ===1?10:1">
+				<view :class="(shownum==1||search.single_price!=0||search.total_price!=0)?'item active':'item'"
+					@tap="shownum = shownum ===1?10:1">
 					价格<image src="../../static/search/search-down1.png" mode=""></image>
 				</view>
-				<view :class="shownum==2?'item active':'item'"  @tap="shownum = shownum ===2?10:2">
+				<view :class="(shownum==2||search.house_types.length!=0)?'item active':'item'"
+					@tap="shownum = shownum ===2?10:2">
 					户型<image src="../../static/search/search-down1.png" mode=""></image>
 				</view>
-				<view :class="shownum==3?'item active':'item'" @tap="shownum = shownum ===3?10:3">
+				<view :class="(shownum==3||search.type!=''||search.feature!=0||search.area!=0)?'item active':'item'"
+					@tap="shownum = shownum ===3?10:3">
 					更多<image src="../../static/search/search-down1.png" mode=""></image>
 				</view>
-				<view :class="shownum==4?'item active':'item'" @tap="shownum = shownum ===4?10:4">
+				<view :class="(shownum==4||search.sort!=0)?'item active':'item'" @tap="shownum = shownum ===4?10:4">
 					排序<image src="../../static/search/search-down1.png" mode=""></image>
 				</view>
 			</view>
-			
-			<view class="pricearea" v-if="shownum === 1">
-				<view class="top">
-					<view class="left">
-						<view :class="pricenum == 0 ? 'active' : ''" @click="setpricenum(0)">
-							<text></text>
-							总价
-						</view>
-						<view :class="pricenum == 1 ? 'active' : ''" @click="setpricenum(1)">
-							<text></text>
-							单价
-						</view>
-					</view>
-					<view class="right">
-						<view v-if="pricenum == 0">
-							<view :class="search.total_price == 0 ? 'li active' : 'li'" @click="search.total_price = 0">
-								不限
-							</view>
-							<view :class="search.total_price == item.id ? 'li active' : 'li'" v-for="item in totals" :key="item.id" @click="search.total_price = item.id">
-								{{item.name}}
-							</view>
-						</view>
-						<view v-if="pricenum == 1">
-							<view :class="search.single_price == 0 ? 'li active' : 'li'" @click="search.single_price = 0">
-								不限
-							</view>
-							<view :class="search.single_price == item.id ? 'li active' : 'li'" v-for="item in singles" :key="item.id" @click="search.single_price = item.id">
-								{{item.name}}
-							</view>
-						</view>
-					</view>
-				</view>
-				<view class="bom">
-					<view class="numbox">
-						<input type="text" value="" placeholder="最低总价" placeholder-class="numtxt" v-model="search.min_total_price"/>
-					</view>
-					<view class="line">
 
-					</view>
-					<view class="numbox">
-						<input type="text" value="" placeholder="最高总价" placeholder-class="numtxt"  v-model="search.max_total_price"/>
-					</view>
-					<view class="btn" @tap="shownum = 10">
-						确定
-					</view>
-				</view>
-			</view>
-			<view class="pricearea" v-if="shownum === 0">
-				<view class="top">
-					<view class="left">
-						<view :class="areanum == 0 ? 'active' : ''" @click="setareanum(0)">
-							<text></text>
-							区域
-						</view>
-						<view :class="areanum == 1 ? 'active' : ''" @click="setareanum(1)">
-							<text></text>
-							地铁
-						</view>
-					</view>
-					<view class="right">
-						<view v-show="areanum == 0">
-							<view :class="cityidslength == 0 ? 'li active' : 'li'" @tap="setcity">
-								不限
+			<view class="pricearea" v-if="shownum === 1" @tap="shownum = -1">
+				<view @tap.stop="setnull">
+					<view class="top">
+						<view class="left">
+							<view :class="pricenum == 0 ? 'active' : ''" @click="setpricenum(0)">
+								<text></text>
+								总价
 							</view>
-							<view :class="item.checked ? 'li active' : 'li'" v-for="(item,key) in citys" :key="item.id" @click="setsearch(key,0,item.id)">
-								{{item.name}}
+							<view :class="pricenum == 1 ? 'active' : ''" @click="setpricenum(1)">
+								<text></text>
+								单价
 							</view>
 						</view>
-						<view v-show="areanum == 1">
-							<view :class="railwayidslength == 0 ? 'li active' : 'li'" @tap="setrailway">
-								不限
+						<view class="right">
+							<view v-if="pricenum == 0">
+								<view :class="search.total_price == 0 ? 'li active' : 'li'"
+									@click="search.total_price = 0">
+									不限
+								</view>
+								<view :class="search.total_price == item.id ? 'li active' : 'li'" v-for="item in totals"
+									:key="item.id" @click="search.total_price = item.id">
+									{{item.name}}
+								</view>
 							</view>
-							<view :class="item.checked ? 'li active' : 'li'" v-for="(item,key) in railways" :key="item.id" @click="setsearch(key,1,item.id)">
-								{{item.name}}
+							<view v-if="pricenum == 1">
+								<view :class="search.single_price == 0 ? 'li active' : 'li'"
+									@click="search.single_price = 0">
+									不限
+								</view>
+								<view :class="search.single_price == item.id ? 'li active' : 'li'"
+									v-for="item in singles" :key="item.id" @click="search.single_price = item.id">
+									{{item.name}}
+								</view>
 							</view>
 						</view>
 					</view>
-				</view>
-				<view class="bom">
-					<view class="resert" @tap="clear(0)">
-						重置
-					</view>
-					<view class="button" @tap="makereal()">
-						确定
-					</view>
-				</view>
-			</view>
-			<view class="hus" :animation="animationData" v-if="shownum === 2">
-				<view class="top">
-					<view class="list" v-for="item in houses" :key="item.id">
-						<view class="txt">{{item.name}}</view>
-						<view class="checkbox">
-							<jiuaicheckbox borderStyle='1px solid #D4D7D9' color='#40A2F4' :checked='item.id == search.house_type' :borderRadius='6'
-							 :fontSize='20' :checkBoxSize='30' :value="item.id" functionType="page" @pageClick="changeBox"></jiuaicheckbox>
+					<view class="bom" v-if="false">
+						<view class="numbox" v-if="false">
+							<input type="text" value="" placeholder="最低总价" placeholder-class="numtxt"
+								v-model="search.total_price_min" />
+						</view>
+						<view class="line" v-if="false">
+
+						</view>
+						<view class="numbox" v-if="false">
+							<input type="text" value="" placeholder="最高总价" placeholder-class="numtxt"
+								v-model="search.total_price_max" />
+						</view>
+						<view class="resert" @tap="clear(3)">
+							重置
+						</view>
+						<view class="button" @tap="shownum = 10">
+							确定
 						</view>
 					</view>
 				</view>
-				<view class="bom">
-					<view class="resert" @tap="clear(1)">
-						重置
+			</view>
+			<view class="pricearea" v-if="shownum === 0" @tap="shownum = -1">
+				<view @tap.stop="setnull">
+					<view class="top">
+						<view class="left">
+							<view :class="areanum == 0 ? 'active' : ''" @click="setareanum(0)">
+								<text></text>
+								区域
+							</view>
+							<view :class="areanum == 1 ? 'active' : ''" @click="setareanum(1)">
+								<text></text>
+								地铁
+							</view>
+						</view>
+						<view class="right">
+							<view v-show="areanum == 0">
+								<view :class="search.country == 0 ? 'li active' : 'li'" @tap="search.country = 0">
+									不限
+								</view>
+								<!-- <view :class="item.checked ? 'li active' : 'li'" v-for="(item,key) in citys" :key="item.id" @click="setsearch(key,0,item.id)"> -->
+								<view :class="search.country == item.id ? 'li active' : 'li'"
+									v-for="(item,key) in citys" :key="item.id" @click="search.country = item.id">
+									{{item.name}}
+								</view>
+							</view>
+							<view v-show="areanum == 1">
+								<view :class="search.railway == 0 ? 'li active' : 'li'" @tap="search.railway = 0">
+									不限
+								</view>
+								<!-- <view :class="item.checked ? 'li active' : 'li'" v-for="(item,key) in railways" :key="item.id" @click="setsearch(key,1,item.id)"> -->
+								<view :class="search.railway == item.id ? 'li active' : 'li'"
+									v-for="(item,key) in railways" :key="item.id" @click="search.railway = item.id">
+									{{item.name}}
+								</view>
+							</view>
+						</view>
 					</view>
-					<view class="button" @tap="shownum = 10">
-						确定
+					<view class="bom" v-if="false">
+						<view class="resert" @tap="clear(0)">
+							重置
+						</view>
+						<view class="button" @tap="makereal()">
+							确定
+						</view>
 					</view>
 				</view>
 			</view>
-			<view class="more" v-if="shownum === 3">
-				<view class="top">
-					<view class="more-tit">
-						面积
+			<view class="hus" :animation="animationData" v-if="shownum === 2" @tap="shownum = -1">
+				<view @tap.stop="setnull">
+					<view class="top">
+						<view class="list" v-for="item in houses" :key="item.id">
+							<view class="txt">{{item.name}}</view>
+							<view class="checkbox">
+								<jiuaicheckbox borderStyle='1px solid #D4D7D9' color='#40A2F4'
+									:checked='search.house_types.indexOf(item.id)!==-1' :borderRadius='6' :fontSize='20'
+									:checkBoxSize='30' :value="item.id" functionType="page" @pageClick="changeBox">
+								</jiuaicheckbox>
+							</view>
+						</view>
 					</view>
-					<view class="more-icon">
-						<view :class="item.id == search.area ? 'active' : ''" v-for="item in areas" :key="item.id" @tap="search.area = item.id">{{item.name}}</view>
-					</view>
-					<view class="more-tit">
-						类型
-					</view>
-					<view class="more-icon">
-						<view :class="item.type == search.type ? 'active' : ''" v-for="(item,key) in types1" :key="key" @tap="search.type = item.type">{{item.type}}</view>
-					</view>
-					<view class="more-tit">
-						特色
-					</view>
-					<view class="more-icon">
-						<view :class="item.checked ? 'active' : ''" v-for="(item,key) in features" :key="key" @tap="setsearch(key,2,item.id)">{{item.name}}</view>
-					</view>
-					<!-- <view class="more-tit">
-						装修
-					</view>
-					<view class="more-icon">
-						<view>50m²以下</view>
-						<view>50-70m²</view>
-						<view>70-100m²</view>
-						<view>100m²以上</view>
-					</view> -->
-				</view>
-				<view class="bom">
-					<view class="resert" @tap="clear(2)">
-						重置
-					</view>
-					<view class="button" @tap="makereal">
-						确定
+					<view class="bom">
+						<view class="resert" @tap="clear(1)">
+							重置
+						</view>
+						<view class="button" @tap="shownum = 10">
+							确定
+						</view>
 					</view>
 				</view>
 			</view>
-			<view class="sort" v-if="shownum === 4">
-				<view class="sort-box">
-					<view :class="search.order == 0 ? 'li active' : 'li'" @tap="search.order = 0">
+			<view class="more" v-if="shownum === 3" @tap="shownum = -1">
+				<view @tap.stop="setnull">
+					<view class="top">
+						<view class="more-tit">
+							面积
+						</view>
+						<view class="more-icon">
+							<view :class="item.id == search.area ? 'active' : ''" v-for="item in areas" :key="item.id"
+								@tap="search.area = item.id">{{item.name}}</view>
+						</view>
+						<view class="more-tit">
+							类型
+						</view>
+						<view class="more-icon">
+							<view :class="item == search.type ? 'active' : ''" v-for="(item,key) in types1" :key="key"
+								@tap="search.type = item" v-if="item">{{item}}</view>
+						</view>
+						<view class="more-tit">
+							特色
+						</view>
+						<view class="more-icon">
+							<view :class="item.id == search.feature ? 'active' : ''" v-for="(item,key) in features"
+								:key="key" @tap=" search.feature = item.id">{{item.name}}</view>
+						</view>
+						<!-- <view class="more-tit">
+							装修
+						</view>
+						<view class="more-icon">
+							<view>50m²以下</view>
+							<view>50-70m²</view>
+							<view>70-100m²</view>
+							<view>100m²以上</view>
+						</view> -->
+					</view>
+					<view class="bom">
+						<view class="resert" @tap="clear(2)">
+							重置
+						</view>
+						<view class="button" @tap="makereal">
+							确定
+						</view>
+					</view>
+				</view>
+			</view>
+			<view class="sort" v-if="shownum === 4" @tap="shownum = -1">
+				<view class="sort-box" @tap.stop="setnull">
+					<view :class="search.sort == 0 ? 'li active' : 'li'" @tap="search.sort = 0">
 						默认排序
 					</view>
-					<view :class="search.order == 1 ? 'li active' : 'li'" @tap="search.order = 1">
+					<view :class="search.sort == 1 ? 'li active' : 'li'" @tap="search.sort = 1">
 						单价从低到高
 					</view>
-					<view :class="search.order == 3 ? 'li active' : 'li'" @tap="search.order = 3">
+					<view :class="search.sort == 2 ? 'li active' : 'li'" @tap="search.sort = 2">
 						单价从高到低
 					</view>
-					<view :class="search.order == 4 ? 'li active' : 'li'" @tap="search.order = 4">
+					<view :class="search.sort == 3 ? 'li active' : 'li'" @tap="search.sort = 3">
 						开盘时间从近到远
 					</view>
-					<view :class="search.order == 2 ? 'li active' : 'li'" @tap="search.order = 2">
+					<view :class="search.sort == 4 ? 'li active' : 'li'" @tap="search.sort = 4">
 						开盘时间从远到近
 					</view>
 				</view>
@@ -204,7 +234,7 @@
 			<view :class="search.type == '住宅' ? 'active':''" @tap="settype('住宅')">
 				住宅
 			</view>
-			<view :class="search.special_discount == 1 ? 'active':''" @tap="settype('特价房')">
+			<view :class="search.special == 1 ? 'active':''" @tap="settype('特价房')">
 				特价房
 			</view>
 			<view :class="search.feature == 3 ? 'active':''" @tap="settype('刚需')">
@@ -217,7 +247,7 @@
 		<view class="box" v-if="isnormal">
 			<view class="item" v-for="item in builds" :key="item.id" @tap="go(item.id)">
 				<view class="left">
-					<image :src="item.img" mode=""></image>
+					<image :src="item.image" mode=""></image>
 				</view>
 				<view class="right">
 					<view class="tit">
@@ -235,8 +265,8 @@
 					</view>
 					<view class="type">
 						<text class="zhuang">{{item.decorate}}</text>
-						<text v-if="item.railways.length">{{item.railways[0]}}</text>
-						<text v-for="(val,key) in item.features" :key="key">{{val}}</text>
+						<text v-if="item.railway">{{item.railway}}</text>
+						<text v-if="item.feature">{{item.feature}}</text>
 					</view>
 				</view>
 			</view>
@@ -261,7 +291,7 @@
 				</view>
 				<view class="item" v-for="item in other" :key="item.id" @tap="go(item.id)">
 					<view class="left">
-						<image :src="item.img" mode=""></image>
+						<image :src="item.image" mode=""></image>
 					</view>
 					<view class="right">
 						<view class="tit">
@@ -279,8 +309,8 @@
 						</view>
 						<view class="type">
 							<text class="zhuang">{{item.decorate}}</text>
-							<text v-if="item.railways.length">{{item.railways[0].name}}</text>
-							<text v-for="(val,key) in item.features" :key="key">{{val}}</text>
+							<text v-if="item.railway">{{item.railway}}</text>
+							<text v-if="item.feature">{{item.feature}}</text>
 						</view>
 					</view>
 				</view>
@@ -289,7 +319,7 @@
 		<view class="box" v-if="isspecial">
 			<view class="li" v-for="item in builds" :key="item.id" @tap="go(item.id)">
 				<view class="left">
-					<image :src="item.img" mode=""></image>
+					<image :src="item.image" mode=""></image>
 					<view class="leftmsg">
 						特价房
 					</view>
@@ -298,15 +328,15 @@
 					<view class="tit">
 						{{item.name}}
 						<view class="status">
-							立省{{(item.discount.diff/10000).toFixed(0)}}万
+							立省{{(item.diff/10000).toFixed(0)}}万
 						</view>
 					</view>
 					<view class="price">
 						<view class="old">
-							原价<text>{{(item.discount.original_total/10000).toFixed(0)}}</text>万
+							原价<text>{{(item.original_total/10000).toFixed(0)}}</text>万
 						</view>
 						<view class="new">
-							特价<text>{{(item.discount.total/10000).toFixed(0)}}</text>万
+							特价<text>{{(item.total/10000).toFixed(0)}}</text>万
 						</view>
 					</view>
 					<view class="msg">
@@ -314,8 +344,8 @@
 					</view>
 					<view class="type">
 						<text class="zhuang">{{item.decorate}}</text>
-						<text v-if="item.railways.length">{{item.railways[0]}}</text>
-						<text v-for="(val,key) in item.features" :key="key">{{val}}</text>
+						<text v-if="item.railway">{{item.railway}}</text>
+						<text v-if="item.feature">{{item.feature}}</text>
 					</view>
 				</view>
 			</view>
@@ -331,9 +361,27 @@
 	import jiuaicheckbox from '@/components/jiuai-checkbox/jiuai-checkbox.vue'
 	var that
 	export default {
-		onLoad(options) {
+		onShow() {
 			that = this
-			console.log(options)
+			console.log(uni.getStorageSync('naerrail'))
+			this.isspecial = false
+			this.isnormal = true
+			this.search = {
+				sort: 0,
+				country: 0,
+				railway: 0,
+				total_price: 0,
+				single_price: 0,
+				area: 0,
+				type: '',
+				feature: 0,
+				limit: 10,
+				near_railway: 0,
+				special: 0,
+				total_price_max: 0,
+				total_price_min: 0,
+				house_types: []
+			}
 			this.city = uni.getStorageSync('city')
 			this.getinfo()
 			this.cityname = uni.getStorageSync('cityname')
@@ -365,7 +413,7 @@
 				features: [],
 				types1: [],
 				search: {
-					order: 0,
+					sort: 0,
 					country: 0,
 					railway: 0,
 					total_price: 0,
@@ -375,9 +423,10 @@
 					feature: 0,
 					limit: 10,
 					near_railway: 0,
-					special_discount: 0,
-					max_total_price: '',
-					min_total_price: ''
+					special: 0,
+					total_price_max: 0,
+					total_price_min: 0,
+					house_types: []
 				},
 				page: 2,
 				isspecial: false,
@@ -392,17 +441,20 @@
 				featureidslength: 0,
 				once: true,
 				isfixed: false,
-				total: 0
+				total: 0,
+				isover: true
 			}
 		},
 		onReachBottom() {
-			this.isloading = true
+			
 			this.getmore()
+			console.log(888888)
 		},
 		onPageScroll(e) {
-			if(e.scrollTop >=44) {
+			console.log(e.scrollTop)
+			if (e.scrollTop >= 44) {
 				this.isfixed = true
-			}else {
+			} else {
 				this.isfixed = false
 			}
 		},
@@ -412,19 +464,19 @@
 			tabbar
 		},
 		methods: {
-			gomap(){
+			gomap() {
 				uni.navigateTo({
-					url:"/pages/map/map"
+					url: "/pages/map/map"
 				})
 			},
-			gopath(){
+			gopath() {
 				uni.navigateTo({
-					url:"/pages/path/path"
+					url: "/pages/path/path"
 				})
 			},
 			go(id) {
-				uni.redirectTo({
-					url:"/pageA/content/content?id="+id
+				uni.navigateTo({
+					url: "/pageA/content/content?id=" + id
 				})
 			},
 			clearall() {
@@ -440,99 +492,107 @@
 					limit: 10,
 					page: 1,
 					near_railway: 0,
-					special_discount: 0
+					special: 0
 				}
 				this.getinfo()
 			},
 			clear(num) {
-				switch(num) {
+				switch (num) {
 					case 0:
 						this.search.country = 0
 						this.search.railway = 0
-						for(let item of this.citys) {
+						for (let item of this.citys) {
 							item.checked = false
 						}
-						for(let item of this.railways) {
+						for (let item of this.railways) {
 							item.checked = false
 						}
 						this.cityidslength = 0
 						this.railwayidslength = 0
 						this.cityids = []
 						this.railwayids = []
-					break;
+						break;
 					case 1:
-						this.search.house_type = 0
+						this.search.house_types = []
 						this.$forceUpdate()
 						this.getinfo()
-					break;
+						break;
 					case 2:
 						this.search.area = 0
 						this.search.type = ''
 						this.search.feature = 0
-						for(let item of this.features) {
+						for (let item of this.features) {
 							item.checked = false
 						}
 						this.featureidslength = 0
 						this.featureids = []
-					break;
+						break;
+					case 3:
+						this.search.single_price = 0
+						this.search.total_price = 0
+						break
 				}
 			},
 			settype(item) {
-				switch(item) {
+				console.log(this.isover)
+				if (!this.isover) {
+					return false
+				}
+				switch (item) {
 					case '住宅':
-					if(this.search.type == item) {
-						this.search.type = ''
-					}else {
-						this.search.type = item
-					}
-					break;
+						if (this.search.type == item) {
+							this.search.type = ''
+						} else {
+							this.search.type = item
+						}
+						break;
 					case '刚需':
-						if(this.search.feature == 3) {
+						if (this.search.feature == 3) {
 							this.search.feature = 0
-						}else {
+						} else {
 							this.search.feature = 3
 						}
-					break;
+						break;
 					case '特价房':
-						if(this.search.special_discount == 1) {
+						if (this.search.special == 1) {
 							this.isspecial = false
 							this.isnormal = true
-							this.search.special_discount = 0
-						}else {
+							this.search.special = 0
+						} else {
 							this.isspecial = true
 							this.isnormal = false
-							this.search.special_discount = 1
+							this.search.special = 1
 						}
-						
-					break;
+
+						break;
 					case '近地铁':
-						if(this.search.near_railway == 1) {
+						if (this.search.near_railway == 1) {
 							this.search.near_railway = 0
-						}else {
+						} else {
 							this.search.near_railway = 1
 						}
-					break;
+						break;
 				}
 			},
 			gohelp() {
 				uni.redirectTo({
-					url:"/pages/help/help"
+					url: "/pages/help/help"
 				})
 			},
-			setsearch(key,type,id) {
-				if(type == 0) {
+			setsearch(key, type, id) {
+				if (type == 0) {
 					// this.search.country = id
-					let arr = this.pu(this.cityids,id)
-					if(this.citys[key].checked) {
+					let arr = this.pu(this.cityids, id)
+					if (this.citys[key].checked) {
 						this.citys[key].checked = false
 					} else {
 						this.citys[key].checked = true
 					}
 					this.cityids = arr
 					this.cityidslength = arr.length
-				} else if(type == 1) {
-					let arr = this.pu(this.railwayids,id)
-					if(this.railways[key].checked) {
+				} else if (type == 1) {
+					let arr = this.pu(this.railwayids, id)
+					if (this.railways[key].checked) {
 						this.railways[key].checked = false
 					} else {
 						this.railways[key].checked = true
@@ -540,8 +600,8 @@
 					this.railwayids = arr
 					this.railwayidslength = arr.length
 				} else {
-					let arr = this.pu(this.featureids,id)
-					if(this.features[key].checked) {
+					let arr = this.pu(this.featureids, id)
+					if (this.features[key].checked) {
 						this.features[key].checked = false
 					} else {
 						this.features[key].checked = true
@@ -552,43 +612,43 @@
 				console.log(this.featureids)
 			},
 			makereal() {
-				this.search.railway = this.railwayids.join(',')
-				this.search.feature = this.featureids.join(',')
-				this.search.country = this.cityids.join(',')
+				// this.search.railway = this.railwayids.join(',')
+				// this.search.feature = this.featureids.join(',')
+				// this.search.country = this.cityids.join(',')
 				this.shownum = 10
 			},
 			pu(arr, id) {
-			      if (typeof id == 'string') {
-			        if (arr.indexOf(String(id)) == -1) {
-			          arr.push(id);
-			        } else {
-			          arr.splice(arr.indexOf(String(id)), 1);
-			        }
-			      } else {
-			        if (arr.indexOf(parseInt(id)) == -1) {
-			          arr.push(id);
-			        } else {
-			          arr.splice(arr.indexOf(parseInt(id)), 1);
-			        }
-			      }
-			      return arr;
-			    },
+				if (typeof id == 'string') {
+					if (arr.indexOf(String(id)) == -1) {
+						arr.push(id);
+					} else {
+						arr.splice(arr.indexOf(String(id)), 1);
+					}
+				} else {
+					if (arr.indexOf(parseInt(id)) == -1) {
+						arr.push(id);
+					} else {
+						arr.splice(arr.indexOf(parseInt(id)), 1);
+					}
+				}
+				return arr;
+			},
 			gosearch() {
 				uni.navigateTo({
-					url:"/pages/searchname/searchname"
+					url: "/pages/searchname/searchname"
 				})
 			},
 			setcity() {
 				this.cityidslength = 0
 				this.cityids = []
-				for(let val of this.citys) {
+				for (let val of this.citys) {
 					val.checked = false
 				}
 			},
 			setrailway() {
 				this.railwayidslength = 0
 				this.railwayids = []
-				for(let val of this.railways) {
+				for (let val of this.railways) {
 					val.checked = false
 				}
 			},
@@ -600,9 +660,18 @@
 			},
 			changeBox(e) {
 				console.log(e);
-				this.search.house_type = e.detail.value
-				this.$forceUpdate()
-				this.getinfo()
+				let type = true
+				for (let k in this.search.house_types) {
+					if (this.search.house_types[k] == e.detail.value) {
+						this.search.house_types.splice(k, 1)
+						type = false
+					}
+				}
+				if (type) {
+					this.search.house_types.push(e.detail.value)
+					this.$forceUpdate()
+				}
+				// this.getinfo()
 				console.log(this.search)
 			},
 			// 定义动画内容
@@ -613,54 +682,125 @@
 			getinfo() {
 				let city = this.city
 				let token = uni.getStorageSync('token')
-				if(this.once) {
-					this.once = false
+				if (this.once) {
+
 					uni.request({
-						url:that.apiserve+"/jy/phone/search/conditions",
-						method:"GET",
-						data:{
+						url: that.javaserve + "/applets/jy/conditions",
+						method: "GET",
+						data: {
 							city: city,
-							token:token,
 							other: uni.getStorageSync('other'),
 							uuid: uni.getStorageSync('uuid')
 						},
 						success: (res) => {
-							that.citys = res.data.conditions.countries
-							for(let item of that.citys) {
-								that.$set(item,'checked',false)
+							that.once = false
+							that.citys = res.data.data.countries
+							for (let item of that.citys) {
+								that.$set(item, 'checked', false)
 							}
-							that.railways = res.data.conditions.railways
-							for(let item of that.railways) {
-								that.$set(item,'checked',false)
+							that.railways = res.data.data.railways
+							for (let item of that.railways) {
+								that.$set(item, 'checked', false)
 							}
-							that.singles = res.data.conditions.single_prices
-							that.totals = res.data.conditions.total_prices
-							that.houses = res.data.conditions.house_types
-							that.areas = res.data.conditions.areas
-							that.types1 = res.data.conditions.types
-							that.features = res.data.conditions.features
-							that.cityname = res.data.common.city_info.current.short
-							for(let item of that.features) {
-								that.$set(item,'checked',false)
+							that.singles = res.data.data.single_prices
+							that.totals = res.data.data.total_prices
+							that.houses = res.data.data.house_types
+							that.areas = res.data.data.areas
+							that.features = res.data.data.features
+							that.types1 = res.data.data.building_types
+							for (let item of that.features) {
+								item.id = Number(item.id)
+								// that.$set(item,'checked',false)
 							}
-							console.log(res)
+							that.cityname = res.data.data.city.name
+							//#ifdef MP-BAIDU
+							let header = res.data.data.header
+							swan.setPageInfo({
+								title: header.title,
+								keywords: header.keywords,
+								description: header.description,
+								success: res => {
+									console.log('setPageInfo success', res);
+								},
+								fail: err => {
+									console.log('setPageInfo fail', err);
+								}
+							})
+							//#endif
+							if (uni.getStorageSync('indexfeature')) {
+								that.search.feature = uni.getStorageSync('indexfeature')
+								uni.removeStorageSync('indexfeature')
+								that.makereal()
+							}
+							if (uni.getStorageSync('isspecial')) {
+								that.search.special = uni.getStorageSync('isspecial')
+								console.log(this.search, 'isspecial')
+								this.isspecial = true
+								this.isnormal = false
+								uni.removeStorageSync('isspecial')
+							}
+							if (uni.getStorageSync('naerrail')) {
+								this.search.near_railway = 1
+								uni.removeStorageSync('naerrail')
+							}
+							if (uni.getStorageSync('isgangxu')) {
+								this.search.feature = 3
+								uni.removeStorageSync('isgangxu')
+							}
+							console.log(this.search, 'isone')
+							that.getmsg()
 						}
 					})
+				} else {
+					if (uni.getStorageSync('indexfeature')) {
+						that.search.feature = uni.getStorageSync('indexfeature')
+						uni.removeStorageSync('indexfeature')
+						this.makereal()
+					}
+					if (uni.getStorageSync('isspecial')) {
+						that.search.special = uni.getStorageSync('isspecial')
+						this.isspecial = true
+						this.isnormal = false
+						uni.removeStorageSync('isspecial')
+					}
+					if (uni.getStorageSync('naerrail')) {
+						this.search.near_railway = 1
+						uni.removeStorageSync('naerrail')
+					}
+					if (uni.getStorageSync('isgangxu')) {
+						this.search.feature = 3
+						uni.removeStorageSync('isgangxu')
+					}
+					this.getmsg()
 				}
-				
+
+
+			},
+			getmsg() {
+				if (!this.isover) {
+					return false
+				}
+				this.isover = false
+				this.page = 2
 				let data = this.search
-				data.city = city
+				console.log(data, 'getmsg')
+				data.city = this.city
+				let city = this.city
+				data.page = 1
 				data.other = uni.getStorageSync('other')
 				data.uuid = uni.getStorageSync('uuid')
 				uni.request({
-					url:that.apiserve+"/applets/search/info",
-					method:"GET",
-					data:data,
+					url: that.javaserve + "/applets/jy/search/info",
+					method: "post",
+					// header: {
+					// 	'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					// },
+					data: data,
 					success: (res) => {
-						console.log(res)
-						that.builds = res.data.info
+						that.builds = res.data.data.data
+						that.total = res.data.data.total
 						//#ifdef MP-BAIDU
-						let header = res.data.common.header
+						let header = res.data.data.header
 						swan.setPageInfo({
 							title: header.title,
 							keywords: header.keywords,
@@ -673,78 +813,109 @@
 							}
 						})
 						//#endif
-						if(that.builds.length == 0) {
+						if (that.builds.length == 0) {
 							that.isnull = true
 							uni.request({
-								url:that.apiserve+'/jy/recommend',
-								method:"GET",
-								data:{
+								url: that.javaserve + '/building/recommends',
+								method: "POST",
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+								},
+								data: {
+									city: city,
+									limit: 4,
+									other: uni.getStorageSync('other'),
+									uuid: uni.getStorageSync('uuid')
+								},
+								success: (response) => {
+									console.log(response)
+									that.other = response.data.data
+
+								}
+							})
+							uni.request({
+								url: that.apiserve + '/jy/recommend',
+								method: "GET",
+								data: {
 									city: city,
 									count: 4,
 									other: uni.getStorageSync('other'),
 									uuid: uni.getStorageSync('uuid')
 								},
 								success: (response) => {
-									console.log(response)
-									that.other = response.data.recommends
-									
+									// that.other = response.data.recommends
+
 								}
 							})
-						}else {
+						} else {
 							that.isnull = false
-							that.toasttxt = `为您找到${res.data.total}个楼盘`
-							that.total = res.data.total
+							that.toasttxt = `为您找到${res.data.data.total}个楼盘`
 							that.$refs.toast.show()
 						}
+						that.isover = true
 					}
 				})
 			},
+			setnull() {
+				return false
+			},
+			getnumber(n) {
+				return Number(n)
+			},
 			getmore() {
+				if (!this.isover) {
+					return
+				}
+				this.isover = false
 				let city = uni.getStorageSync('city')
 				let data = this.search
 				data.city = city
 				data.other = uni.getStorageSync('other')
 				data.uuid = uni.getStorageSync('uuid')
 				// let num = this.total
-				let num = Math.ceil((this.total/10))
-				if(this.page > num) {
+				let num = Math.ceil((this.total / 10))
+				this.isloading = true
+				if (this.page > num) {
 					this.isloading = false
 					return
 				}
 				data.page = that.page
 				uni.request({
-					url:that.apiserve+"/applets/search/info",
-					method:"GET",
-					data:data,
+					url: that.javaserve + "/applets/jy/search/info",
+					method: "POST",
+					data: data,
 					success: (res) => {
 						console.log(res)
-						that.page = that.page+1
-						console.log(data.page)
-						that.builds = that.builds.concat(res.data.info)
+						that.page = that.page + 1
+						that.builds = that.builds.concat(res.data.data.data)
 						that.isloading = false
+						that.isover = true
 					}
 				})
 			}
 		},
-		watch:{
-			search:{
+		watch: {
+			search: {
 				handler(val) {
 					console.log(val)
-					if(val.min_total_price || val.max_total_price) {
+					if (val.total_price_min || val.total_price_max) {
 						val.total_price = 0
 					}
-					this.getinfo()
+					if (!this.once) {
+						this.getmsg()
+					}
 				},
-				deep:true
+				deep: true
 			}
 		}
 	}
 </script>
 
 <style lang="less">
-	page{
+	page {
 		background: #FFFFFF;
 	}
+
 	.toptitle {
 		color: #17181A;
 		font-size: 32rpx;
@@ -756,6 +927,7 @@
 		background-color: #FFFFFF;
 		top: 0;
 		z-index: 10;
+
 		image {
 			width: 32rpx;
 			height: 32rpx;
@@ -767,6 +939,7 @@
 	.input {
 		display: flex;
 		padding: 8rpx 0;
+
 		.left {
 			margin-left: 30rpx;
 			width: 570rpx;
@@ -828,7 +1001,7 @@
 
 	.icons {
 		position: relative;
-		
+
 		.icons-box {
 			display: flex;
 			align-items: center;
@@ -847,6 +1020,7 @@
 					margin-left: 8rpx;
 				}
 			}
+
 			.active {
 				color: #20C657;
 			}
@@ -1165,7 +1339,6 @@
 	.types {
 		display: flex;
 		justify-content: space-around;
-		margin-bottom: 4rpx;
 		margin-bottom: 6rpx;
 
 		view {
@@ -1186,7 +1359,7 @@
 	}
 
 	.typesbox {
-		margin-top: 0rpx;
+		margin-top: 88rpx;
 	}
 
 	.box {

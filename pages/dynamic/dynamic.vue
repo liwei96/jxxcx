@@ -13,18 +13,18 @@
 		<view class="box">
 			<view class="item" v-for="item in list" :key="item.id">
 				<view class="top" @tap="go(item.id)">
-					<image :src="item.img" mode=""></image>
+					<image :src="item.project.image" mode=""></image>
 					<view class="zhao"></view>
 					<view class="topicon">
 						最新
 					</view>
 					<view class="name">
-						{{item.name}}
+						{{item.project.name}}
 					</view>
 					<view class="msg">
-						<text>{{item.country.substr(0,2)}}</text>
-						<text>面积 {{item.area}}m²</text>
-						<text>均价：{{item.price}}元/m²</text>
+						<text>{{item.project.country.substr(0,2)}}</text>
+						<text>面积 {{item.project.area}}m²</text>
+						<text>均价：{{item.project.price}}元/m²</text>
 					</view>
 				</view>
 				<view class="bom">
@@ -33,20 +33,23 @@
 					<view class="time">
 						{{item.time}}
 					</view>
-					<button open-type="getPhoneNumber" @tap="bid = item.bid" @getphonenumber="getPhoneNumber" v-if="!pass&&!weixin">
+					<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber($event,item.project.id)"
+						v-if="!pass&&!weixin">
 						<view class="btn">
 							订阅此楼盘动态
 						</view>
 					</button>
-					<view class="btn" v-if='pass||weixin' @tap="show(item.bid,'动态页+订阅楼盘动态',1)">
+					<view class="btn" v-if='pass||weixin' @tap="show(item.project.id,'动态页+订阅楼盘动态',1)">
 						订阅此楼盘动态
 					</view>
 				</view>
 			</view>
 		</view>
 		<bom-nav :tel="'400-718-6686'" @show="nav"></bom-nav>
-		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true" @hide="setiscode">
-			<sign :type="codenum" @closethis="setpop" :title="title" :pid="pid" :remark="remark" :position="position" :isok="isok"></sign>
+		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"
+			@hide="setiscode">
+			<sign :type="codenum" @closethis="setpop" :title="title" :pid="pid" :remark="remark" :position="position"
+				:isok="isok"></sign>
 		</wyb-popup>
 	</view>
 </template>
@@ -67,7 +70,7 @@
 			this.getdata()
 		},
 		onLoad(options) {
-			this.city =  uni.getStorageSync('city');
+			this.city = uni.getStorageSync('city');
 			this.pass = uni.getStorageSync('pass')
 			// #ifdef  MP-WEIXIN
 			// this.weixin = true
@@ -107,8 +110,11 @@
 				})
 				let city = this.city
 				uni.request({
-					url: that.apiserve + '/applets/dynamic/info',
-					method: 'GET',
+					url: that.javaserve + '/applets/jy/city/dynamics',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						city: city,
 						page: that.page,
@@ -117,10 +123,9 @@
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
-						console.log(res)
-						that.list = res.data.data
+						that.list = res.data.data.data
 						//#ifdef MP-BAIDU
-						let header = res.data.common.header
+						let header = res.data.data.header
 						swan.setPageInfo({
 							title: header.title,
 							keywords: header.keywords,
@@ -144,8 +149,11 @@
 				that.page = that.page + 1
 				let city = uni.getStorageSync('city')
 				uni.request({
-					url: that.apiserve + '/applets/dynamic/info',
-					method: 'GET',
+					url: that.javaserve + '/applets/jy/city/dynamics',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						city: city,
 						page: that.page,
@@ -154,7 +162,7 @@
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
-						that.list = that.list.concat(res.data.data)
+						that.list = that.list.concat(res.data.data.data)
 						uni.hideLoading()
 					}
 				})
@@ -185,8 +193,9 @@
 				this.isok = e.isok
 				this.$refs.popup.show()
 			},
-			async getPhoneNumber(e) {
+			async getPhoneNumber(e, id) {
 				console.log(e)
+				this.bid = id
 				let that = this
 				// #ifdef  MP-BAIDU
 				if (e.detail.errMsg == 'getPhoneNumber:fail auth deny') {
@@ -199,18 +208,21 @@
 					let session = uni.getStorageSync('session')
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res)
-								let tel = res.data.mobile
+								console.log(res);
+								let tel = res.data.data.mobile;
 								uni.setStorageSync('phone', tel)
 								let openid = uni.getStorageSync('openid')
 								that.tel = tel
@@ -219,36 +231,65 @@
 						})
 					} else {
 						swan.getLoginCode({
-							success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												that.tel = tel
-												that.show(that.bid, '动态页+订阅楼盘动态', 1)
+												that.show(that.bid, '动态页+订阅楼盘动态',
+													1)
+												uni.request({
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
+													data: {
+														phone: tel,
+														openid: openid,
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
+													},
+													success: (res) => {
+														console.log(
+															res);
+														uni.setStorageSync(
+															"token",
+															res
+															.data
+															.data);
+													},
+												})
 											}
 										})
 
@@ -299,24 +340,35 @@
 											let tel = data.purePhoneNumber
 											let token = uni.getStorageSync('token')
 											if (!token) {
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												uni.request({
 													url: "https://api.edefang.net/applets/login",
 													method: 'GET',
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														other: uni
+															.getStorageSync(
+																'other'),
+														uuid: uni
+															.getStorageSync(
+																'uuid')
 													},
 													success: (res) => {
-														console.log(res)
-														uni.setStorageSync('token', res.data.token)
+														console.log(
+															res)
+														uni.setStorageSync(
+															'token',
+															res
+															.data
+															.token)
 													}
 												})
 											}
 											uni.setStorageSync('phone', tel)
-											let openid = uni.getStorageSync('openid')
+											let openid = uni.getStorageSync(
+												'openid')
 											that.tel = tel
 											that.show(that.bid, '动态页+订阅楼盘动态', 1)
 										}

@@ -3,7 +3,7 @@
 		<!-- <view class="toptitle">
 			<view class="status_bar">
 			</view>
-			<text>允家新房</text>
+			<text>家园新房</text>
 		</view> -->
 		<view class="search">
 			<view class="searchbox">
@@ -17,27 +17,31 @@
 						请输入楼盘名
 					</view>
 				</view>
+				<view class="topshi" v-if="tebtn">
+					<view class="topbb">
+					</view>
+					<view class="left">
+						<view class="t1">
+							点此添加 我的小程序
+						</view>
+						<view class="t1">
+							找房更方便
+						</view>
+					</view>
+					<view class="right" @tap="tebtn = false">
+						<image src="../../static/close.png" mode=""></image>
+					</view>
+				</view>
 			</view>
 		</view>
 		<view class="searchpros">
 			<view class="prozhao" @tap="gobuild">
+				<!-- <image src="../../static/index/index-yy.png" mode=""></image> -->
 				<image src="../../static/index/index-down.png" mode=""></image>
 			</view>
 			<scroll-view class="scrollpro" scroll-x="true">
-				<view class="proname">
-					华发·峰荟
-				</view>
-				<view class="proname">
-					华发·峰荟
-				</view>
-				<view class="proname">
-					华发·峰荟
-				</view>
-				<view class="proname">
-					华发·峰荟
-				</view>
-				<view class="proname">
-					华发·峰荟
+				<view class="proname" v-for="item in recommends_head" :key="item.id" @tap="gopro(item.id)">
+					{{item.name}}
 				</view>
 			</scroll-view>
 		</view>
@@ -50,7 +54,7 @@
 					<image src="../../static/index/index-new.png" mode=""></image>
 					<text>新房</text>
 				</view>
-				<view class="li">
+				<view class="li" @tap="gonearrail">
 					<image src="../../static/index/index-ditie.png" mode=""></image>
 					<text>地铁房</text>
 				</view>
@@ -58,13 +62,13 @@
 					<image src="../../static/index/index-tejia.png" mode=""></image>
 					<text>特价房</text>
 				</view>
+				<view class="li" @tap="gojoin">
+					<image src="../../static/index/index-join.png" mode=""></image>
+					<text>刚需房</text>
+				</view>
 				<view class="li" @tap="gomap">
 					<image src="../../static/index/index-map.png" mode=""></image>
 					<text>地图找房</text>
-				</view>
-				<view class="li" @tap="gojoin">
-					<image src="../../static/index/index-join.png" mode=""></image>
-					<text>平台合作</text>
 				</view>
 			</view>
 			<view class="navsbox">
@@ -84,7 +88,7 @@
 					<image src="../../static/index/index-dynamic.png" mode=""></image>
 					<text>动态</text>
 				</view>
-				<view class="li">
+				<view class="li" @tap="gowenda">
 					<image src="../../static/index/index-question.png" mode=""></image>
 					<text>楼盘问答</text>
 				</view>
@@ -93,36 +97,39 @@
 				<view class="topnew-box">
 					<image class="icon" src="../../static/index/index-topnew.png" mode=""></image>
 					<swiper class="swiper" :vertical="true" :circular="true" :autoplay="true" interval="2000">
-						<swiper-item class="swiper-item" v-for="item in tops" :key="item.id">
-							<navigator :url="`../article/article?id=${item.id}`">
-								<view class="swiper-item uni-bg-red">{{item.title}}</view>
+						<swiper-item class="swiper-item" v-for="item in news" :key="item.id">
+							<navigator :url="`../info/info?id=${item.id}`">
+								<view class="swiper-item uni-bg-red">{{item.name}}</view>
 							</navigator>
 						</swiper-item>
 					</swiper>
 				</view>
 			</view>
 		</view>
-		
+
 		<view class="help">
 			<image src="../../static/index/index-help.jpg" mode=""></image>
 			<text class="help-btn" @tap="bangZhao">帮我找房</text>
 		</view>
-		<view class="feature">
-			<view class="feature-tit">今日特价房<view class="more" @tap="gobuild">更多楼盘<image src="../../static/content/right.png" mode=""></image></view></view>
+		<view class="feature" v-if="special_price.length">
+			<view class="feature-tit">今日特价房<view class="more" @tap="gospecial">更多楼盘<image
+						src="../../static/content/right.png" mode=""></image>
+				</view>
+			</view>
 			<scroll-view class="scroll-view" scroll-x="true">
-				<view class="scroll-item" @tap="ganglou(3,'刚需')">
+				<view class="scroll-item" @tap="gopro(item.id)" v-for="item in special_price" :key="item.id">
 					<view class="item-top">
 						<view class="red">
-							临安
+							{{item.country.substr(0,2)}}
 						</view>
 						<view class="name">
-							赞成.国潮商务...
+							{{item.name}}
 						</view>
-						<image src="../../static/other/about-logo.jpg" mode=""></image>
+						<image :src="item.img" mode=""></image>
 					</view>
 					<view class="item-bom">
 						<view class="old">
-							原价: 260万
+							原价: {{(item.original_total/10000).toFixed(0)}}万
 						</view>
 						<view class="new">
 							<view class="newleft">
@@ -130,79 +137,7 @@
 								特价
 							</view>
 							<view class="newright">
-								省<text>￥68000</text>
-							</view>
-						</view>
-					</view>
-				</view>
-				<view class="scroll-item" @tap="ganglou(3,'刚需')">
-					<view class="item-top">
-						<view class="red">
-							临安
-						</view>
-						<view class="name">
-							赞成.国潮商务...
-						</view>
-						<image src="../../static/other/about-logo.jpg" mode=""></image>
-					</view>
-					<view class="item-bom">
-						<view class="old">
-							原价: 260万
-						</view>
-						<view class="new">
-							<view class="newleft">
-								特价
-							</view>
-							<view class="newright">
-								省<text>￥68000</text>
-							</view>
-						</view>
-					</view>
-				</view>
-				<view class="scroll-item" @tap="ganglou(3,'刚需')">
-					<view class="item-top">
-						<view class="red">
-							临安
-						</view>
-						<view class="name">
-							赞成.国潮商务...
-						</view>
-						<image src="../../static/other/about-logo.jpg" mode=""></image>
-					</view>
-					<view class="item-bom">
-						<view class="old">
-							原价: 260万
-						</view>
-						<view class="new">
-							<view class="newleft">
-								特价
-							</view>
-							<view class="newright">
-								省<text>￥68000</text>
-							</view>
-						</view>
-					</view>
-				</view>
-				<view class="scroll-item" @tap="ganglou(3,'刚需')">
-					<view class="item-top">
-						<view class="red">
-							临安
-						</view>
-						<view class="name">
-							赞成.国潮商务...
-						</view>
-						<image src="../../static/other/about-logo.jpg" mode=""></image>
-					</view>
-					<view class="item-bom">
-						<view class="old">
-							原价: 260万
-						</view>
-						<view class="new">
-							<view class="newleft">
-								特价
-							</view>
-							<view class="newright">
-								省<text>￥68000</text>
+								省<text>￥{{item.diff}}</text>
 							</view>
 						</view>
 					</view>
@@ -220,32 +155,25 @@
 			</view>
 			<scroll-view class="scroll-view" scroll-x="true">
 				<view class="scroll-item">
+					<view class="scroll-item-box">
 						<view class="lefticon">
 							<image src="../../static/index/index-jiang.png" mode=""></image>
 						</view>
-						<image class="rightimg" src="../../static/other/about-logo.jpg" mode=""></image>
+						<image class="rightimg" :src="rigid_demands[0].img" mode=""></image>
 						<view class="name">
 							刚需楼盘榜
 						</view>
 						<view class="time">
-							更新于2021-04-22
+							更新于{{starttime}}
 						</view>
-						<view class="li">
+						<view class="libox">
+						<view class="li" v-for="(item,key) in rigid_demands" :key="item.id" @tap="gopro(item.id)" v-if="key<3">
 							<view class="round">
 							</view>
-							中天溪珺庭
+							{{item.name}}
 						</view>
-						<view class="li">
-							<view class="round">
-							</view>
-							中天溪珺庭
 						</view>
-						<view class="li">
-							<view class="round">
-							</view>
-							中天溪珺庭
-						</view>
-						<view class="bom">
+						<view class="bom" @tap="setbuild(3)">
 							<view class="btn">
 							</view>
 							<view class="msg">
@@ -253,34 +181,59 @@
 								<image src="../../static/index/roundmore.png" mode=""></image>
 							</view>
 						</view>
+					</view>
 				</view>
 				<view class="scroll-item">
+					<view class="scroll-item-box">
 						<view class="lefticon">
 							<image src="../../static/index/index-jiang.png" mode=""></image>
 						</view>
-						<image class="rightimg" src="../../static/other/about-logo.jpg" mode=""></image>
+						<image class="rightimg" :src="brands[0].img" mode=""></image>
 						<view class="name">
-							刚需楼盘榜
+							品牌楼盘榜
 						</view>
 						<view class="time">
-							更新于2021-04-22
+							更新于{{starttime}}
 						</view>
-						<view class="li">
-							<view class="round">
+						<view class="libox">
+							<view class="li" v-for="(item,key) in brands" :key="item.id" @tap="gopro(item.id)" v-if="key<3">
+								<view class="round">
+								</view>
+								{{item.name}}
 							</view>
-							中天溪珺庭
 						</view>
-						<view class="li">
-							<view class="round">
-							</view>
-							中天溪珺庭
-						</view>
-						<view class="li">
-							<view class="round">
-							</view>
-							中天溪珺庭
-						</view>
+						
 						<view class="bom">
+							<view class="btn">
+							</view>
+							<view class="msg" @tap="setbuild(4)">
+								更多楼盘
+								<image src="../../static/index/roundmore.png" mode=""></image>
+							</view>
+						</view>
+					</view>
+					
+				</view>
+				<view class="scroll-item">
+					<view class="scroll-item-box">
+						<view class="lefticon">
+							<image src="../../static/index/index-jiang.png" mode=""></image>
+						</view>
+						<image class="rightimg" :src="railways[0].img" mode=""></image>
+						<view class="name">
+							地铁楼盘榜
+						</view>
+						<view class="time">
+							更新于{{starttime}}
+						</view>
+						<view class="libox">
+						<view class="li" v-for="(item,key) in railways" :key="item.id" @tap="gopro(item.id)" v-if="key<3">
+							<view class="round">
+							</view>
+							{{item.name}}
+						</view>
+						</view>
+						<view class="bom" @tap="setbuild(6)">
 							<view class="btn">
 							</view>
 							<view class="msg">
@@ -288,10 +241,42 @@
 								<image src="../../static/index/roundmore.png" mode=""></image>
 							</view>
 						</view>
+					</view>
+					
+				</view>
+				<view class="scroll-item">
+					<view class="scroll-item-box">
+						<view class="lefticon">
+							<image src="../../static/index/index-jiang.png" mode=""></image>
+						</view>
+						<image class="rightimg" :src="educations[0].img" mode=""></image>
+						<view class="name">
+							现房楼盘榜
+						</view>
+						<view class="time">
+							更新于{{starttime}}
+						</view>
+						<view class="libox">
+						<view class="li" v-for="(item,key) in educations" :key="item.id" @tap="gopro(item.id)" v-if="key<3">
+							<view class="round">
+							</view>
+							{{item.name}}
+						</view>
+						</view>
+						<view class="bom" @tap="setbuild(8)">
+							<view class="btn">
+							</view>
+							<view class="msg">
+								更多楼盘
+								<image src="../../static/index/roundmore.png" mode=""></image>
+							</view>
+						</view>
+					</view>
+					
 				</view>
 			</scroll-view>
 		</view>
-		
+
 		<view class="dynamic">
 			<view class="dynamic-box">
 				<view class="dynamic-tit">
@@ -315,7 +300,7 @@
 							<text class="title">{{dynamics[0].name}}</text>
 						</view>
 						<view class="con1-bom">
-							<text class="txt">{{dynamics[0].introduce}}</text>
+							<text class="txt">{{dynamics[0].content}}</text>
 						</view>
 						<!-- </navigator> -->
 					</view>
@@ -323,7 +308,7 @@
 						<view class="con2">
 							<navigator :url="`../dynamicdetail/dynamicdetail?id=${dynamics[1].id}`" class="nav_nav">
 								<view class="con2-left">
-									<text class="msg">{{dynamics[1].introduce}}</text>
+									<text class="msg">{{dynamics[1].content}}</text>
 								</view>
 								<view class="con2-right">
 									<image :src="dynamics[1].img" mode=""></image>
@@ -334,7 +319,7 @@
 						<view class="con2 con3">
 							<navigator :url="`../dynamicdetail/dynamicdetail?id=${dynamics[2].id}`" class="nav_nav">
 								<view class="con2-left">
-									<text class="msg">{{dynamics[2].introduce}}</text>
+									<text class="msg">{{dynamics[2].content}}</text>
 								</view>
 								<view class="con2-right">
 									<image :src="dynamics[2].img" mode=""></image>
@@ -346,7 +331,7 @@
 				</view>
 			</view>
 		</view>
-		
+
 		<view class="articles">
 			<view class="tit">
 				楼盘导购
@@ -355,54 +340,25 @@
 					<image src="../../static/content/right.png" mode=""></image>
 				</view>
 			</view>
-			<view class="article">
+			<view class="article" v-for="item in project_articles" :key="item.id" @tap="goinfo(item.id)">
 				<view class="left">
 					<view class="name">
-						不限购！半小时到未来科技城！
-						临安稀缺户型即将首开！
+						{{item.title}}
 					</view>
 					<view class="msg">
-						家园新房 <text>2020-05-24</text>
+						{{item.source}} <text>{{item.time}}</text>
 					</view>
 				</view>
 				<view class="right">
-					<image src="../../static/other/about-logo.jpg" mode=""></image>
-				</view>
-			</view>
-			<view class="article">
-				<view class="left">
-					<view class="name">
-						不限购！半小时到未来科技城！
-						临安稀缺户型即将首开！
-					</view>
-					<view class="msg">
-						家园新房 <text>2020-05-24</text>
-					</view>
-				</view>
-				<view class="right">
-					<image src="../../static/other/about-logo.jpg" mode=""></image>
-				</view>
-			</view>
-			<view class="article">
-				<view class="left">
-					<view class="name">
-						不限购！半小时到未来科技城！
-						临安稀缺户型即将首开！
-					</view>
-					<view class="msg">
-						家园新房 <text>2020-05-24</text>
-					</view>
-				</view>
-				<view class="right">
-					<image src="../../static/other/about-logo.jpg" mode=""></image>
+					<image :src="item.img" mode=""></image>
 				</view>
 			</view>
 		</view>
-		
+
 		<view class="recommend">
 			<view class="tit">
-				为你推荐 
-				<view class="more">
+				为你推荐
+				<view class="more" @tap="gobuild">
 					更多楼盘
 					<image src="../../static/content/right.png" mode=""></image>
 				</view>
@@ -414,6 +370,15 @@
 			更多楼盘
 			<image src="../../static/index/index-green.png" mode=""></image>
 		</view>
+		<view class="fixbom" v-if="logintype">
+			<image @tap="logintype=false" src="../../static/index/indexclose.png" mode=""></image>
+			<view class="txt">
+				立即登录咨询找房更方便
+			</view>
+			<button open-type="getPhoneNumber" hover-class="none" @getphonenumber="getPhoneNumber" class="fixbtn">
+				立即登录
+			</button>
+		</view>
 	</view>
 </template>
 
@@ -423,6 +388,8 @@
 	export default {
 		data() {
 			return {
+				special_price: [],
+				project_articles: [],
 				tops: [],
 				avg_prices: {},
 				rigid_demand: [],
@@ -444,7 +411,16 @@
 				},
 				cityname: '杭州',
 				isweixin: false,
-				isover: false
+				isover: false,
+				tebtn: false,
+				logintype: false,
+				railways: [],
+				brands: [],
+				rigid_demands: [],
+				educations: [],
+				recommends_head: [],
+				news: [],
+				starttime: ''
 			}
 		},
 		components: {
@@ -455,41 +431,71 @@
 			// #ifdef  MP-WEIXIN
 			this.isweixin = true
 			// #endif
+			let that = this
+			let uuid = uni.getStorageSync('uuid')
+			let city = uni.getStorageSync('city')
+			let ip = uni.getStorageSync('ip')
+			let arr = getCurrentPages()
+			let url = arr[arr.length - 1].route
+			let host = this.host
+			let pp = {
+				controller: "Info",
+				action: "register",
+				params: {
+					city: city,
+					project: '',
+					ip: ip,
+					url: url,
+					uuid: uuid,
+					host: host
+				},
+			};
+			this.$store.state.socket.send({
+				data: JSON.stringify(pp)
+			});
+			if (!uni.getStorageSync('token')) {
+				// this.logintype = true
+				this.tebtn = true
+				setTimeout(() => {
+					// that.logintype = false
+					that.tebtn = false
+				}, 12000)
+			}
 			console.log(options)
 			this.cityname = uni.getStorageSync('cityname') || '杭州'
-			let city = options.city || uni.getStorageSync('city');
 			let token = uni.getStorageSync("token");
 			uni.showLoading({
 				title: "加载中"
 			})
+			let date = new Date()
+			console.log(date.getFullYear(), 'year')
+			this.starttime = date.getFullYear() + '-' + (date.getMonth() + 1 >= 10 ? (date.getMonth() + 1) : '0' + (date
+				.getMonth() + 1)) + '-' + (date.getDate() >= 10 ? date.getDate() : '0' + date.getDate())
 			uni.request({
-				url: this.apiserve + '/applets/first',
+				url: this.javaserve + '/applets/jy',
 				data: {
-					token: token,
 					city: city,
 					other: uni.getStorageSync('other'),
 					uuid: uni.getStorageSync('uuid')
 				},
 				success: (res) => {
-					console.log(res);
-					if (res.data.code == 200) {
+					console.log(res, 'res');
+					if (res.data.status == 200) {
 						this.isover = true
-						uni.hideLoading()
-						this.tops = res.data.data.tops;
-						this.avg_prices = res.data.data.avg_prices;
-						this.rigid_demand = res.data.data.rigid_demand;
-						this.investment = res.data.data.investment;
-						this.improvement = res.data.data.improvement;
-						this.hot_searches = res.data.data.hot_searches;
-						this.completed_houses = res.data.data.completed_houses;
-						this.common = this.hot_searches;
-						this.popularity = res.data.data.popularity;
-						this.deals = res.data.data.deals;
 						this.dynamics = res.data.data.dynamics;
-						this.recommends = res.data.data.recommends;
-						this.cityname = res.data.data.city_info.current.short
+						this.recommends = res.data.data.footRecommend;
+						this.project_articles = res.data.data.project_articles
+						this.special_price = res.data.data.special_price
+						this.railways = res.data.data.railways
+						this.brands = res.data.data.brands
+						this.rigid_demands = res.data.data.rigid_demands
+						this.educations = res.data.data.educations
+						this.recommends_head = res.data.data.recommends_head
+						this.news = res.data.data.news
+						this.cityname = res.data.data.city.name
+						uni.hideLoading()
 						// #ifdef MP-BAIDU
-						let header = res.data.data.common.header;
+						let header = res.data.data.header;
 						swan.setPageInfo({
 							title: header.title,
 							keywords: header.keywords,
@@ -502,15 +508,14 @@
 							}
 						})
 						// #endif
+						console.log(this.dynamics, 'dynamics')
 					}
-
-				}
-
+				},
 			})
 		},
 		onReady() {
 			var view = uni.createSelectorQuery().select(".toptitle");
-
+			
 			view.boundingClientRect(function(data) {
 
 				console.log(data.height);
@@ -518,14 +523,224 @@
 			}).exec();
 		},
 		methods: {
+			setbuild(id) {
+				uni.setStorageSync('indexfeature', id)
+				uni.switchTab({
+					url: '/pages/building/building'
+				})
+			},
+			getPhoneNumber(e) {
+				let that = this
+				console.log(e)
+				// #ifdef  MP-BAIDU
+				if (e.detail.errMsg == 'getPhoneNumber:fail auth deny') {} else {
+					uni.setStorageSync('pass', true)
+					that.pass = true
+					console.log(that.pass)
+					let session = uni.getStorageSync('session')
+					if (session) {
+						uni.request({
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
+							data: {
+								iv: e.detail.iv,
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+							},
+							success: (res) => {
+								console.log(res);
+								let tel = res.data.data.mobile;
+								uni.setStorageSync('phone', tel)
+								let openid = uni.getStorageSync('openid')
+								that.tel = tel.substr(0, 3) + '****' + tel.substr(7)
+								uni.request({
+									url: "https://java.edefang.net/applets/jy/login",
+									method: "POST",
+									header: {
+										"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+									},
+									data: {
+										phone: tel,
+										openid: openid,
+										uuid: uni.getStorageSync("uuid"),
+										city: uni.getStorageSync("city"),
+									},
+									success: (res) => {
+										console.log(res);
+										uni.setStorageSync("token", res.data.data);
+										that.logintype = false
+										uni.showToast({
+											title: '登录成功',
+											icon: "none"
+										})
+									}
+								})
+
+							}
+						})
+					} else {
+						swan.getLoginCode({
+							success: (res) => {
+								console.log(res.code);
+								uni.request({
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
+									data: {
+										code: res.code,
+									},
+									success: (res) => {
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data.session_key);
+										uni.request({
+											url: "https://java.edefang.net/applets/jy/decrypt",
+											data: {
+												ciphertext: e.detail.encryptedData,
+												iv: e.detail.iv,
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+											},
+											success: (res) => {
+												console.log(res);
+												let tel = res.data.data.mobile;
+												uni.setStorageSync('phone', tel)
+												let openid = uni.getStorageSync(
+													'openid')
+												that.tel = tel.substr(0, 3) + '****' +
+													tel.substr(7)
+												uni.request({
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
+													data: {
+														phone: tel,
+														openid: openid,
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
+													},
+													success: (res) => {
+														console.log(res);
+														uni.setStorageSync(
+															"token",
+															res.data
+															.data);
+														that.logintype =
+															false
+														uni.showToast({
+															title: '登录成功',
+															icon: "none"
+														})
+													}
+												})
+											}
+										})
+
+									}
+								})
+							}
+						});
+
+					}
+				}
+				// #endif
+				// #ifdef  MP-WEIXIN
+				console.log(e)
+				if (e.detail.errMsg == "getPhoneNumber:ok") {
+					uni.login({
+						provider: 'weixin',
+						success: function(res) {
+							console.log(res)
+							uni.request({
+								url: 'https://ll.edefang.net/api/weichat/jscode2session',
+								method: 'get',
+								data: {
+									code: res.code,
+									other: uni.getStorageSync('other'),
+									uuid: uni.getStorageSync('uuid')
+								},
+								success: (res) => {
+									console.log(res)
+									uni.setStorageSync('openid', res.data.data.openid)
+									uni.setStorageSync('session', res.data.data.session_key)
+									uni.request({
+										url: "https://ll.edefang.net/api/weichat/decryptData",
+										data: {
+											data: e.detail.encryptedData,
+											iv: e.detail.iv,
+											sessionKey: res.data.data.session_key,
+											other: uni.getStorageSync('other'),
+											uuid: uni.getStorageSync('uuid')
+										},
+										success: (res) => {
+											let data = JSON.parse(res.data.message)
+											let tel = data.purePhoneNumber
+											uni.setStorageSync('phone', tel)
+											let openid = uni.getStorageSync('openid')
+											that.tel = tel.substr(0, 3) + '****' + tel
+												.substr(7)
+											uni.request({
+												url: "https://api.edefang.net/applets/login",
+												method: 'GET',
+												data: {
+													phone: tel,
+													openid: openid,
+													other: uni
+														.getStorageSync(
+															'other'),
+													uuid: uni
+														.getStorageSync(
+															'uuid')
+												},
+												success: (res) => {
+													uni.setStorageSync(
+														'token',
+														res.data
+														.token)
+													that.logintype = false
+													uni.showToast({
+														title: '登录成功',
+														icon: "none"
+													})
+												}
+											})
+										}
+									})
+								}
+							})
+						}
+					})
+				}
+				// #endif
+			},
 			gobuild() {
 				uni.switchTab({
 					url: `/pages/building/building`
 				})
 			},
+			gonearrail() {
+				uni.setStorageSync('naerrail', true)
+				uni.switchTab({
+					url: `/pages/building/building`
+				})
+			},
 			gojoin() {
-				uni.navigateTo({
-					url: `/pages/alliance/alliance`
+				uni.setStorageSync('isgangxu', true)
+				uni.switchTab({
+					url: `/pages/building/building`
 				})
 			},
 			gomap() {
@@ -538,9 +753,25 @@
 					url: `/pages/infos/infos`
 				})
 			},
-			gospecial() {
+			goinfo(id) {
 				uni.navigateTo({
-					url: `/pageA/special/special`
+					url: "/pages/info/info?id=" + id
+				})
+			},
+			gopro(id) {
+				uni.navigateTo({
+					url: "/pageA/content/content?id=" + id
+				})
+			},
+			gospecial() {
+				uni.setStorageSync('isspecial', 1)
+				uni.switchTab({
+					url: `/pages/building/building`
+				})
+			},
+			gowenda() {
+				uni.navigateTo({
+					url: `/pages/allwenda/allwenda`
 				})
 			},
 			goweike() {
@@ -565,6 +796,7 @@
 					url: '/pages/dynamic/dynamic'
 				})
 			},
+			// 废弃
 			ganglou(num, txt) {
 				uni.navigateTo({
 					url: `/pages/feature/feature?num=${num}&txt=${txt}`
@@ -577,7 +809,7 @@
 			},
 			godynamic() {
 				uni.navigateTo({
-					url:"/pages/dynamic/dynamic"
+					url: "/pages/dynamic/dynamic"
 				})
 			},
 			goSearch() {
@@ -644,6 +876,44 @@
 	.search {
 		padding: 0 29.88rpx;
 		margin-top: 10rpx;
+		position: relative;
+
+		.topshi {
+			z-index: 500;
+			position: fixed;
+			width: 360rpx;
+			height: 100rpx;
+			border-radius: 12rpx;
+			background: rgba(0, 0, 0, 0.9);
+			display: flex;
+			right: 54rpx;
+			top: 10rpx;
+			align-items: center;
+
+			.left {
+				padding: 0 26rpx 0 24rpx;
+			}
+
+			.topbb {
+				position: absolute;
+				border: 10rpx solid transparent;
+				border-bottom-color: rgba(0, 0, 0, 0.9);
+				top: -20rpx;
+				right: 90rpx;
+			}
+
+			.t1 {
+				color: #E6E6E6;
+				font-size: 28rpx;
+			}
+
+			.right {
+				image {
+					width: 24rpx;
+					height: 24rpx
+				}
+			}
+		}
 
 		.searchbox {
 			height: 71.71rpx;
@@ -678,7 +948,7 @@
 				//border-left: 0.99rpx solid #D4D4D9;
 				padding-left: 35.85rpx;
 				height: 72rpx;
-				width: 500rpx;
+				width: 464rpx;
 
 				.right-icon {
 					width: 31.87rpx;
@@ -703,9 +973,11 @@
 		line-height: 40rpx;
 		position: relative;
 		margin-bottom: 22rpx;
+
 		.scrollpro {
-			width:100%;
-			white-space:nowrap;
+			width: 100%;
+			white-space: nowrap;
+
 			.proname {
 				display: inline-block;
 				font-size: 26rpx;
@@ -713,6 +985,7 @@
 				margin-right: 34rpx;
 			}
 		}
+
 		.prozhao {
 			position: absolute;
 			width: 80rpx;
@@ -723,6 +996,7 @@
 			z-index: 10;
 			display: flex;
 			align-items: center;
+
 			image {
 				width: 32rpx;
 				height: 32rpx;
@@ -748,24 +1022,29 @@
 		margin-bottom: 39.84rpx;
 		border-radius: 12rpx;
 	}
-	
+
 	.navs {
 		margin: 0 30rpx;
 		background-color: #FFFFFF;
 		border-radius: 16rpx;
-		margin-bottom: 20rpx;
 		padding: 0 30rpx;
+		padding-top: 38rpx;
+		position: relative;
+		top: -20rpx;
 		.navsbox {
 			display: flex;
 			justify-content: space-between;
+			
 			.li {
 				width: 20%;
 				text-align: center;
+
 				image {
 					width: 92rpx;
 					height: 92rpx;
-					margin-bottom: 14rpx;
+					margin-bottom: 10rpx;
 				}
+
 				text {
 					color: #181A1A;
 					font-size: 24rpx;
@@ -774,34 +1053,39 @@
 				}
 			}
 		}
+
 		.navsbox:nth-of-type(2) {
 			margin-top: 36rpx;
-			margin-bottom: 24rpx;
+			margin-bottom: 22rpx;
+
 			image {
 				width: 44rpx;
 				height: 44rpx;
 			}
+
 			text {
 				font-weight: 500;
 				color: #303333;
 			}
 		}
+
 		.topnew {
 			border-top: 1rpx solid #EDEDED;
+
 			.topnew-box {
 				display: flex;
 				align-items: center;
-		
+
 				.icon {
 					width: 120rpx;
 					height: 26rpx;
 					margin-right: 20rpx;
 				}
-		
+
 				.swiper {
 					height: 87rpx;
 					flex: 1;
-		
+
 					.swiper-item {
 						line-height: 87rpx;
 						color: #646566;
@@ -824,6 +1108,7 @@
 		image {
 			width: 100%;
 			height: 128rpx;
+			border-radius: 16rpx;
 		}
 
 		.help-btn {
@@ -848,17 +1133,20 @@
 		margin-bottom: 20rpx;
 		border-radius: 16rpx;
 		height: 408rpx;
+
 		.feature-tit {
 			color: #17181A;
 			font-size: 34rpx;
 			font-weight: bold;
 			margin-left: 30rpx;
 			padding-top: 38rpx;
+
 			.more {
 				float: right;
 				color: #7D7E80;
 				font-size: 24rpx;
 				margin-right: 30rpx;
+
 				image {
 					width: 24rpx;
 					height: 24rpx;
@@ -882,16 +1170,18 @@
 				white-space: normal;
 				border-radius: 12rpx;
 				box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.04);
+
 				.item-top {
 					position: relative;
 					height: 144rpx;
 					border-radius: 12rpx 12rpx 0 0;
 					overflow: hidden;
-					
+
 					image {
 						width: 100%;
 						height: 100%;
 					}
+
 					.red {
 						width: 64rpx;
 						height: 30rpx;
@@ -905,6 +1195,7 @@
 						font-size: 20rpx;
 						color: #FFFFFF;
 					}
+
 					.name {
 						width: 200rpx;
 						color: #FFFFFF;
@@ -915,12 +1206,14 @@
 						left: 50%;
 						margin-left: -100rpx;
 						overflow: hidden;
-						text-overflow:ellipsis;
+						text-overflow: ellipsis;
 						white-space: nowrap;
 					}
 				}
+
 				.item-bom {
 					padding-left: 20rpx;
+
 					.old {
 						color: #969799;
 						font-size: 24rpx;
@@ -928,6 +1221,7 @@
 						text-decoration: line-through;
 						margin-bottom: 16rpx;
 					}
+
 					.new {
 						display: flex;
 						width: 220rpx;
@@ -935,6 +1229,7 @@
 						border-radius: 12rpx 6rpx 12rpx 6rpx;
 						overflow: hidden;
 						background-color: #FFEBEB;
+
 						.newleft {
 							width: 78rpx;
 							height: 38rpx;
@@ -944,12 +1239,14 @@
 							display: flex;
 							justify-content: center;
 							align-items: center;
+
 							image {
 								width: 24rpx;
 								height: 24rpx;
 								margin-right: 4rpx;
 							}
 						}
+
 						.newright {
 							width: 126rpx;
 							height: 38rpx;
@@ -958,6 +1255,7 @@
 							line-height: 38rpx;
 							padding-left: 20rpx;
 							background: url(../../static/index/index-rightimg.png);
+
 							text {
 								font-size: 24rpx;
 							}
@@ -977,23 +1275,29 @@
 		margin-bottom: 20rpx;
 		background-color: #FFFFFF;
 		border-radius: 16rpx;
-		height: 552rpx;
+		padding-bottom: 33rpx;
 		.tit {
 			padding: 40rpx 30rpx;
+			padding-top: 37rpx;
+			padding-bottom: 30rpx;
 			.hot {
 				width: 36rpx;
 				height: 36rpx;
 				margin-right: 8rpx;
 				margin-bottom: -2rpx;
 			}
+
 			text {
 				color: #17181A;
 				font-size: 34rpx;
+				font-weight: bold;
 			}
+
 			.more {
 				float: right;
 				color: #7D7E80;
 				font-size: 24rpx;
+
 				image {
 					width: 24rpx;
 					height: 24rpx;
@@ -1002,21 +1306,27 @@
 				}
 			}
 		}
+
 		.scroll-view {
 			width: auto;
 			white-space: nowrap;
 			padding-bottom: 10rpx;
-
+			height: 415rpx;
 			.scroll-item {
-				width: 440rpx;
-				height: 400rpx;
+				
 				margin-right: 30rpx;
 				display: inline-block;
 				overflow-wrap: break-word;
-				white-space: normal;
-				border-radius: 12rpx;
-				position: relative;
-				background-color: #F7F7F7;
+				white-space: nowrap;
+				padding-top: 12rpx;
+				
+				.scroll-item-box{
+					background-color: #F7F7F7;
+					position: relative;
+					width: 440rpx;
+					height: 400rpx;
+					border-radius: 12rpx;
+				}
 				.lefticon {
 					width: 52rpx;
 					height: 52rpx;
@@ -1028,11 +1338,13 @@
 					display: flex;
 					justify-content: center;
 					align-items: center;
+
 					image {
 						width: 36rpx;
 						height: 36rpx;
 					}
 				}
+
 				.rightimg {
 					position: absolute;
 					width: 180rpx;
@@ -1041,19 +1353,24 @@
 					right: -10rpx;
 					top: -12rpx;
 				}
+
 				.name {
 					color: #AF772D;
 					font-size: 28rpx;
 					font-weight: bold;
 					padding-top: 18rpx;
 					margin-left: 72rpx;
-					margin-bottom: 22rpx;
+					margin-bottom: 20rpx;
 				}
+
 				.time {
 					color: #646466;
 					font-size: 20rpx;
 					margin-left: 30rpx;
-					margin-bottom: 40rpx;
+					margin-bottom: 42rpx;
+				}
+				.libox {
+					height: 180rpx;
 				}
 				.li {
 					display: flex;
@@ -1062,6 +1379,7 @@
 					margin-bottom: 20rpx;
 					align-items: center;
 					margin-left: 30rpx;
+
 					.round {
 						background-color: #AF772D;
 						width: 6rpx;
@@ -1070,33 +1388,39 @@
 						margin-right: 12rpx;
 					}
 				}
+
 				.bom {
-					position: absolute;
+					position: relative;
 					bottom: 0;
 					left: 0;
 					width: 440rpx;
-					height: 80rpx;
+					height: 78rpx;
 					background-color: #F7F7F7;
+					border-radius: 0 0 12rpx 12rpx;
+
 					.btn {
 						width: 300rpx;
-						height: 80rpx;
-						box-shadow: 0px 8rpx 15rpx 0px rgba(4, 0, 0, 0.05);
+						height: 78rpx;
+						box-shadow: 0px -8rpx 15rpx 0px rgba(4, 0, 0, 0.05);
 						position: absolute;
 						left: 70rpx;
 						bottom: 0;
 					}
+
 					.msg {
-						position: absolute;
+						position: relative;
 						z-index: 10;
 						bottom: 0;
 						left: 0;
 						width: 440rpx;
-						height: 80rpx;
+						height: 78rpx;
 						background-color: #F7F7F7;
 						text-align: center;
-						line-height: 80rpx;
+						line-height: 78rpx;
 						color: #737980;
 						font-size: 24rpx;
+						border-radius: 0 0 12rpx 12rpx;
+
 						image {
 							width: 24rpx;
 							height: 24rpx;
@@ -1106,7 +1430,8 @@
 					}
 				}
 			}
-			.scroll-item:nth-of-type(1){
+
+			.scroll-item:nth-of-type(1) {
 				margin-left: 30rpx;
 			}
 		}
@@ -1119,18 +1444,21 @@
 		padding: 0 30rpx;
 		height: 434rpx;
 		margin-bottom: 20rpx;
+
 		.dynamic-box {
 			.dynamic-tit {
 				display: flex;
 				margin-bottom: 35.85rpx;
 				justify-content: space-between;
 				position: relative;
-				padding-top: 30rpx;
+				padding-top: 31.5rpx;
+
 				.title {
 					color: #17181A;
 					font-size: 33.86rpx;
 					font-weight: bold;
 				}
+
 				.righttop {
 					position: absolute;
 					width: 64rpx;
@@ -1143,15 +1471,16 @@
 					font-size: 18rpx;
 					font-weight: bold;
 					left: 140rpx;
-					
+
 					.jiao {
 						position: absolute;
-						border: 10rpx solid rgba(0,0,0,0);
+						border: 10rpx solid rgba(0, 0, 0, 0);
 						border-left-color: #FF4040;
 						left: 0;
 						bottom: -8rpx;
 					}
 				}
+
 				.right_t {
 					.more {
 						color: #969799;
@@ -1171,7 +1500,7 @@
 				display: flex;
 
 				.con1 {
-					width: 278.88rpx;
+					width: 265rpx;
 					height: 282.86rpx;
 					border-radius: 11.95rpx;
 					overflow: hidden;
@@ -1218,7 +1547,7 @@
 				}
 
 				.right {
-					width: 388.44rpx;
+					width: 345rpx;
 
 					.con2 {
 						width: 100%;
@@ -1248,7 +1577,7 @@
 									display: block;
 									color: #646466;
 									font-size: 23.9rpx;
-									width: 215.13rpx;
+									width: 180rpx;
 									line-height: 33.86rpx;
 									display: block;
 									display: -webkit-box;
@@ -1301,17 +1630,20 @@
 		margin-bottom: 20rpx;
 		padding: 0 30rpx;
 		padding-bottom: 20rpx;
+
 		.tit {
 			color: #17181A;
 			font-size: 34rpx;
-			margin-bottom: 36rpx;
+			margin-bottom: 32rpx;
 			font-weight: bold;
-			padding-top: 38rpx;
+			padding-top: 35.5rpx;
+
 			.more {
 				float: right;
 				color: #7D7E80;
 				font-size: 24rpx;
 				font-weight: 500;
+
 				image {
 					width: 24rpx;
 					height: 24rpx;
@@ -1320,17 +1652,25 @@
 				}
 			}
 		}
+
 		.article {
 			display: flex;
 			margin-bottom: 20rpx;
+
 			.left {
 				position: relative;
 				flex: 1;
+
 				.name {
 					color: #323233;
 					font-size: 30rpx;
 					line-height: 40rpx;
+					display: -webkit-box;
+					-webkit-box-orient: vertical;
+					-webkit-line-clamp: 2;
+					overflow: hidden;
 				}
+
 				.msg {
 					color: #969799;
 					font-size: 22rpx;
@@ -1338,12 +1678,14 @@
 					bottom: 18rpx;
 				}
 			}
+
 			.right {
 				margin-left: 30rpx;
 				width: 200rpx;
 				height: 140rpx;
 				border-radius: 12rpx;
 				overflow: hidden;
+
 				image {
 					width: 100%;
 					height: 100%;
@@ -1363,14 +1705,16 @@
 		.tit {
 			color: #17181A;
 			font-size: 33.86rpx;
-			margin-bottom: 31.87rpx;
+			margin-bottom: 31rpx;
 			font-weight: bold;
-			padding-top: 38rpx;
+			padding-top: 36rpx;
+
 			.more {
 				float: right;
 				color: #7D7E80;
 				font-size: 24rpx;
 				font-weight: 500;
+
 				image {
 					width: 24rpx;
 					height: 24rpx;
@@ -1380,7 +1724,7 @@
 			}
 		}
 	}
-	
+
 	.bommorebtn {
 		margin: 0 30rpx;
 		height: 92rpx;
@@ -1392,9 +1736,49 @@
 		font-size: 30rpx;
 		font-weight: bold;
 		background-color: #D5EDDF;
+
 		image {
 			width: 32rpx;
 			height: 32rpx;
+		}
+	}
+
+	.fixbom {
+		width: 100%;
+		height: 100rpx;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		z-index: 500;
+		background: rgba(0, 0, 0, 0.8);
+		display: flex;
+		align-items: center;
+
+		image {
+			width: 48rpx;
+			height: 48rpx;
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+
+		.txt {
+			color: #E6E6E6;
+			font-size: 30rpx;
+			margin-left: 74rpx;
+			margin-right: 162rpx;
+		}
+
+		.fixbtn {
+			width: 156rpx;
+			height: 56rpx;
+			border-radius: 6rpx;
+			background: linear-gradient(270deg, #28C567, #81DB85);
+			text-align: center;
+			line-height: 56rpx;
+			color: #FFFFFF;
+			font-size: 28rpx;
+			padding: 0;
 		}
 	}
 </style>

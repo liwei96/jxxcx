@@ -69,23 +69,27 @@
 				sid: 0,
 				num: 0,
 				pass: false,
-				weixin: false
+				weixin: false,
+				type: false
 			};
 		},
 		mounted() {
-			console.log(this.$store.state,78979798789)
+			console.log(this.$store.state, 78979798789)
 			let that = this
 			this.pass = uni.getStorageSync('pass')
 			// this.num = uni.getStorageSync('total')
-			uni.onSocketMessage(function(res) {
+			this.$store.state.socket.onMessage(function(res) {
 				if (res.data.indexOf('{') === -1) {
 					return
 				}
 				let data = JSON.parse(res.data)
 				if (data.action == 302) {
 					that.sid = data.sid
+					if (that.type) {
+						that.gotalk()
+					}
 				} else if (data.action == 301) {
-					console.log(that.pid,uni.getStorageSync(String(that.pid)))
+					console.log(that.pid, uni.getStorageSync(String(that.pid)))
 					if (!uni.getStorageSync(String(that.pid))) {
 						that.$store.state.socket.send({
 							data: JSON.stringify({
@@ -153,14 +157,14 @@
 					url: '/pages/talk/talk?id=' + id + '&bid=' + pid
 				})
 			},
-			register() {
+			register(pro, type) {
 				let uuid = uni.getStorageSync('uuid')
 				let city = uni.getStorageSync('city')
 				let ip = uni.getStorageSync('ip')
 				let arr = getCurrentPages()
 				let url = arr[arr.length - 1].route
 				let host = this.host
-				let pro = this.pid
+					url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')
 				let pp = {
 					controller: "Info",
 					action: "register",
@@ -173,9 +177,12 @@
 						host: host
 					},
 				};
-				uni.sendSocketMessage({
+				this.$store.state.socket.send({
 					data: JSON.stringify(pp)
 				});
+				if (type) {
+					this.type = true
+				}
 			},
 			setiscode() {
 				this.codenum = 0
@@ -209,18 +216,21 @@
 					let session = uni.getStorageSync('session')
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res)
-								let tel = res.data.mobile
+								console.log(res);
+								let tel = res.data.data.mobile;
 								uni.setStorageSync('phone', tel)
 								let openid = uni.getStorageSync('openid')
 								that.tel = tel
@@ -229,39 +239,75 @@
 						})
 					} else {
 						swan.getLoginCode({
-							success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
 												let openid = uni.getStorageSync(
 													'openid')
 												that.tel = tel
-												that.baoMing(that.remark, that
-													.point, that.title, that
-													.pid, 1)
+												uni.request({
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
+													data: {
+														bid: that.pid,
+														phone: tel,
+														openid: openid,
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
+													},
+													success: (res) => {
+														console.log(
+															res);
+														uni.setStorageSync(
+															"token",
+															res
+															.data
+															.data);
+														that.baoMing(
+															that
+															.remark,
+															that
+															.point,
+															that
+															.title,
+															that
+															.pid, 1
+															)
+													},
+												})
+
 											}
 										})
 
@@ -321,8 +367,12 @@
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														other: uni
+															.getStorageSync(
+																'other'),
+														uuid: uni
+															.getStorageSync(
+																'uuid')
 													},
 													success: (res) => {
 														console.log(
@@ -353,7 +403,7 @@
 			pid(news, val) {
 				console.log(news, val)
 				if (news != val && val == '') {
-					this.register()
+					this.register(news)
 				}
 			}
 		}

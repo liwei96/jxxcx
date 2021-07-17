@@ -40,7 +40,8 @@
 		</view>
 		<view class="box">
 			<view class="left">
-				<view :class="listnum === item.id ? 'active':''" v-for="(item,key) in list" :key="key" @click="change(item.id)">
+				<view :class="listnum === item.id ? 'active':''" v-for="(item,key) in list" :key="key"
+					@click="change(item.id)">
 					{{item.name}}
 					<view class="sp">
 					</view>
@@ -57,10 +58,11 @@
 								{{item.title}}
 							</view>
 							<view class="time">
-								{{item.begin}}
+								{{item.time}}
 							</view>
 							<view class="icons">
 								<text v-for="(val,key) in item.tags">{{val}}</text>
+								<!-- <text>{{item.source}}</text> -->
 							</view>
 						</view>
 					</view>
@@ -212,23 +214,25 @@
 				let token = uni.getStorageSync('token')
 				let city = this.city
 				uni.request({
-					url: that.apiserve + '/applets/article/info',
-					method: 'GET',
+					url: that.javaserve + '/applets/jy/article/info',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						city: city,
 						position: that.listnum,
 						page: that.page,
 						limit: 10,
-						token: token,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
 						console.log(res)
-						that.total = res.data.total
-						that.infos = res.data.data
+						that.total = res.data.data.total
+						that.infos = res.data.data.data
 						//#ifdef MP-BAIDU
-						let header = res.data.common.header
+						let header = res.data.data.head
 						swan.setPageInfo({
 							title: header.title,
 							keywords: header.keywords,
@@ -252,21 +256,22 @@
 				let token = uni.getStorageSync('token')
 				let city = uni.getStorageSync('city')
 				uni.request({
-					url: that.apiserve + '/applets/article/info',
-					method: 'GET',
+					url: that.javaserve + '/applets/jy/article/info',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						city: city,
 						position: that.listnum,
 						page: that.page,
 						limit: 10,
-						token: token,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
 						console.log(res)
-						that.total = res.data.total
-						that.infos = that.infos.concat(res.data.data)
+						that.infos = that.infos.concat(res.data.data.data)
 						uni.hideLoading()
 					}
 				})
@@ -282,7 +287,7 @@
 			},
 			goinfo(id) {
 				uni.navigateTo({
-					url: "/pages/article/article?id=" + id
+					url: "/pages/info/info?id=" + id
 				})
 			},
 			gosearch() {
@@ -304,9 +309,10 @@
 </script>
 
 <style lang="less" scoped>
-	page{
-		background:#F5F5F5;
+	page {
+		background: #F5F5F5;
 	}
+
 	.weike {
 		display: flex;
 		flex-direction: column;
@@ -318,10 +324,11 @@
 		font-size: 32rpx;
 		padding: 0 29.88rpx;
 		line-height: 87.64rpx;
+
 		.status_bar {
-		      height: var(--status-bar-height);
-		      width: 100%;
-		  }
+			height: var(--status-bar-height);
+			width: 100%;
+		}
 
 		image {
 			width: 32rpx;
@@ -330,10 +337,11 @@
 			margin-bottom: -4rpx;
 		}
 	}
-	
+
 	.titbox {
 		background: #fff;
 	}
+
 	.tit {
 		width: 92%;
 		margin-left: 4%;
@@ -358,6 +366,7 @@
 
 		input {
 			font-size: 28rpx;
+			color: #969799;
 		}
 	}
 
@@ -485,8 +494,8 @@
 			flex: 1;
 			// overflow: auto;
 			height: 100%;
-			padding: 30rpx;
-
+			padding: 0 30rpx;
+			// margin-top: 30rpx;
 			.scroll {
 				height: 100%;
 			}
@@ -512,7 +521,7 @@
 				.msg {
 					position: relative;
 					top: -4rpx;
-					padding-bottom: 30rpx;
+					padding-bottom: 26rpx;
 
 					.info-tit {
 						color: #17191A;
@@ -522,7 +531,7 @@
 						-webkit-line-clamp: 2;
 						overflow: hidden;
 						margin-bottom: 16rpx;
-						width: 384rpx;
+						width: 480rpx;
 						line-height: 44rpx;
 						padding-top: 26rpx;
 					}
@@ -544,6 +553,9 @@
 						}
 					}
 				}
+			}
+			.li:nth-of-type(1) {
+				margin-top: 30rpx;
 			}
 		}
 	}

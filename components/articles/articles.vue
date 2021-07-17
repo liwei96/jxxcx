@@ -10,10 +10,12 @@
 				</view>
 				<view class="li-icons">
 					<text v-for="(val,key) in item.tags" :key="key">{{val}}</text>
+					<text>{{item.source}}</text>
+					<text>{{item.time}}</text>
 				</view>
 			</view>
 			<view class="right">
-				<image :src="item.img" mode=""></image>
+				<image :src="item.img||item.image" mode=""></image>
 			</view>
 		</view>
 	</view>
@@ -65,7 +67,7 @@
 
 					.li-icons {
 						text {
-							background-color: #F5F5F5;
+							// background-color: #F5F5F5;
 							color: #7D7F80;
 							font-size: 20rpx;
 							margin-right: 12rpx;

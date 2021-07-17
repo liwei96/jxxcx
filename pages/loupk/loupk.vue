@@ -225,6 +225,10 @@
 					this.selBox = arr;
 					this.duibi_tootip = true;
 					this.style_num = 1;
+				}else{
+					this.selBox = arr;
+					this.duibi_tootip = true;
+					this.style_num = 0;
 				}
 				// #endif
 				// #ifdef  MP-WEIXIN
@@ -338,9 +342,11 @@
 <style lang="less">
 	page {
 		background: #fff;
+		
 	}
 
 	.loupk {
+		min-height: 95vh;
 		.toptitle {
 			color: #D4D7D9;
 			font-size: 29.88rpx;
@@ -565,7 +571,7 @@
 				color: #E6E6E6;
 				line-height: 100rpx;
 				text-align: center;
-				position: absolute;
+				position: fixed;
 				transform: translate(-50%, -50%);
 				left: 50%;
 				top: 50%;

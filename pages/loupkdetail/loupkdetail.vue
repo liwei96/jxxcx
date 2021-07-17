@@ -13,20 +13,28 @@
 				<view class="tit_01">楼盘对比</view>
 				<view class="tit_02">楼盘信息</view>
 			</view>
+			<view class="imgbox">
+				<image src="../../static/other/alliance-vs.png" mode=""></image>
+			</view>
 			<view class="pro_one" v-for="item in data" :key="item.id">
 				<view class="img_top">
 					<image :src="item.img" mode=""></image>
 				</view>
 				<view class="pro_bot">
-					<view class="name">{{item.name}}</view>
+					<view class="name">{{item.name.substr(0,7)}}</view>
 					<view class="tese">
-						<text class="status" v-if="item.state!==''&& item.state!==null">{{item.state}}</text>
+						<text class="status"
+							v-if="item.sale_state!==''&& item.sale_state!==null">{{item.sale_state}}</text>
 						<text class="type" v-if="item.type!=='' && item.type!==null">{{item.type}}</text>
 					</view>
 					<view class="price">
-						约<text>{{item.price}}</text>元/m²
+						<text>{{item.single_price}}</text>元/m²
 					</view>
-					<view class="bo_tel_btn" @tap="boTel(telphone)">
+					<view class="btnbox">
+						<image src="../../static/other/pk-msg.png" mode="" @tap="gotalk(item)"></image>
+						<image src="../../static/other/pktel.png" mode="" @tap="boTel(telphone)"></image>
+					</view>
+					<view class="bo_tel_btn" @tap="boTel(telphone)" v-if="false">
 						<image src="../../static/other/pk_tel.png" mode=""></image>
 						电话咨询
 					</view>
@@ -46,7 +54,11 @@
 				</view>
 				<view class="pro_bot">
 					<view class="name">{{item.name}}</view>
-					<view class="bo_tel_btn" @tap="boTel(telphone)">
+					<view class="btnbox">
+						<image src="../../static/other/pk-msg.png" mode="" @tap="gotalk(item)"></image>
+						<image src="../../static/other/pktel.png" mode="" @tap="boTel(telphone)"></image>
+					</view>
+					<view class="bo_tel_btn" @tap="boTel(telphone)" v-if="false">
 						<image src="../../static/other/pk_tel.png" mode=""></image>
 						电话咨询
 					</view>
@@ -96,28 +108,30 @@
 					{{item.address}}
 				</view>
 				<view class="tese">
-					<text v-for="ite in item.features">{{ite}}</text>
+					<template v-for="(ite,key) in item.features">
+						<text :key="key" v-if="key<2">{{ite}}</text>
+					</template>
 				</view>
 				<view class="state">
-					{{item.state}}
+					{{item.sale_state}}
 				</view>
 				<view class="type">
 					{{item.type}}
 				</view>
 				<view class="zheng">
-					{{item.license}}
+					{{item.pre_sale_license}}
 				</view>
 				<view class="zhuang">
 					{{item.decorate}}
 				</view>
 				<view class="height">
-					{{item.height}}m
+					{{item.floor_height}}m
 				</view>
 				<view class="year">
 					{{item.year}}年
 				</view>
 				<view class="subway">
-					<text v-for="ite in item.railways">{{ite.name}}</text>
+					<text v-for="(ite,key) in item.railways" :key="'klj'+key">{{ite}}</text>
 				</view>
 			</view>
 
@@ -153,9 +167,11 @@
 			</view>
 			<view class="pro_sale" v-for="item in data" :key="item.id">
 				<view class="danjia_box">
-					<view class="price">约{{item.price}}元/m²</view>
-					<button class="btn" open-type="getPhoneNumber" hover-class="none" v-if="!pass&&!weixin" @getphonenumber="getPhoneNumber($event,item.id,'楼盘pk详情页+咨询底价',105,'咨询楼盘底价')">咨询底价</button>
-					<view class="btn" v-if="pass||weixin" @tap="baoMing(item.id,'楼盘pk详情页+咨询底价',105,'咨询楼盘底价',1)">咨询底价</view>
+					<view class="price">约{{item.single_price}}元/m²</view>
+					<button class="btn" open-type="getPhoneNumber" hover-class="none" v-if="!pass&&!weixin"
+						@getphonenumber="getPhoneNumber($event,item.id,'楼盘pk详情页+咨询底价',105,'咨询楼盘底价')">咨询底价</button>
+					<view class="btn" v-if="pass||weixin" @tap="baoMing(item.id,'楼盘pk详情页+咨询底价',105,'咨询楼盘底价',1)">咨询底价
+					</view>
 				</view>
 				<view class="zongjia">
 					{{item.total_price}}
@@ -170,7 +186,7 @@
 					{{item.builder}}
 				</view>
 				<view class="youhui">
-					{{item.discount}}
+					{{item.preferential}}
 				</view>
 			</view>
 
@@ -214,7 +230,7 @@
 				</view>
 				<view class="huxing">
 					<view class="shi">
-						{{item.departments}}
+						{{item.house_types.join(',')}}
 					</view>
 					<view class="more">
 						<navigator :url="`../prohuxing/prohuxing?id=${item.id}`">
@@ -227,42 +243,50 @@
 					{{item.built_area}}m²
 				</view>
 				<view class="wufei">
-					{{item.property_fee}}元/m²月
+					{{item.fee}}元/m²月
 				</view>
 				<view class="rongji">
-					{{item.property_fee}}
+					{{item.plot_ratio}}
 				</view>
 				<view class="wuye_gong">
 					{{item.property_company}}
 				</view>
 				<view class="lvhua">
-					{{item.green}}%
+					{{item.green_rate}}%
 				</view>
 				<view class="chewei">
-					{{item.parking}}个
+					{{item.parking_num}}个
 				</view>
 			</view>
 
 		</view>
 
-		<button class="button" open-type="getPhoneNumber" hover-class="none" v-if="!pass&&!weixin" @getphonenumber="getPhoneNumber($event,0,'楼盘pk详情页+咨询详细楼盘信息',90,'咨询详细楼盘信息')">
+		<button class="button" open-type="getPhoneNumber" hover-class="none" v-if="!pass&&!weixin"
+			@getphonenumber="getPhoneNumber($event,0,'楼盘pk详情页+咨询详细楼盘信息',90,'咨询详细楼盘信息')">
 			咨询详细楼盘信息
 		</button>
 		<view class="button" v-if="pass||weixin" @tap="baoMing(0,'楼盘pk详情页+咨询详细楼盘信息',90,'咨询详细楼盘信息',1)">
 			咨询详细楼盘信息
 		</view>
-		<twosee :title="title" :project="recommends"></twosee>
-		<bottom :remark="'楼盘pk详情页+预约看房'" :point="103" :title="'预约看房'" :pid="pid" :telphone="telphone"></bottom>
+		<view class="other">
+			<view class="tit">
+				猜你喜欢
+			</view>
+			<twosee :recommends="recommends"></twosee>
+		</view>
+		<bottom :remark="'楼盘pk详情页+预约看房'" :point="103" :title="'预约看房'" :pid="pid" ref="bomm" :telphone="telphone">
+		</bottom>
 
-		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true" @hide="setiscode">
-			<sign :type="codenum" @closethis="setpop" :title="title_e" :pid="pid_d" :remark="remark_k" :position="position_n"
-			 :isok="isok"></sign>
+		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"
+			@hide="setiscode">
+			<sign :type="codenum" @closethis="setpop" :title="title_e" :pid="pid_d" :remark="remark_k"
+				:position="position_n" :isok="isok"></sign>
 		</wyb-popup>
 	</view>
 </template>
 
 <script>
-	import twosee from '../../components/mine/twosee.vue';
+	import twosee from '../../components/pros.vue';
 	import bottom from '../../components/mine/bottom.vue'
 	import wybPopup from "@/components/wyb-popup/wyb-popup.vue"
 	import sign from '@/components/sign.vue'
@@ -292,7 +316,8 @@
 				tel: '4009669995',
 				isok: 0,
 				pass: false,
-				weixin: false
+				weixin: false,
+				pksid: 152
 			};
 		},
 		onLoad(option) {
@@ -338,18 +363,21 @@
 					let session = uni.getStorageSync('session')
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res, 'session')
-								let tel = res.data.mobile
+								console.log(res);
+								let tel = res.data.data.mobile;
 								uni.setStorageSync('phone', tel)
 								let openid = uni.getStorageSync('openid')
 								that.tel = tel;
@@ -359,36 +387,65 @@
 					} else {
 						console.log(session, "没保存session")
 						swan.getLoginCode({
-											success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
-												that.$refs.sign.tel = tel
-												that.baoMing(pid, remark, point, title, 1)
+												let openid = uni.getStorageSync(
+													'openid')
+												// that.$refs.sign.tel = tel
+												that.baoMing(pid, remark, point,
+													title, 1)
+												uni.request({
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
+													data: {
+														phone: tel,
+														openid: openid,
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
+													},
+													success: (res) => {
+														console.log(
+															res);
+														uni.setStorageSync(
+															"token",
+															res
+															.data
+															.data);
+													},
+												})
 											}
 										})
 
@@ -439,27 +496,39 @@
 											let data = JSON.parse(res.data.message)
 											let tel = data.purePhoneNumber
 											uni.setStorageSync('phone', tel)
-											let openid = uni.getStorageSync('openid')
+											let openid = uni.getStorageSync(
+												'openid')
 											let token = uni.getStorageSync('token')
 											if (!token) {
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												uni.request({
 													url: "https://api.edefang.net/applets/login",
 													method: 'GET',
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														other: uni
+															.getStorageSync(
+																'other'),
+														uuid: uni
+															.getStorageSync(
+																'uuid')
 													},
 													success: (res) => {
-														console.log(res)
-														uni.setStorageSync('token', res.data.token)
+														console.log(
+															res)
+														uni.setStorageSync(
+															'token',
+															res
+															.data
+															.token)
 													}
 												})
 											}
 											that.$refs.sign.tel = tel
-											that.baoMing(pid, remark, point, title, 1)
+											that.baoMing(pid, remark, point, title,
+												1)
 										}
 									})
 
@@ -494,59 +563,41 @@
 					} //仅为示例
 				});
 			},
-
+			gotalk(row) {
+				this.$refs.bomm.register(row.id, 1)
+				let id = String(this.pksid)
+				let pid = row.id
+				uni.navigateTo({
+					url: '/pages/talk/talk?id=' + id + '&bid=' + pid
+				})
+			},
 			getdata(id) {
 				let city = uni.getStorageSync('city')
 				let other = uni.getStorageSync('other');
 				let token = uni.getStorageSync('token');
 				uni.request({
-					url: this.apiserve + '/jy/base/compare',
-					method: "GET",
+					url: this.javaserve + '/applets/jy/compare',
+					method: "POST",
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						ids: id,
-						other: other,
-						token: token,
-						city: city,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
-						if (res.data.code == 200) {
-							console.log(res);
-							//	this.recommends = res.data.recommends;
-							this.common = res.data.common;
-							this.telphone = res.data.common.phone;
-							this.data = res.data.data;
-							let arr = res.data.recommends;
-							let my_arr = [];
-							arr.map(p => {
-								let number = p.railways;
-								let item = "";
-								number.map(m => {
-									item = m.name
-								})
-								my_arr.push({
-									id: p.id,
-									img: p.img,
-									name: p.name,
-									status: p.state,
-									single_price: p.price,
-									type: p.type,
-									city: p.city,
-									country: p.country,
-									area: p.area,
-									decorate: p.decorate,
-									railway: p.railway,
-									features: p.feature,
-									railway: item
-								})
-							})
-							this.recommends = my_arr;
-							// #ifdef MP-BAIDU
+						console.log(res)
+						if (res.data.status == 200) {
+							this.data = res.data.data.projects;
+							this.recommends = res.data.data.recommends;
+							this.telphone = res.data.data.phone;
+							//#ifdef MP-BAIDU
+							let header = res.data.data.head
 							swan.setPageInfo({
-								title: "允家新房-楼盘pk详情",
-								keywords: "允家新房-楼盘pk详情",
-								description: "允家新房-楼盘pk详情",
+								title: header.title,
+								keywords: header.keywords,
+								description: header.description,
 								success: res => {
 									console.log('setPageInfo success', res);
 								},
@@ -554,10 +605,9 @@
 									console.log('setPageInfo fail', err);
 								}
 							})
-							// #endif
+							//#endif
 						}
 					}
-
 				})
 			},
 			handletouchmove: function(event) {
@@ -692,6 +742,25 @@
 				}
 			}
 
+			.imgbox {
+				position: absolute;
+				width: 80rpx;
+				height: 80rpx;
+				border-radius: 50%;
+				box-shadow: 0px 0px 19rpx 1rpx rgba(0, 0, 0, 0.04);
+				display: flex;
+				align-items: center;
+				background-color: #FFFFFF;
+				justify-content: center;
+				left: 398rpx;
+				top: 190rpx;
+
+				image {
+					width: 52rpx;
+					height: 52rpx;
+				}
+			}
+
 			.pro_one {
 				width: 240rpx;
 				height: 340rpx;
@@ -703,7 +772,7 @@
 					image {
 						width: 240rpx;
 						height: 132rpx;
-						border-radius: 12rpx 12rpx 0px 0px;
+						border-radius: 16rpx 16rpx 0px 0px;
 					}
 				}
 
@@ -715,7 +784,7 @@
 					.name {
 						font-size: 26rpx;
 						font-weight: 500;
-						color: #323233;
+						color: #272B2E;
 					}
 
 					.tese {
@@ -751,9 +820,20 @@
 						font-size: 20rpx;
 						color: #FF6A48;
 						line-height: 48rpx;
+						font-weight: bold;
 
 						text {
-							font-weight: bold;
+							font-size: 30rpx;
+						}
+					}
+
+					.btnbox {
+						display: flex;
+						justify-content: space-around;
+
+						image {
+							width: 56rpx;
+							height: 56rpx;
 						}
 					}
 
@@ -816,6 +896,16 @@
 				float: left;
 				box-shadow: 0px 0px 19px 1px rgba(0, 0, 0, 0.04);
 				margin-right: 40rpx;
+
+				.btnbox {
+					display: flex;
+					justify-content: space-around;
+
+					image {
+						width: 56rpx;
+						height: 56rpx;
+					}
+				}
 
 				.img_top {
 					width: 240rpx;
@@ -985,7 +1075,7 @@
 				.address {
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					width: 252rpx;
 					height: 119rpx;
 					border-bottom: 1rpx solid rgba(237, 237, 237, 1);
@@ -1020,7 +1110,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1032,7 +1122,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1044,7 +1134,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 32rpx;
 					text-align: center;
 					padding-top: 30rpx;
@@ -1057,7 +1147,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1069,7 +1159,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1081,7 +1171,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1093,7 +1183,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1103,7 +1193,7 @@
 				.address {
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					width: 280rpx;
 					height: 95rpx;
 					border-bottom: 1rpx solid rgba(237, 237, 237, 1);
@@ -1138,7 +1228,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1150,7 +1240,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1162,7 +1252,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 32rpx;
 					text-align: center;
 					padding-top: 30rpx;
@@ -1175,7 +1265,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1187,7 +1277,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1199,7 +1289,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1211,7 +1301,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1317,7 +1407,7 @@
 					.price {
 						font-size: 26rpx;
 						font-weight: 400;
-						color: #FF5454;
+						color: #FF6A48;
 						line-height: 26rpx;
 						line-height: 70rpx;
 						text-align: center;
@@ -1326,12 +1416,12 @@
 					.btn {
 						width: 140rpx;
 						height: 48rpx;
-						background: linear-gradient(-45deg, #348AFF, #6ACCFF);
+						background: #D5EDDF;
 						border-radius: 8rpx;
 						font-size: 24rpx;
 						font-family: Microsoft YaHei;
 						font-weight: 400;
-						color: #FFFFFF;
+						color: #38916C;
 						text-align: center;
 						line-height: 48rpx;
 						margin-left: 68rpx;
@@ -1347,7 +1437,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1359,7 +1449,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1371,7 +1461,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1383,7 +1473,7 @@
 					border-right: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 32rpx;
 					text-align: center;
 					padding-top: 28rpx;
@@ -1412,7 +1502,7 @@
 					.price {
 						font-size: 26rpx;
 						font-weight: 400;
-						color: #FF5454;
+						color: #FF6A48;
 						line-height: 26rpx;
 						line-height: 70rpx;
 						text-align: center;
@@ -1421,12 +1511,12 @@
 					.btn {
 						width: 140rpx;
 						height: 48rpx;
-						background: linear-gradient(-45deg, #348AFF, #6ACCFF);
+						background: #D5EDDF;
 						border-radius: 8rpx;
 						font-size: 24rpx;
 						font-family: Microsoft YaHei;
 						font-weight: 400;
-						color: #FFFFFF;
+						color: #38916C;
 						text-align: center;
 						line-height: 48rpx;
 						margin-left: 78rpx;
@@ -1439,7 +1529,7 @@
 					border-bottom: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1450,7 +1540,7 @@
 					border-bottom: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1461,7 +1551,7 @@
 					border-bottom: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 99rpx;
 					text-align: center;
 				}
@@ -1472,7 +1562,7 @@
 					border-bottom: 1rpx solid rgba(237, 237, 237, 1);
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #323233;
+					color: #272B2E;
 					line-height: 32rpx;
 					text-align: center;
 					padding-top: 28rpx;
@@ -1576,6 +1666,9 @@
 					color: #7D7E80;
 					line-height: 100rpx;
 					text-align: center;
+					overflow: hidden;
+					text-overflow:ellipsis;
+					white-space: nowrap;
 				}
 
 				.lvhua {
@@ -1611,7 +1704,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1629,7 +1722,7 @@
 					.shi {
 						font-size: 26rpx;
 						font-weight: 500;
-						color: #323233;
+						color: #272B2E;
 						line-height: 26rpx;
 						text-align: center;
 					}
@@ -1657,7 +1750,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1669,7 +1762,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1681,7 +1774,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1693,9 +1786,12 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
+					overflow: hidden;
+					text-overflow:ellipsis;
+					white-space: nowrap;
 				}
 
 				.lvhua {
@@ -1705,7 +1801,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1717,7 +1813,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1731,7 +1827,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1749,7 +1845,7 @@
 					.shi {
 						font-size: 26rpx;
 						font-weight: 500;
-						color: #323233;
+						color: #272B2E;
 						line-height: 26rpx;
 						text-align: center;
 					}
@@ -1777,7 +1873,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1789,7 +1885,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1801,7 +1897,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1813,9 +1909,12 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
+					overflow: hidden;
+					text-overflow:ellipsis;
+					white-space: nowrap;
 				}
 
 				.lvhua {
@@ -1825,7 +1924,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1837,7 +1936,7 @@
 					border-right: 1rpx solid #EDEDED;
 					font-size: 26rpx;
 					font-weight: 500;
-					color: #7D7E80;
+					color: #272B2E;
 					line-height: 100rpx;
 					text-align: center;
 				}
@@ -1847,11 +1946,11 @@
 		.button {
 			width: 600rpx;
 			height: 72rpx;
-			background: #F0F6FA;
+			background: #D5EDDF;
 			border-radius: 8rpx;
 			font-size: 30rpx;
 			font-weight: bold;
-			color: #40A2F4;
+			color: #38916C;
 			text-align: center;
 			line-height: 72rpx;
 			margin-top: 40rpx;
@@ -1863,5 +1962,18 @@
 			padding-bottom: 110rpx;
 		}
 
+	}
+
+	.other {
+		margin: 0 30rpx;
+		margin-top: 58rpx;
+		padding-bottom: 130rpx;
+
+		.tit {
+			color: #19191A;
+			font-size: 34rpx;
+			margin-bottom: 40rpx;
+			font-weight: bold;
+		}
 	}
 </style>

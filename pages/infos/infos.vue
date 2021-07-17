@@ -42,7 +42,7 @@
 						</view>
 						<view class="li-icons">
 							<text>{{item.source}}</text>
-							<text>{{item.begin}}</text>
+							<text>{{item.time}}</text>
 						</view>
 					</view>
 					<view class="right">
@@ -133,18 +133,49 @@
 				let city = uni.getStorageSync('city')
 				let token = uni.getStorageSync('token')
 				uni.request({
-					url: that.apiserve + "/applets/article/news",
-					method: "GET",
+					url: that.javaserve + "/applets/jy/articles/head",
+					method: "POST",
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						city: city,
+						limit: 4,
 						token: token,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
-						that.tops = res.data.tops
+						that.tops = res.data.data.data
+					}
+				})
+			},
+			getdata() {
+				uni.showLoading({
+					title: '加载中'
+				})
+				let token = uni.getStorageSync('token')
+				let city = this.city
+				uni.request({
+					url: that.javaserve + '/applets/jy/article/info',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
+					data: {
+						city: city,
+						position: that.navnum,
+						page: that.page,
+						limit: 10,
+						other: uni.getStorageSync('other'),
+						uuid: uni.getStorageSync('uuid')
+					},
+					success: (res) => {
+						console.log(res)
+						that.total = res.data.data.total
+						that.infos = res.data.data.data
 						//#ifdef MP-BAIDU
-						let header = res.data.common.header
+						let header = res.data.data.head
 						swan.setPageInfo({
 							title: header.title,
 							keywords: header.keywords,
@@ -157,32 +188,6 @@
 							}
 						})
 						//#endif
-						console.log(res)
-					}
-				})
-			},
-			getdata() {
-				uni.showLoading({
-					title: '加载中'
-				})
-				let token = uni.getStorageSync('token')
-				let city = this.city
-				uni.request({
-					url: that.apiserve + '/applets/article/info',
-					method: 'GET',
-					data: {
-						city: city,
-						position: that.navnum,
-						page: that.page,
-						limit: 10,
-						token: token,
-						other: uni.getStorageSync('other'),
-						uuid: uni.getStorageSync('uuid')
-					},
-					success: (res) => {
-						console.log(res)
-						that.total = res.data.total
-						that.infos = res.data.data
 						uni.hideLoading()
 					}
 				})
@@ -195,21 +200,22 @@
 				let token = uni.getStorageSync('token')
 				let city = uni.getStorageSync('city')
 				uni.request({
-					url: that.apiserve + '/applets/article/info',
-					method: 'GET',
+					url: that.javaserve + '/applets/jy/article/info',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						city: city,
 						position: that.navnum,
 						page: that.page,
 						limit: 10,
-						token: token,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
 						console.log(res)
-						that.total = res.data.total
-						that.infos = that.infos.concat(res.data.data)
+						that.infos = that.infos.concat(res.data.data.data)
 						uni.hideLoading()
 					}
 				})
@@ -285,7 +291,7 @@
 	}
 
 	.swiper {
-		padding-bottom: 50rpx;
+		padding-bottom: 44rpx;
 		position: relative;
 
 		.swiper-item {
@@ -324,7 +330,7 @@
 			justify-content: center;
 			position: absolute;
 			width: 100%;
-			bottom: 30rpx;
+			bottom: 42rpx;
 
 			view {
 				width: 12rpx;
@@ -347,7 +353,7 @@
 	.swiper-nav {
 		white-space: nowrap;
 		height: 60rpx;
-		margin-bottom: 50rpx;
+		margin-bottom: 25rpx;
 		.scroll-nav {
 		}
 		.swiper-item {
@@ -376,7 +382,8 @@
 
 	.other {
 		padding: 0 30rpx;
-
+		border-top: 1rpx solid #f7f7f7;
+		padding-top: 25rpx;
 		.other-li {
 			display: flex;
 			margin-bottom: 4rpx;
@@ -404,6 +411,7 @@
 						display: inline-block;
 						text-align: center;
 						line-height: 30rpx;
+						margin-top: -4rpx;
 					}
 				}
 

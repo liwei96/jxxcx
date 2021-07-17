@@ -1,5 +1,5 @@
 <template>
-	<view class="wendadetail">
+	<view class="wendadetail" v-if="issure">
 		<!-- <view class="toptitle">
 			<view class="status_bar">
 			</view>
@@ -15,16 +15,17 @@
 			</view>
 
 			<view class="pro_one" @tap="gopro(building.id)">
-				<image :src="building.img" mode=""></image>
+				<image :src="building.image" mode=""></image>
 				<view class="right_pro">
 					<view class="pro_name">{{building.name}}<text class="status">{{building.state}}</text></view>
 					<view class="price">{{building.price}}<text>元/m²</text></view>
 					<view class="type">
-						{{building.type}}<text>|</text>{{building.city_name}}-{{building.country}}<text>|</text>{{building.area}}m²
+						{{building.type}}<text>|</text>{{building.city}}-{{building.country}}<text>|</text>{{building.area}}m²
 					</view>
 					<view class="tese">
 						<text class="zhuang">{{building.decorate}}</text>
 						<text class="other">{{building.type}}</text>
+						<text class="other" v-if="building.railway">{{building.railway}}</text>
 						<text class="other" v-for="item in building.feature">{{item}}</text>
 					</view>
 				</view>
@@ -42,10 +43,10 @@
 			<view class="da" v-show="data.answer!==''">
 				<view class="top">
 					<view class="left_box">
-						<image :src="staff.staff.head_img" mode=""></image>
+						<image :src="staff.image" mode=""></image>
 						<view class="rig">
 							<view class="name_box">
-								{{staff.staff.name}}
+								{{staff.name}}
 								<text>专业解答</text>
 							</view>
 							<view class="pp">
@@ -61,7 +62,7 @@
 						免费咨询
 					</view>
 				</view>
-				<!-- 允家房友-->
+				<!-- 家园房友-->
 				<!-- <view class="top">
 					<view class="left_box">
 						<image src="../../static/content/ping_img.png" mode=""></image>
@@ -70,7 +71,7 @@
 							138****4854
 							</view>
 							<view class="pp">
-								允家房友
+								家园房友
 							</view>
 						</view>
 					</view>
@@ -87,42 +88,42 @@
 						@getphonenumber="getPhoneNumber($event,data.bid,'项目问答详情页+点赞',104,'点赞',1,data.id)">
 						<view class="zan">
 							<image src="../../static/content/zan.png" mode=""></image>
-							有用({{data.like_num}})
+							有用({{data.like_count}})
 						</view>
 					</button>
 					<view class="zan" v-if="data.my_like==1 && (pass||weixin)" @tap="wenDian(data.id)">
 						<image src="../../static/content/zan.png" mode=""></image>
-						有用({{data.like_num}})
+						有用({{data.like_count}})
 					</view>
 
 					<button open-type="getPhoneNumber" v-if="data.my_like==0 &&!pass&&!weixin" hover-class="none"
 						@getphonenumber="getPhoneNumber($event,data.bid,'项目问答详情页+点赞',104,'点赞',1,data.id)">
 						<view class="nozan">
 							<image src="../../static/content/no_zan.png" mode=""></image>
-							有用({{data.like_num}})
+							有用({{data.like_count}})
 						</view>
 					</button>
 					<view class="nozan" v-if="data.my_like==0 &&(pass||weixin)" @tap="wenDian(data.id)">
 						<image src="../../static/content/no_zan.png" mode=""></image>
-						有用({{data.like_num}})
+						有用({{data.like_count}})
 					</view>
 				</view>
 			</view>
 		</view>
-		<view class="hui_bg"></view>
+		<view class="hui_bg" v-if="relevant.length"></view>
 		<!-- 	相关楼盘问答 -->
-		<view class="about_wen">
+		<view class="about_wen" v-if="relevant.length">
 			<view class="title">
 				相关楼盘问答
 			</view>
-			<view class="wen_tit" v-for="item in relevant" :key="item.id">
+			<view class="wen_tit" v-for="(item,key) in relevant" :key="item.id" v-if="key<3">
 				<navigator :url="`../wendadetail/wendadetail?id=${item.id}`">
 					<text class="wen">问</text>
 					{{item.question}}
 				</navigator>
 			</view>
 			<view class="btn" @tap="showAllwen">
-				查看杭州全部楼盘问答
+				查看{{cityname}}全部楼盘问答
 			</view>
 		</view>
 		<view class="hui_bg"></view>
@@ -133,11 +134,16 @@
 			</view>
 			<twosee :recommends="recommends"></twosee>
 		</view>
-		<bottom :remark="'项目问答详情页+预约看房'" :point="103" :title="'预约看房'" :pid="data.bid" :telphone="telphone"></bottom>
+		<bottom :remark="'项目问答详情页+预约看房'" :point="103" :title="'预约看房'" :pid="data.bid" :telphone="telphone" ref="bottom"></bottom>
 		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"
 			@hide="setiscode">
 			<sign :type="codenum" @closethis="setpop" :title="title_e" :pid="pid_d" :remark="remark_k"
 				:position="position_n" :isok="isok"></sign>
+		</wyb-popup>
+		<!-- 登录弹框 -->
+		<wyb-popup ref="login" type="bottom" height="570" width="650" radius="0" :showCloseIcon="true"
+			closeIconSize="32" @hide="setiscode">
+			<login @login="logined" :pid="building.id"></login>
 		</wyb-popup>
 		<mytoast ref="msg" :txt="msg"></mytoast>
 	</view>
@@ -149,6 +155,7 @@
 	import wybPopup from '@/components/wyb-popup/wyb-popup.vue'
 	import sign from '@/components/sign.vue'
 	import mytoast from "@/components/mytoast/mytoast.vue"
+	import login from "@/components/login.vue";
 	export default {
 		data() {
 			return {
@@ -168,13 +175,17 @@
 				isok: 0,
 				msg: '',
 				pass: false,
-				weixin: false
+				weixin: false,
+				typebtn: '',
+				cityname: '',
+				wen_id: 0,
+				issure: false
 			};
 		},
 		components: {
 			bottom,
 			twosee,
-
+			login,
 			wybPopup,
 			sign,
 			mytoast
@@ -184,10 +195,22 @@
 			// this.weixin = true
 			// #endif
 			console.log(option);
-			this.getdata(option.id)
+			this.getinfo(option.id)
+			this.wen_id = option.id
+			this.cityname = uni.getStorageSync('cityname')
 			this.pass = uni.getStorageSync('pass')
 		},
 		methods: {
+			logined() {
+				this.pass = true;
+				this.$refs.bottom.pass = true
+				this.$refs.login.hide();
+				if (this.typebtn == 1) { //点赞
+					this.wenDian(this.wen_id)
+				} else if (this.typebtn == 2) { //跳回答
+					this.gowenda(this.wen_id)
+				}
+			},
 			gopro(id) {
 				uni.navigateTo({
 					url: "/pageA/content/content?id=" + id
@@ -215,39 +238,30 @@
 
 			},
 			wenDian(id) {
-				let token = uni.getStorageSync("token")
-				if (token) {
-					uni.request({
-						url: this.apiserve + "/jy/question/like",
-						data: {
-							token: token,
-							id: id,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
-						},
-						header: {
-							'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-						},
-						method: "POST",
-						success: (res) => {
-							if (res.data.code == 200) {
-								console.log(res, 'res');
-								this.$refs.msg.show();
-								this.msg = res.data.message;
-								this.getdata(this.data.id)
-							} else {
-								console.log(res)
-							}
+				uni.request({
+					url: this.javaserve + "/applets/jy/question/like",
+					data: {
+						id: id,
+						other: uni.getStorageSync('other'),
+						uuid: uni.getStorageSync('uuid'),
+						token: uni.getStorageSync('token')
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
+					method: "POST",
+					success: (res) => {
+						if (res.data.status == 200) {
+							this.$refs.msg.show();
+							this.msg = '点赞成功';
+							this.getinfo(this.data.id)
+						} else {
+							this.$refs.msg.show();
+							this.msg = res.data.msg || res.data.message;
+							console.log(res)
 						}
-					})
-				} else {
-					let url = "/pages/wendadetail/wendadetail?id=" + this.data.bid;
-					uni.setStorageSync("backurl", url)
-					uni.navigateTo({
-						url: "/pages/login/login"
-					})
-				}
-
+					}
+				})
 			},
 			async getPhoneNumber(e, pid, remark, point, title, type, wen_id) {
 				let that = this
@@ -262,11 +276,13 @@
 								this.gowenda(wen_id)
 							}
 						} else {
-							let url = "/pages/wendadetail/wendadetail?id=" + pid;
-							uni.setStorageSync("backurl", url)
-							uni.navigateTo({
-								url: "/pages/login/login"
-							})
+							this.typebtn = type
+							this.$refs.login.show();
+							// let url = "/pages/wendadetail/wendadetail?id=" + pid;
+							// uni.setStorageSync("backurl", url)
+							// uni.navigateTo({
+							// 	url: "/pages/login/login"
+							// })
 						}
 
 					} else {
@@ -280,32 +296,37 @@
 						let session = uni.getStorageSync('session')
 						if (session) {
 							uni.request({
-								url: 'https://api.edefang.net/applets/baidu/decrypt',
-								method: 'get',
+								url: "https://java.edefang.net/applets/jy/decrypt",
+								method: "post",
 								data: {
 									iv: e.detail.iv,
-									data: e.detail.encryptedData,
-									session_key: session,
-									other: uni.getStorageSync('other'),
-									uuid: uni.getStorageSync('uuid')
+									ciphertext: e.detail.encryptedData,
+									sessionKey: session,
+									other: uni.getStorageSync("other"),
+									uuid: uni.getStorageSync("uuid"),
+								},
+								header: {
+									"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 								},
 								success: (res) => {
-									console.log(res, 'session')
-									let tel = res.data.mobile
-									uni.setStorageSync('phone', tel)
+									console.log(res);
+									let tel = res.data.data.mobile;
 									let openid = uni.getStorageSync('openid')
 									uni.request({
-										url: "https://api.edefang.net/applets/login",
-										method: 'GET',
+										url: "https://java.edefang.net/applets/jy/login",
+										method: "POST",
+										header: {
+											"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+										},
 										data: {
 											phone: tel,
 											openid: openid,
-											other: uni.getStorageSync('other'),
-											uuid: uni.getStorageSync('uuid')
+											uuid: uni.getStorageSync("uuid"),
+											city: uni.getStorageSync("city"),
 										},
 										success: (res) => {
-											console.log(res)
-											uni.setStorageSync('token', res.data.token)
+											console.log(res);
+											uni.setStorageSync("token", res.data.data);
 											if (type == 1) { //点赞
 												that.wenDian(wen_id)
 											} else if (type == 2) { //跳回答
@@ -318,74 +339,80 @@
 						} else {
 							console.log(session, "没保存session")
 							swan.getLoginCode({
-								success: res => {
-									// console.log(res.code);
+								success: (res) => {
+									console.log(res.code);
 									uni.request({
-										url: 'https://api.edefang.net/applets/baidu/get_session_key',
-										method: 'get',
+										url: "https://java.edefang.net/applets/jy/session_key/get",
+										method: "get",
 										data: {
 											code: res.code,
-											other: uni.getStorageSync('other'),
-											uuid: uni.getStorageSync('uuid')
 										},
 										success: (res) => {
-											console.log(res)
-											uni.setStorageSync('openid', res.data.openid)
-											uni.setStorageSync('session', res.data.session_key)
+											console.log(res);
+											uni.setStorageSync("openid", res.data.data.openid);
+											uni.setStorageSync("session", res.data.data
+												.session_key);
 											uni.request({
-												url: "https://api.edefang.net/applets/baidu/decrypt",
+												url: "https://java.edefang.net/applets/jy/decrypt",
 												data: {
-													data: e.detail.encryptedData,
+													ciphertext: e.detail.encryptedData,
 													iv: e.detail.iv,
-													session_key: res.data.session_key,
-													other: uni.getStorageSync('other'),
-													uuid: uni.getStorageSync('uuid')
+													sessionKey: res.data.data
+														.session_key,
+												},
+												method: "POST",
+												header: {
+													"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 												},
 												success: (res) => {
-													console.log(res)
-													let tel = res.data.mobile
+													console.log(res);
+													let tel = res.data.data.mobile;
 													uni.setStorageSync('phone',
 														tel)
 													let openid = uni
 														.getStorageSync('openid')
 													uni.request({
-														url: "https://api.edefang.net/applets/login",
-														method: 'GET',
+														url: "https://java.edefang.net/applets/jy/login",
+														method: "POST",
+														header: {
+															"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+														},
 														data: {
 															phone: tel,
 															openid: openid,
-															other: uni
-																.getStorageSync(
-																	'other'
-																	),
 															uuid: uni
 																.getStorageSync(
-																	'uuid')
+																	"uuid"
+																),
+															city: uni
+																.getStorageSync(
+																	"city"
+																),
 														},
 														success: (res) => {
 															console
 																.log(
 																	res
-																	)
+																);
 															uni.setStorageSync(
-																'token',
+																"token",
 																res
 																.data
-																.token
-																)
+																.data
+															);
 															if (type ==
 																1
-																) { //点赞
+															) { //点赞
 																that.wenDian(
 																	wen_id
-																	)
+																)
 															} else if (
 																type ==
 																2
-																) { //跳没回答的问答
+															) { //跳没回答的问答
 																that.gowenda(
 																	wen_id
-																	)
+																)
 															}
 
 														}
@@ -404,18 +431,21 @@
 						let session = uni.getStorageSync('session')
 						if (session) {
 							uni.request({
-								url: 'https://api.edefang.net/applets/baidu/decrypt',
-								method: 'get',
+								url: "https://java.edefang.net/applets/jy/decrypt",
+								method: "post",
 								data: {
 									iv: e.detail.iv,
-									data: e.detail.encryptedData,
-									session_key: session,
-									other: uni.getStorageSync('other'),
-									uuid: uni.getStorageSync('uuid')
+									ciphertext: e.detail.encryptedData,
+									sessionKey: session,
+									other: uni.getStorageSync("other"),
+									uuid: uni.getStorageSync("uuid"),
+								},
+								header: {
+									"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 								},
 								success: (res) => {
-									console.log(res, 'session')
-									let tel = res.data.mobile
+									console.log(res);
+									let tel = res.data.data.mobile;
 									uni.setStorageSync('phone', tel)
 									let openid = uni.getStorageSync('openid')
 									that.tel = tel;
@@ -425,37 +455,39 @@
 						} else {
 							console.log(session, "没保存session")
 							swan.getLoginCode({
-								success: res => {
+								success: (res) => {
 									console.log(res.code);
 									uni.request({
-										url: 'https://api.edefang.net/applets/baidu/get_session_key',
-										method: 'get',
+										url: "https://java.edefang.net/applets/jy/session_key/get",
+										method: "get",
 										data: {
 											code: res.code,
-											other: uni.getStorageSync('other'),
-											uuid: uni.getStorageSync('uuid')
 										},
 										success: (res) => {
-											console.log(res)
-											uni.setStorageSync('openid', res.data.openid)
-											uni.setStorageSync('session', res.data.session_key)
+											console.log(res);
+											uni.setStorageSync("openid", res.data.data.openid);
+											uni.setStorageSync("session", res.data.data
+												.session_key);
 											uni.request({
-												url: "https://api.edefang.net/applets/baidu/decrypt",
+												url: "https://java.edefang.net/applets/jy/decrypt",
 												data: {
-													data: e.detail.encryptedData,
+													ciphertext: e.detail.encryptedData,
 													iv: e.detail.iv,
-													session_key: res.data.session_key,
-													other: uni.getStorageSync('other'),
-													uuid: uni.getStorageSync('uuid')
+													sessionKey: res.data.data
+														.session_key,
+												},
+												method: "POST",
+												header: {
+													"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 												},
 												success: (res) => {
-													console.log(res)
-													let tel = res.data.mobile
+													console.log(res);
+													let tel = res.data.data.mobile;
 													uni.setStorageSync('phone',
 														tel)
 													let openid = uni
 														.getStorageSync('openid')
-													that.$refs.sign.tel = tel
+													// that.$refs.sign.tel = tel
 													that.baoMing(pid, remark,
 														point, title, 1)
 												}
@@ -554,13 +586,13 @@
 															1) { //点赞
 															that.wenDian(
 																wen_id
-																)
+															)
 														} else if (
 															type == 2
-															) { //跳没回答的问答
+														) { //跳没回答的问答
 															that.gowenda(
 																wen_id
-																)
+															)
 														}
 
 													}
@@ -636,32 +668,33 @@
 			setiscode() {
 				this.codenum = 0
 			},
-			getdata(id) {
+			getinfo(id) {
 				uni.showLoading({
 					title: '加载中'
 				});
 				let other = uni.getStorageSync('other');
 				let token = uni.getStorageSync('token');
 				uni.request({
-					url: this.apiserve + "/applets/question/detail",
+					url: this.javaserve + "/applets/jy/question",
 					data: {
 						id: id,
-						token: token,
 						other: uni.getStorageSync('other'),
-						uuid: uni.getStorageSync('uuid')
+						uuid: uni.getStorageSync('uuid'),
+						token: uni.getStorageSync('token')
 					},
 					method: "GET",
 					success: (res) => {
-						if (res.data.code == 200) {
+						console.log(res)
+						if (res.data.status == 200) {
 
-							this.building = res.data.building;
-							this.data = res.data.data;
-							this.recommends = res.data.recommends;
-							this.relevant = res.data.relevant;
-							this.staff = res.data.common.staff;
-							this.telphone = res.data.common.phone;
+							this.building = res.data.data.project;
+							this.data = res.data.data.question;
+							this.recommends = res.data.data.recommends;
+							this.relevant = res.data.data.relevant;
+							this.staff = res.data.data.people;
+							this.telphone = res.data.data.phone;
 							// #ifdef MP-BAIDU
-							let header = res.data.common.header;
+							let header = res.data.data.header;
 							swan.setPageInfo({
 								title: header.title,
 								keywords: header.keywords,
@@ -674,6 +707,7 @@
 								}
 							})
 							// #endif
+							this.issure = true
 							uni.hideLoading();
 						}
 					},
@@ -697,6 +731,7 @@
 <style lang="less">
 	page {
 		background-color: #fff;
+		padding-bottom: 30rpx;
 	}
 
 	button::after {
@@ -754,15 +789,17 @@
 					display: inline-block;
 					text-align: center;
 					line-height: 30rpx;
-					margin-right: 25rpx;
+					margin-right: 20rpx;
+					position: relative;
+					top: -4rpx;
 				}
 
 				font-size: 30rpx;
 				font-weight: bold;
 				color: #323233;
 				line-height: 45rpx;
-				margin-bottom: 32rpx;
-				margin-top: 32rpx;
+				margin-bottom: 28rpx;
+				margin-top: 34rpx;
 			}
 
 			.pro_one {
@@ -792,6 +829,7 @@
 						font-weight: 800;
 						color: #0B0F12;
 						line-height: 30rpx;
+						margin-bottom: 4rpx;
 
 						.status {
 							width: 68rpx;
@@ -812,15 +850,17 @@
 						font-weight: 800;
 						color: #FF6040;
 						line-height: 56rpx;
+
 						text {
 							font-size: 26rpx;
 							font-weight: 500;
+							position: relative;
+							top: -2rpx;
 						}
 					}
 
 					.type {
 						font-size: 24rpx;
-						font-weight: 500;
 						color: #646466;
 
 						text {
@@ -852,6 +892,7 @@
 							padding: 5rpx 14rpx;
 							background-color: #F5F5F5;
 							margin-right: 12rpx;
+							border-radius: 6rpx;
 						}
 					}
 				}
@@ -894,6 +935,8 @@
 							font-size: 30rpx;
 							font-weight: bold;
 							color: #121212;
+							position: relative;
+							top: -3rpx;
 
 							text {
 								width: 92rpx;
@@ -907,12 +950,13 @@
 								line-height: 28rpx;
 								margin-left: 8rpx;
 								display: inline-block;
+								position: relative;
+								top: -2rpx;
 							}
 						}
 
 						.pp {
 							font-size: 24rpx;
-							font-weight: 500;
 							color: #7D7E80;
 							line-height: 30rpx;
 
@@ -946,13 +990,12 @@
 
 			.bottom {
 				font-size: 28rpx;
-				font-weight: 500;
 				color: #4B4C4D;
-				line-height: 42rpx;
+				line-height: 46rpx;
 				background-color: #F7F7F7;
 				padding-left: 30rpx;
-				padding-bottom: 30rpx;
-				padding-top: 30rpx;
+				padding-bottom: 26rpx;
+				padding-top: 28rpx;
 				border-radius: 24rpx;
 				padding-right: 30rpx;
 			}
@@ -965,7 +1008,7 @@
 					font-size: 24rpx;
 					font-weight: 400;
 					color: #969799;
-					line-height: 100rpx;
+					line-height: 96rpx;
 					float: left;
 				}
 
@@ -1023,14 +1066,14 @@
 				font-size: 34rpx;
 				font-weight: bold;
 				color: #323233;
-				line-height: 114rpx;
+				line-height: 110rpx;
 			}
 
 			.wen_tit {
 				.wen {
 					width: 30rpx;
 					height: 30rpx;
-					background: #FF5454;
+					background: linear-gradient(270deg, #FF4B2D, #FFB753);
 					border-radius: 4rpx;
 					font-size: 20rpx;
 					font-weight: 500;
@@ -1039,6 +1082,8 @@
 					text-align: center;
 					line-height: 30rpx;
 					margin-right: 25rpx;
+					position: relative;
+					top: -4rpx;
 				}
 
 				font-size: 30rpx;

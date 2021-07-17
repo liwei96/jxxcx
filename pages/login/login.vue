@@ -1,25 +1,27 @@
 <template>
 	<view class="login">
-		<!-- <view class="toptitle">
-			<navigator class="nav_top" open-type="navigateBack" delta="1">
-				<image src="../../static/all-back.png" mode=""></image>
-				<text>手机快捷登录</text>
-			</navigator>
-		</view> -->
 		<view class="login_box">
 			<view class="title">
-				<image src="../../static/other/login_img.png"></image>
+				<image src="../../static/other/login.png"></image>
 			</view>
 			<view class="tel">
-			   <input placeholder="输入手机号" v-model="telphone" 
-			   placeholder-style="color:#969799;font-size:30rpx;line-height:128rpx"
-			   maxlength="11"/>
-			   <text @tap="getCode">{{timetxt}}</text>
+				<input placeholder="输入手机号" v-model="telphone"
+					placeholder-style="color:#969799;font-size:30rpx;line-height:128rpx" maxlength="11" />
 			</view>
 			<view class="yan">
-				  <input placeholder="输入验证码" v-model="code" placeholder-style="color:#969799;font-size:30rpx;line-height:128rpx"/>
+				<input placeholder="输入验证码" v-model="code"
+					placeholder-style="color:#969799;font-size:34rpx;line-height:128rpx;font-weight:500" />
+				<text @tap="getCode">{{timetxt}}</text>
 			</view>
-			<view class="login" @tap="getLogin">登录</view>
+			<view class="tishi">
+				<checkbox-group @change="set">
+				<checkbox value="cb" checked="true" color="#2AC66D" style="transform:scale(0.7)"/>
+				</checkbox-group>
+				<view class="txt">
+					登录即表示您同意<text @tap="goserve">《家园服务协议》</text>
+				</view>
+			</view>
+			<view :class="ok&&code&&telphone?'login active':'login'" @tap="getLogin">立即登录</view>
 		</view>
 		<toast ref="toast" :txt="msg"></toast>
 	</view>
@@ -28,159 +30,184 @@
 <script>
 	import toast from "@/components/mytoast/mytoast.vue"
 	export default {
-		components:{
+		components: {
 			toast
 		},
 		data() {
 			return {
-				telphone:"",
-				code:"",
-				second:60,
-				timetxt:"验证码",
-				msg:"",
+				telphone: "",
+				code: "",
+				second: 60,
+				timetxt: "获取验证码",
+				msg: "",
 				istime: false,
+				timer: null,
+				ok: true
 			};
 		},
-		onLoad(){
-			
+		onLoad() {
+
 		},
-		methods:{
-			getCode(){
-				let that = this;
-				let phone= this.telphone;
-			  var pattern_phone = /^1[3-9][0-9]{9}$/;
-			  if(phone==""){
-				  this.msg="手机号不能为空"
-				  this.$refs.toast.show();
-				  return ;
-			  } else if(!pattern_phone.test(phone)){
-				  this.msg="手机号码不合法"
-				  this.$refs.toast.show();
-				  return;
-			  }
-			  let kid= uni.getStorageSync("kid") || null;
-			  let other = uni.getStorageSync("other") || null;
-			  let ip = ''
-			  let city = uni.getStorageSync('city') || 1
-			  uni.request({
-			  	url: that.putserve+'/getIp.php',
-			  	method: 'GET',
-			  	success: (res) => {
-			  		ip = res.data
-			  		ip = ip.split('=')[1].split(':')[1]
-			  		ip = ip.substring(1)
-			  		ip = ip.slice(0, -3)
-			  		uni.request({
-			  			url: that.putserve + '/front/flow/sign',
-			  			data: {
-			  				city: city,
-			  				page: 11,
-			  				project: "",
-			  				remark: "登录",
-			  				source: '线上推广2',
-			  				name: "",
-			  				ip: ip,
-			  				position: "106",
-			  				tel: phone,
-			  				kid: kid,
-			  				other: other,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
-			  			},
-			  			method: "GET",
-			  			success: (res) => {
-			  				if(res.data.code == 500) {
-			  					this.msg = res.data.message;
-			  					that.$refs.toast.show()
-			  				} else {
-			  					that.teltxt = phone.substr(0, 3) + "****" + phone.substr(7, 11);
-			  					let time = 60
-			  					var fn = function() {
-			  						time--;
-			  						if (time > 0) {
-			  							that.istime = true
-			  							that.timetxt = `重发${time}s`
-			  						} else {
-			  							that.istime = false
-			  							clearInterval(interval);
-			  							that.timetxt = `验证码`
-			  						}
-			  					};
-			  					fn();
-			  					var interval = setInterval(fn, 1000);
-			  					if(that.isok == 1) {
-			  						if(!uni.getStorageSync('token')) {
-			  							let openid = uni.getStorageSync('openid')
-			  							uni.request({
-			  								url:"https://api.edefang.net/applets/login",
-			  								method:'GET',
-			  								data:{
-			  									phone: phone,
-			  									openid: openid,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
-			  								},
-			  								success: (res) => {
-			  									console.log(res)
-			  									uni.setStorageSync('token',res.data.token)
-			  									uni.setStorageSync('phone',phone)
-			  								}
-			  							})
-			  						}
-			  						that.msg = "订阅成功";
-			  						that.$refs.toast.show()
-			  					}else {
-			  						that.iscode = true
-			  					}
-			  					
-			  				}
-			  				
-			  			}
-			  		})
-			  		uni.request({
-			  			url: that.apiserve + '/send',
-			  			method: "POST",
-			  			data: {
-			  				ip: ip,
-			  				phone: phone,
-			  				source: 3,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
-			  			},
-						header: {
-							'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-						},
-			  			success: (res) => {
-			  				console.log(res);
-							if(res.data.code==500){
-								this.msg= '发送失败，请重试';
-								this.$refs.toast.show();
-								console.log("500");
-							}else {
-								this.msg= '短信已发您手机';
-								this.$refs.toast.show();
-							}
-			  			}
-			  		})
-			  	}
-			  })
-			  
-			  
+		methods: {
+			goserve() {
+				uni.navigateTo({
+					url:"/pages/serve/serve"
+				})
 			},
-			getLogin(){
-			 	let that = this
-			 	if (!this.code) {
-			 		this.msg = "请输入验证码";
-			 		this.$refs.toast.show()
-			 		return;
-			 	}
-				var phone = this.telphone;
+			set(e){
+				if(e.detail.value.length==0) {
+					this.ok = false
+				}else{
+					this.ok = true
+				}
+			},
+			getCode() {
+				let that = this;
+				let phone = this.telphone;
+				var pattern_phone = /^1[3-9][0-9]{9}$/;
+				if (phone == "") {
+					this.msg = "手机号不能为空"
+					this.$refs.toast.show();
+					return;
+				} else if (!pattern_phone.test(phone)) {
+					this.msg = "手机号码不合法"
+					this.$refs.toast.show();
+					return;
+				}
+				let kid = uni.getStorageSync("kid") || null;
+				let other = uni.getStorageSync("other") || null;
+				let ip = ''
+				let city = uni.getStorageSync('city') || 1
 				uni.request({
-					url: that.apiserve + '/sure',
+					url: that.putserve + `/getIp.php`,
+					method: 'GET',
+					success: (res) => {
+						ip = res.data
+						ip = ip.split('=')[1].split(':')[1]
+						ip = ip.substring(1)
+						ip = ip.slice(0, -3)
+						ip=String(ip)
+						uni.request({
+							url: that.putserve + '/front/flow/sign',
+							data: {
+								city: city,
+								page: 11,
+								project: "",
+								remark: "登录",
+								source: '线上推广2',
+								name: "",
+								ip: ip,
+								position: "106",
+								tel: phone,
+								kid: kid,
+								other: other,
+								other: uni.getStorageSync('other'),
+								uuid: uni.getStorageSync('uuid')
+							},
+							method: "GET",
+							success: (res) => {
+								if (res.data.code == 500) {
+									this.msg = res.data.message;
+									that.$refs.toast.show()
+								} else {
+									that.teltxt = phone.substr(0, 3) + "****" + phone.substr(7,
+									11);
+									let time = 60
+									clearInterval(that.timer);
+									var fn = function() {
+										time--;
+										if (time > 0) {
+											that.istime = true
+											that.timetxt = `已发送(${time}s)`
+										} else {
+											that.istime = false
+											clearInterval(that.timer);
+											that.timetxt = `获取验证码`
+										}
+									};
+									fn();
+									that.timer = setInterval(fn, 1000);
+									if (that.isok == 1) {
+										if (!uni.getStorageSync('token')) {
+											let openid = uni.getStorageSync('openid')
+											uni.request({
+												url: "https://api.edefang.net/applets/login",
+												method: 'GET',
+												data: {
+													phone: phone,
+													openid: openid,
+													other: uni.getStorageSync('other'),
+													uuid: uni.getStorageSync('uuid')
+												},
+												success: (res) => {
+													console.log(res)
+													uni.setStorageSync('token', res
+														.data.token)
+													uni.setStorageSync('phone', phone)
+												}
+											})
+										}
+										that.msg = "订阅成功";
+										that.$refs.toast.show()
+									} else {
+										that.iscode = true
+									}
+
+								}
+
+							}
+						})
+						uni.request({
+							url: that.javaserve + `applets/send/code`,
+							method: "POST",
+							header: {
+								'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+							},
+							data: {
+								ip: ip,
+								phone: phone,
+								type: 1,
+							},
+							success: (res) => {
+								console.log(res);
+								if (res.data.status == 200) {
+									this.msg = '短信已发您手机';
+									this.$refs.toast.show();
+								} else {
+									this.msg = '发送失败，请重试';
+									this.$refs.toast.show();
+								}
+							}
+						})
+					}
+				})
+
+
+			},
+			getLogin() {
+				let that = this
+				if(!this.ok) {
+					return;
+				}
+				let phone = this.telphone;
+				var pattern_phone = /^1[3-9][0-9]{9}$/;
+				if (phone == "") {
+					return;
+				} 
+				if (!this.code) {
+					return;
+				}
+				if (!pattern_phone.test(phone)) {
+					this.msg = "手机号码不合法"
+					this.$refs.toast.show();
+					return;
+				}
+				uni.request({
+					url: that.javaserve + '/applets/sure/code',
 					method: "POST",
 					data: {
 						phone: phone,
-						source: 3,
+						type: 1,
 						code: that.code,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
@@ -190,126 +217,118 @@
 					},
 					success: (res) => {
 						console.log(res)
-						if(res.data.code === 500) {
-							that.msg = '验证码不正确';
-							that.$refs.toast.show()
-						} else {
-							uni.setStorageSync('phone',phone)
-							let  basurl = uni.getStorageSync('backurl');
+						if (res.data.status === 200) {
+							// res.header['page-count']
+							console.log(res)
+							uni.setStorageSync('phone', phone)
+							let basurl = uni.getStorageSync('backurl');
 							that.msg = "订阅成功";
 							that.$refs.toast.show()
-							uni.setStorageSync('token',res.data.token)
-							uni.setStorageSync('pass',true)
-							if(basurl){
+							uni.setStorageSync('token', res.data.data)
+							uni.setStorageSync('pass', true)
+							if (basurl) {
 								uni.removeStorageSync('backurl')
-								if(basurl == '/pages/home/home') {
-									uni.navigateTo({
-										url:basurl
+								if (basurl == '/pages/home/home') {
+									uni.switchTab({
+										url: basurl
 									})
-								}else{
+								} else {
 									uni.navigateTo({
-										url:basurl
+										url: basurl
 									})
 								}
-								
 							} else {
-								uni.navigateTo({
-									url:'/pages/home/home'
+								uni.switchTab({
+									url: '/pages/home/home'
 								})
 							}
+						} else {
+							that.msg = '验证码不正确';
+							that.$refs.toast.show()
 						}
 					}
 				})
 			}
 		},
-		
+
 	}
 </script>
 
 <style lang="less">
-	page{
+	page {
 		background: #fff;
 	}
-.login{
-	.toptitle{
-		color: #17181A;
-		font-size: 29.88rpx;
-		padding: 0 29.88rpx;
-		padding-top: 39.84rpx;
-		line-height: 87.64rpx;
-		background-color: #fff;
-		.nav_top{
-			image{
-			 width: 31.87rpx;
-			 height: 31.87rpx;
-			 margin-right: 11.95rpx;
-			 margin-bottom: -3.98rpx;
-			}
-			text{
-			  width: 221rpx;
-			  font-size: 32rpx;
-			  font-weight: 500;
-			  color: #17181A;
-			}
-		}
-	}
-	.login_box{
-		padding-left:86rpx ;
-		padding-right: 72rpx;
-	    box-sizing: border-box;
-		width: 100%;
-		.title{
-			display: flex;
-			align-items: center;
-			margin-bottom: 37rpx;
-			margin-top: 98rpx;
-			image{
-				width: 108rpx;
-				height: 56rpx;
-				margin:0 auto;
-			}
-		}
-		.tel{
-		   height:88rpx ;
-		   width:590rpx;
-		   border-bottom: 1rpx solid #EDEDED;
-		   padding-top: 40rpx;
-		   display: flex;
-		   text{
-			   min-width: 129rpx;
-			   height: 53rpx;
-			   border: 1rpx solid #00A0E9;
-			   border-radius: 8rpx;
-			   font-size: 24rpx;
-			   font-weight: 400;
-			   color: #00A0E9;
-			   text-align: center;
-			   line-height: 53rpx;
-			   padding-left: 5rpx;
-			   padding-right: 5rpx;
-			   margin-left: auto;
-		   }
-		}
-		.yan{
-			height:88rpx ;
-			width:590rpx;
-			border-bottom: 1rpx solid #EDEDED;
-			padding-top: 40rpx;
-		}
-		.login{
+
+	.login {
+		.login_box {
+			padding-left: 60rpx;
+			padding-right: 60rpx;
+			box-sizing: border-box;
 			width: 100%;
-			height: 88rpx;
-			background: #00A0E9;
-			border-radius: 12rpx;
-            font-size: 30rpx;
-            font-weight: 400;
-            color: #FFFFFF;
-			text-align: center;
-			line-height: 88rpx;
-			margin-top: 120rpx;
+
+			.title {
+				margin-bottom: 37rpx;
+				margin-top: 98rpx;
+
+				image {
+					width: 392rpx;
+					height: 102rpx;
+				}
+			}
+
+			.tel {
+				height: 70rpx;
+				width: 590rpx;
+				border-bottom: 1rpx solid #EDEDED;
+				padding-top: 46rpx;
+
+				input {
+					// font-weight: bold;
+				}
+			}
+
+			.yan {
+				height: 70rpx;
+				width: 590rpx;
+				border-bottom: 1rpx solid #EDEDED;
+				padding-top: 46rpx;
+				display: flex;
+				text {
+					font-size: 28rpx;
+					font-weight: 500;
+					color: #2AC66D;
+					margin-left: auto;
+				}
+			}
+			.tishi {
+				display: flex;
+				align-items: center;
+				margin-top: 50rpx;
+				.txt {
+					color: #9DA3A6;
+					font-size: 26rpx;
+					text {
+						color: #2AC66D;
+					}
+				}
+			}
+			.login {
+				width: 630rpx;
+				height: 96rpx;
+				background: #E3E5E6;
+				border-radius: 48rpx;
+				font-size: 32rpx;
+				font-weight: 400;
+				color: #FFFFFF;
+				text-align: center;
+				line-height: 96rpx;
+				margin-top: 160rpx;
+			}
+			.active {
+				background: #2AC66D;
+			}
 		}
+
+
 	}
-	
-	
-}
 </style>

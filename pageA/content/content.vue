@@ -12,15 +12,15 @@
 				<swiper-item v-for="(item,key) in pro_img" :key="key">
 					<view class="swiper-item uni-bg-red">
 						<navigator :url="`/pages/piclist/piclist?id=${detail.id}`">
-							<image :src="item.small" mode=""></image>
+							<image :src="item.bigImg" mode=""></image>
 						</navigator>
 					</view>
 				</swiper-item>
 			</swiper>
 			<view class="topimgbtn">
 				<text :class="{active:style_list.e_active}" @tap="showEffect">效果图</text>
-				<text :class="{active:style_list.hu_active}" @tap="showHuxing">户型图</text>
-				<text :class="{active:style_list.hu_active}" @tap="showHuxing">交通图</text>
+				<text :class="{active:style_list.hu_active}" @tap="showHuxing">样板房</text>
+				<text :class="{active:style_list.jiao_active}" @tap="showJiao">交通图</text>
 			</view>
 			<text class="total">共{{total}}张</text>
 			<button open-type="getPhoneNumber" hover-class="none"
@@ -40,24 +40,31 @@
 				<view class="top_name">
 					<view class="name">{{detail.name}}</view>
 					<text class="tese">
-						<text class="one" v-if="detail.state">{{detail.state}}</text>
+						<text class="one" v-if="detail.sale_state">{{detail.sale_state}}</text>
 						<text class="other" v-if="detail.type">{{detail.type}}</text>
-						<text class="other" v-if="detail.railway">{{detail.railway}}</text>
-						<text class="other" v-for="(item,index) in detail.features" :key="index">{{item}}</text>
+						<text class="other" v-if="detail.railways.length">{{detail.railways[0]}}</text>
+						<text class="other" v-for="(item,index) in detail.features" :key="index"
+							v-if="index==0">{{item}}</text>
 					</text>
 				</view>
 				<view class="right_gong">
 					<view class="duibi" @tap="goDuibi(detail.id)">
-						<image src="../../static/content/duibi.png"></image>
+						<image src="../../static/content/duibi.gif"></image>
 						<text>加入对比</text>
 					</view>
 				</view>
 			</view>
 			<view class="huiimg">
-				<view class="btn">
+				<view class="btn" @tap="baoMing(detail.id,'项目落地页+一键咨询',104,'一键咨询',1)" v-if="pass||weixin">
 					一键咨询
-					<image src="../../static/index/roundmore.png" mode=""></image>
+					<image src="../../static/content/topback.png" mode=""></image>
 				</view>
+				<button open-type="getPhoneNumber" hover-class="none"
+					@getphonenumber="getPhoneNumber($event,detail.id,'项目落地页+一键咨询',104,'一键咨询')" class="btn"
+					v-if="!pass&&!weixin">
+					一键咨询
+					<image src="../../static/content/topback.png" mode=""></image>
+				</button>
 			</view>
 			<view class="detail_list">
 				<view class="list_top">
@@ -67,13 +74,13 @@
 								class="dan">元/m²</text>
 						</view>
 						<view class="kai_time">
-							<text class="left">开盘:</text> <text class="com">{{detail.opentime}}</text>
+							<text class="left">开盘:</text> <text class="com">{{detail.open_time}}</text>
 						</view>
 						<view class="address" @tap="goweb">
 							<text class="left">地址:</text> <text class="com">{{detail.address}}</text>
 						</view>
 						<view class="zhu">
-							<text>注：</text> <text>以上价格为开发商报价，可联系咨询师咨询最低价</text>
+							<text>注：</text> <text>以上价格为开发商报价，最新价格以实际为准</text>
 						</view>
 					</view>
 					<view class="ref_nav" @tap="goDetail">
@@ -86,7 +93,7 @@
 					<view class="btn_box">
 						<button open-type="getPhoneNumber"
 							@getphonenumber="getPhoneNumber($event,detail.id,'项目落地页+查询最底价',105,'咨询楼盘底价')"
-							hover-class="none" v-if="!pass&&!weixin">
+							hover-class="none" v-if="!pass&&!weixin" class="btn01">
 							<image src="../../static/content/dijia.png"></image>查询最底价
 						</button>
 						<view class="btn01" @tap="baoMing(detail.id,'项目落地页+查询最底价',105,'咨询楼盘底价', 1)" v-if="pass||weixin">
@@ -109,9 +116,6 @@
 			<view class="left">
 				<view class="tel">
 					{{telphone}}
-				</view>
-				<view class="pp">
-					致电售楼处了解更多信息
 				</view>
 			</view>
 			<view class="right_btn" @tap="boTel(old_telphone)">
@@ -173,20 +177,20 @@
 		<view class="tejia" v-if="tejia.length>0">
 			<view class="tit">
 				<view class="left">
-					<image src="../../static/index/index-bighot.png" mode=""></image>今日特价房
+					<image src="../../static/content/hot.png" mode=""></image>今日特价房
 				</view>
 				<view class="right">
-					距结束仅剩02天
+					距结束仅剩0{{day}}天
 					<view class="time">
-						02
+						{{hour}}
 					</view>
 					<text>:</text>
 					<view class="time">
-						02
+						{{min}}
 					</view>
 					<text>:</text>
 					<view class="time">
-						02
+						{{second}}
 					</view>
 				</view>
 			</view>
@@ -208,11 +212,11 @@
 								原价{{ ((item.original_total)/10000).toFixed(1) }}万
 							</view>
 							<button class="btn" open-type="getPhoneNumber"
-								@getphonenumber="getPhoneNumber($event,detail.id,'项目落地页+立即抢',93,'立即抢')"
+								@getphonenumber="getPhoneNumber($event,detail.id,'项目落地页+咨询特价房',93,'咨询特价房')"
 								hover-class="none" v-if="!pass&&!weixin">
 								立即抢
 							</button>
-							<view @tap="baoMing(detail.id,'项目落地页+立即抢',93,'立即抢',1)" class="btn" v-if="pass||weixin">
+							<view @tap="baoMing(detail.id,'项目落地页+咨询特价房',93,'咨询特价房',1)" class="btn" v-if="pass||weixin">
 								立即抢
 							</view>
 						</view>
@@ -220,8 +224,8 @@
 				</scroll-view>
 			</view>
 			<view class="xiaoxi">
-				<uni-notice-bar :text="specials.dynamic" scrollable showType="slider" background-color="#fff"
-					:showIcon="true" color="#646466" :speed="50" v-if="specials.dynamic" :single="true">
+				<uni-notice-bar :text="specials.content" scrollable showType="slider" background-color="#fff"
+					:showIcon="true" color="#646466" :speed="50" v-if="specials.content" :single="true">
 				</uni-notice-bar>
 			</view>
 			<button class="buttons" open-type="getPhoneNumber"
@@ -241,7 +245,7 @@
 				</view>
 				<view class="right" @tap="moreHuxing(detail.id)">
 					<text>全部户型</text>
-					<image src="../../static/content/you.png" mode=""></image>
+					<image src="../../static/content/right.png" mode=""></image>
 				</view>
 			</view>
 			<scroll-view class="floor-list" scroll-x>
@@ -252,7 +256,10 @@
 								<image :src="item.big" mode="aspectFill"></image>
 							</view>
 							<view class="bottom">
-								<view class="title clamp">{{item.title}}
+								<view class="title clamp">
+								<view class="tittxt">
+									{{item.title}}
+								</view>
 									<text class="status">{{item.state}}</text>
 								</view>
 								<view class="area">面积 {{item.area}}m²</view>
@@ -282,7 +289,7 @@
 				</view>
 				<view class="dong_right" @tap="allDong(detail.id)">
 					全部动态
-					<image src="../../static/content/you.png" mode=""></image>
+					<image src="../../static/content/right.png" mode=""></image>
 				</view>
 			</view>
 
@@ -293,13 +300,15 @@
 					<view class="line">
 					</view>
 					<navigator :url="`/pages/dynamicdetail/dynamicdetail?id=${item.id}`">
-						<view class="dong">{{item.introduce}}</view>
-						<view class="more" v-if="item.introduce.length>50">
+						<view class="dong">{{item.content}}</view>
+						<view class="more" v-if="item.content.length>46">
 							阅读全文
 						</view>
 						<view class="time">
-							<view class="icon" v-if="key==0">最新动态</view>
-							<view class="icon ic1" v-if="key==1">最新加推</view>{{item.time}}
+							<view class="icon" v-if="item.state=='否'&&key==0">最新动态</view>
+							<view class="icon ic1" v-if="item.state=='是'">最新加推</view><view class="timedate">
+								{{item.time}}
+							</view>
 						</view>
 					</navigator>
 				</view>
@@ -314,11 +323,11 @@
 		</view>
 		<view class="bg_hui"></view>
 		<!-- 最新成交价 -->
-		<view class="zui_price" v-if="deal_prices.length>0">
+		<view class="zui_price" v-if="deal_prices&&deal_prices.length>0">
 			<view class="tit">
 				最新成交价
 				<view class="cha">
-					已有<text>647</text>人查询
+					已有<text>{{pricenum}}</text>人查询
 				</view>
 			</view>
 			<!-- <view class="zhu_box">
@@ -347,7 +356,7 @@
 				<image src="../../static/content/msgicon.png" mode=""></image>
 				<swiper class="swiper" :vertical="true" :circular="true" :autoplay="true" interval="2000">
 					<swiper-item class="swiper-item" v-for="item in deal_prices" :key="item.id">
-						<view class="swiper-item uni-bg-red">客户 {{item.tel}} {{item.time.substr(5)}} 成功购房</view>
+						<view class="swiper-item uni-bg-red">客户 {{item.phone}} {{item.time.substr(5)}} 成功购房</view>
 					</swiper-item>
 				</swiper>
 			</view>
@@ -369,24 +378,24 @@
 			</view>
 			<view class="li">
 				<view class="title">
-					<image src="../static/special/spcial-round.png" mode=""></image>
+					<image src="../../static/content/touzi.png" mode=""></image>
 					投资分析
 				</view>
 				<view class="licon">
-					{{fenxi_tou[0].content}}{{fenxi_tou[1].content}}
+					{{fenxi_tou[0]}}{{fenxi_tou[1]}}
 				</view>
 			</view>
 			<view class="li">
 				<view class="title">
-					<image src="../static/special/spcial-round.png" mode=""></image>
+					<image src="../../static/content/yiju.png" mode=""></image>
 					投资分析
 				</view>
 				<view class="licon">
-					{{fenxi_yiju[0].content}}{{fenxi_yiju[1].content}}
+					{{fenxi_yiju[0]}}{{fenxi_yiju[1]}}
 				</view>
 			</view>
 			<view class="zhaobox">
-				<image src="../static/special/spcial-round.png" mode=""></image>
+				<image src="../../static/content/suoding.png" mode=""></image>
 			</view>
 			<button class="btn" open-type="getPhoneNumber" hover-class="none"
 				@getphonenumber="getPhoneNumber($event,detail.id,'项目落地页+领取分析资料',99,'领取分析资料')" v-if="!pass&&!weixin">
@@ -400,7 +409,7 @@
 		<!-- 家园咨询师 -->
 		<view class="ye_people">
 			<view class="tit">
-				允家咨询师
+				家园咨询师
 			</view>
 			<view class="tese">
 				<view class="te_01">
@@ -417,37 +426,17 @@
 				</view>
 			</view>
 
-			<view class="ye_one" v-if="staff">
-				<image :src="staff.img" mode="" class="head_img"></image>
+			<view class="ye_one" v-if="staff" v-for="(item,key) in staff" :key="key">
+				<image :src="item.image" mode="aspectFill" class="head_img"></image>
 				<view class="peo">
 					<view class="top">
-						{{staff.name}}
-						<text>满意度{{staff.num}}分</text>
+						{{item.name}}
+						<text>满意度5分</text>
 					</view>
-					<view class="bottom">
+					<view class="bottom" v-if="key==0">
 						了解房源特色，专业挑好房
 					</view>
-				</view>
-				<view class="bo_tel">
-					<button open-type="getPhoneNumber" hover-class="none"
-						@getphonenumber="getPhoneNumber($event,detail.id,'项目落地页+咨询服务',104,'咨询服务')" class="bo_zi"
-						v-if="!pass&&!weixin">
-						<image src="../../static/content/zixun.png" mode=""></image>
-					</button>
-					<view class="bo_zi" @tap="baoMing(detail.id,'项目落地页+咨询服务',104,'咨询服务',1)" v-if="pass||weixin">
-						<image src="../../static/content/zixun.png" mode=""></image>
-					</view>
-					<image src="../../static/content/tel.png" mode="" @tap="boTel(old_telphone)"></image>
-				</view>
-			</view>
-			<view class="ye_one" v-if="staff">
-				<image :src="staff.img" mode="" class="head_img"></image>
-				<view class="peo">
-					<view class="top">
-						{{staff.name}}
-						<text>满意度{{staff.num}}分</text>
-					</view>
-					<view class="bottom">
+					<view class="bottom" v-else>
 						为客户提供专业的购房建议
 					</view>
 				</view>
@@ -463,7 +452,6 @@
 					<image src="../../static/content/tel.png" mode="" @tap="boTel(old_telphone)"></image>
 				</view>
 			</view>
-
 
 		</view>
 		<!-- 周边配套 -->
@@ -488,25 +476,25 @@
 			<!-- 周边配套地图 -->
 			<view class="scrollbox">
 				<scroll-view class="scrolls" scroll-x="true">
-					<view class="active">
+					<view class="active" @tap="goweb">
 						公交
 					</view>
-					<view>
+					<view @tap="goweb">
 						地铁
 					</view>
-					<view>
+					<view @tap="goweb">
 						教育
 					</view>
-					<view>
+					<view @tap="goweb">
 						医院
 					</view>
-					<view>
+					<view @tap="goweb">
 						购物
 					</view>
-					<view>
+					<view @tap="goweb">
 						美食
 					</view>
-					<view>
+					<view @tap="goweb">
 						娱乐
 					</view>
 				</scroll-view>
@@ -554,24 +542,24 @@
 									@tap="did = item.id" v-if="!pass&&!weixin">
 									<view class="no_zan" v-if="item.my_like == 0">
 										<image src="../../static/content/no_zan.png" mode=""></image>
-										赞({{item.like_num}})
+										赞({{item.like_count}})
 									</view>
 								</button>
 								<view class="no_zan" v-if="item.my_like == 0 && (pass||weixin)" @tap="getLike(item.id)">
 									<image src="../../static/content/no_zan.png" mode=""></image>
-									赞({{item.like_num}})
+									赞({{item.like_count}})
 								</view>
 								<button open-type="getPhoneNumber"
 									@getphonenumber="getPhoneNumber($event,detail.id,'项目落地页+获取周边5公里详细配套',102,'获取详细周边配套',1,item.id)"
 									@tap="did = item.id" v-if="!pass&&!weixin">
 									<view class="zan" v-if="item.my_like ==1">
 										<image src="../../static/content/zan.png" mode=""></image>
-										赞({{item.like_num}})
+										赞({{item.like_count}})
 									</view>
 								</button>
 								<view class="zan" v-if="item.my_like ==1 && (pass||weixin)" @tap="getLike(item.id)">
 									<image src="../../static/content/zan.png" mode=""></image>
-									赞({{item.like_num}})
+									赞({{item.like_count}})
 								</view>
 							</view>
 							<view class="content">
@@ -692,9 +680,23 @@
 			</view>
 			<pros :recommends="recommends"></pros>
 		</view>
+		<view class="fixbom" v-if="logintype">
+			<image @tap="logintype=false" src="../../static/index/indexclose.png" mode=""></image>
+			<view class="txt">
+				立即登录咨询找房更方便
+			</view>
+			<button open-type="getPhoneNumber" hover-class="none" @getphonenumber="getPhoneNumber($event,0,'',0,'','','',1)" class="fixbtn">
+				立即登录
+			</button>
+		</view>
+		<!-- 登录弹框 -->
+		<wyb-popup ref="login" type="bottom" height="570" width="650" radius="0" :showCloseIcon="true"
+			closeIconSize="32" @hide="setiscode">
+			<login @login="logined" :pid="detail.id"></login>
+		</wyb-popup>
 		<bottom ref="bomnav" :remark="'项目落地页+预约看房'" :point="103" :title="'预约看房'" :pid="detail.id"
 			:telphone="old_telphone"></bottom>
-		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"
+		<wyb-popup ref="popup" type="center" height="750" width="650" radius="8" :showCloseIcon="true"
 			@hide="setiscode">
 			<sign ref="sign" :type="codenum" @closethis="setpop" :title="title_e" :pid="pid_d" :remark="remark_k"
 				:position="position_n" :isok="isok"></sign>
@@ -702,7 +704,7 @@
 		<mytoast :txt="msg" ref="msg"></mytoast>
 		<!-- 自动获取授权 -->
 		<wyb-popup ref="zidong" type="center" height="500" width="660" radius="20" @hide="setiscode">
-			<shou @closeshou="clsshou"></shou>
+			<shou @closeshou="clsshou" :bid="pid"></shou>
 		</wyb-popup>
 
 
@@ -714,7 +716,7 @@
 				</view>
 				<scroll-view class="text_box" scroll-y="true" :scroll-top="scrollTop">
 					<view class="">
-						1、本次团购活动以分档累计补发的方案执行，通过允家网站成交该项目具体团购费用如下所示：
+						1、本次团购活动以分档累计补发的方案执行，通过家园网站成交该项目具体团购费用如下所示：
 					</view>
 					<view class="">0-5套---------每套1000元</view>
 					<view class="">6-10套--------每套2000元</view>
@@ -793,18 +795,19 @@
 </template>
 
 <script>
-	import tTable from '@/components/t-table/t-table.vue';
-	import tTh from '@/components/t-table/t-th.vue';
-	import tTr from '@/components/t-table/t-tr.vue';
-	import tTd from '@/components/t-table/t-td.vue';
+	import tTable from "@/components/t-table/t-table.vue";
+	import tTh from "@/components/t-table/t-th.vue";
+	import tTr from "@/components/t-table/t-tr.vue";
+	import tTd from "@/components/t-table/t-td.vue";
 	import uniNoticeBar from "@/components/uni-notice-bar/uni-notice-bar.vue";
-	import uCharts from '@/components/u-charts/u-charts/u-charts.min.js'
-	import wybPopup from '@/components/wyb-popup/wyb-popup.vue'
-	import sign from '@/components/sign.vue'
-	import shou from '@/components/zidong.vue'
-	import mytoast from "@/components/mytoast/mytoast.vue"
-	import bottom from "@/components/mine/bottom.vue"
-	import pros from "@/components/pros.vue"
+	import uCharts from "@/components/u-charts/u-charts/u-charts.min.js";
+	import wybPopup from "@/components/wyb-popup/wyb-popup.vue";
+	import sign from "@/components/sign.vue";
+	import shou from "@/components/zidong.vue";
+	import mytoast from "@/components/mytoast/mytoast.vue";
+	import bottom from "@/components/mine/bottom.vue";
+	import pros from "@/components/pros.vue";
+	import login from "@/components/login.vue";
 	var _self;
 	var canvaColumn = null;
 	export default {
@@ -819,20 +822,21 @@
 			mytoast,
 			bottom,
 			shou,
-			pros
+			pros,
+			login,
 		},
 		data() {
 			return {
-				map_image1: '',
+				map_image1: "",
 				staffmsg: {},
 				pass: false,
 				did: 0,
-				total: '',
+				total: "",
 				pro_img: [],
 				detail: {},
 				tableList: [],
-				xiaoxi: '',
-				color: '#000',
+				xiaoxi: "",
+				color: "#000",
 				goodsList: [],
 				dongtai: [],
 				num: 3,
@@ -841,10 +845,10 @@
 				table_show2: true,
 				weixin: false,
 
-				cWidth: '',
-				cHeight: '',
+				cWidth: "",
+				cHeight: "",
 				pixelRatio: 1,
-				serverData: '',
+				serverData: "",
 
 				class_active: {
 					yiju: false,
@@ -860,22 +864,21 @@
 					id: 1,
 					latitude: "",
 					longitude: "",
-					iconPath: "../../static/content/map_icon.png",
 					width: "30",
 					height: "42",
 					title: "项目名称",
 					label: {
-						content: '文本',
-						color: '#121212',
-						bgColor: '#fff',
+						content: "文本",
+						color: "#121212",
+						bgColor: "#fff",
 						fontSize: 24,
 						padding: 40,
 						borderWidth: 2,
 						borderColor: "#3EACF0",
 						borderRadius: 5,
-						textAlign: "center"
+						textAlign: "center",
 					},
-				}],
+				}, ],
 				style_list: {
 					effect: false,
 					e_active: true,
@@ -884,7 +887,7 @@
 				},
 				effects: [],
 				house_types: [],
-
+				msgbox: {},
 				fenxi_data: [],
 				fenxi_tou: [],
 				fenxi_yiju: [],
@@ -893,8 +896,8 @@
 				questions: [],
 				recommends: [],
 				common: {},
-				telphone: '',
-				old_telphone: '',
+				telphone: "",
+				old_telphone: "",
 				specials: {},
 				deal_prices: [],
 				Column: [],
@@ -902,10 +905,10 @@
 				echarts_year: "",
 				project_id: "",
 
-				title_e: '',
-				type_e: '',
-				pid_d: '',
-				remark_k: '',
+				title_e: "",
+				type_e: "",
+				pid_d: "",
+				remark_k: "",
 				position_n: 0,
 				codenum: 1,
 				msg: "",
@@ -920,7 +923,7 @@
 					huxing: true,
 					dongtai: false,
 					fenxi: false,
-					zhou_pei: false
+					zhou_pei: false,
 				},
 
 				//优惠信息
@@ -937,37 +940,55 @@
 				map_image: "",
 				isweixin: false,
 				// 资讯
-				infos: []
+				infos: [],
+				jiao_types: [],
+				pricenum: 0,
+				hour: 2,
+				min: 2,
+				second: 2,
+				day: 2,
+				logintype: false
 			};
 		},
 		onLoad(option) {
-			if (!uni.getStorageSync('pass')) {
-				// this.$refs.zidong.show()
+			if (!uni.getStorageSync("pass")) {
+				this.$refs.zidong.show()
 			}
-			// this.$refs.talkbox.show()
-			// var u = navigator.userAgent;
-
-			// var isbaidu = u.indexOf('baiduboxapp') > -1 ; //百度小程序
-
-			// if( !isbaidu ){
-			// 	console.log(879878978979)
-			// }else{
-			// 	console.log(22223131231)
-			// }
+			let that =this
+			if (!uni.getStorageSync('token')) {
+				this.logintype = true
+				setTimeout(() => {
+					that.logintype = false
+				}, 12000)
+			}
 			// #ifdef  MP-WEIXIN
-			this.isweixin = true
+			this.isweixin = true;
 			// #endif
 			if (option.other) {
-				uni.setStorageSync('other', option.other)
+				uni.setStorageSync("other", option.other);
 			}
 			_self = this;
 			this.cWidth = uni.upx2px(750);
 			this.cHeight = uni.upx2px(500);
 			let id = option.id;
-			this.pid = id
-			uni.setStorageSync('bid', id)
-			this.getdata(id);
-			this.pass = uni.getStorageSync('pass')
+			this.pid = id;
+			this.pricenum = Math.floor(Math.random() * (1000 - 200)) + 200
+			// this.day = Math.floor(Math.random() * (7 - 2)) + 2
+			// this.hour = Math.floor(Math.random() * (9 - 2)) + 2
+			// this.min = Math.floor(Math.random() * (9 - 2)) + 2
+			// this.second = Math.floor(Math.random() * (9 - 2)) + 2
+			this.showtime()
+			
+			setInterval(()=>{
+				that.showtime()
+			},1000)
+			uni.setStorageSync("bid", id);
+			if (option.kid || option.other) {
+				uni.setStorageSync("kid", option.kid);
+				uni.setStorageSync("other", option.other);
+			}
+			this.getinfo(id);
+			this.pass = uni.getStorageSync("pass");
 		},
 		onPageScroll(e) {
 			if (e.scrollTop >= 200) {
@@ -975,46 +996,111 @@
 			} else {
 				this.fixed_show = false;
 			}
+			let that = this
+			uni
+				.createSelectorQuery()
+				.select(".zhou_pei")
+				.boundingClientRect((res) => {
+						if (res.top<100) {
+							that.class_fixed.huxing = false;
+							that.class_fixed.dongtai = false;
+							that.class_fixed.fenxi = false;
+							that.class_fixed.zhou_pei = true;
+						}else{
+							uni
+								.createSelectorQuery()
+								.select(".fenxi")
+								.boundingClientRect((res) => {
+										if (res.top<=100) {
+											that.class_fixed.huxing = false;
+											that.class_fixed.dongtai = false;
+											that.class_fixed.fenxi = true;
+											that.class_fixed.zhou_pei = false;
+										}else {
+											uni
+												.createSelectorQuery()
+												.select(".dongtai")
+												.boundingClientRect((res) => {
+														if (res.top<=100) {
+															that.class_fixed.huxing = false;
+															that.class_fixed.dongtai = true;
+															that.class_fixed.fenxi = false;
+															that.class_fixed.zhou_pei = false;
+														}else{
+															uni
+																.createSelectorQuery()
+																.select(".huxing_tit")
+																.boundingClientRect((res) => {
+																		if (res.top<=100) {
+																			that.class_fixed.huxing = true;
+																			that.class_fixed.dongtai = false;
+																			that.class_fixed.fenxi = false;
+																			that.class_fixed.zhou_pei = false;
+																		}
+																})
+																.exec();
+														}
+												})
+												.exec();
+										}
+								})
+								.exec();
+						}
+				})
+				.exec();
+			
+			
+			
+			
+		},
+		onShow(){
+			console.log('isshow')
+			this.pass = uni.getStorageSync("pass");
+			this.$refs.bomnav.pass = uni.getStorageSync("pass")
 		},
 		methods: {
 			nowtal() {
-				this.$refs.talkbox.hide()
+				this.$refs.talkbox.hide();
 				uni.navigateTo({
-					url: '/pages/talk/talk?id=' + this.staffmsg.staffid + '&bid=' + this.pid
-				})
+					url: "/pages/talk/talk?id=" + this.staffmsg.staffid + "&bid=" + this.pid,
+				});
 			},
 			late() {
-				this.$refs.talkbox.hide()
+				this.$refs.talkbox.hide();
 			},
 			goloudong() {
 				uni.navigateTo({
-					url: '/pages/loudong/loudong?id=' + this.pid + '&type=1'
-				})
+					url: "/pages/loudong/loudong?id=" + this.pid + "&type=1",
+				});
 			},
 			goinfo(id) {
 				uni.navigateTo({
-					url: '/pages/info/info?id=' + id
-				})
+					url: "/pages/info/info?id=" + id,
+				});
 			},
 			gowen(id) {
 				uni.navigateTo({
-					url: "/pages/wendadetail/wendadetail?id=" + id
-				})
+					url: "/pages/wendadetail/wendadetail?id=" + id,
+				});
 			},
-			setpop() {
-				this.$refs.popup.hide()
+			setpop(e) {
+				this.$refs.popup.hide();
+				if(e) {
+					this.pass = true
+					this.$refs.bomnav.pass = true
+				}
 			},
 			gocon(id) {
 				uni.navigateTo({
-					url: '/pageA/content/content?id=' + id
-				})
+					url: "/pageA/content/content?id=" + id,
+				});
 			},
 			suijiData() {
 				let my_date = "";
 				let date1 = new Date();
 				let date_add_1 = uni.getStorageSync("date_add_1" + this.detail.id);
 				if (date_add_1) {
-					if ((parseInt(date_add_1)) - (new Date().getTime(new Date())) > 0) {
+					if (parseInt(date_add_1) - new Date().getTime(new Date()) > 0) {
 						let day = uni.getStorageSync("day" + this.detail.id);
 						let sheng_num = uni.getStorageSync("sheng_num" + this.detail.id);
 						let ling_top = uni.getStorageSync("ling_top" + this.detail.id);
@@ -1024,24 +1110,27 @@
 						this.seefang_sheng = sheng_num;
 						this.seefang_ling = ling_bot;
 					} else {
-						console.log('小于')
+						console.log("小于");
 						my_date = date1.setDate(date1.getDate() + 1);
 						my_date = new Date(my_date);
-						uni.setStorageSync("date_add_1" + this.detail.id, my_date.getTime(my_date));
+						uni.setStorageSync(
+							"date_add_1" + this.detail.id,
+							my_date.getTime(my_date)
+						);
 
 						let date2 = new Date();
 						date2.setDate(date2.getDate() + 7);
 						let time = date2.getMonth() + 1 + "月" + date2.getDate() + "日";
-						uni.setStorageSync("day" + this.detail.id, time)
+						uni.setStorageSync("day" + this.detail.id, time);
 						//50-100 剩余
 						let num = Math.random().toFixed(2) * 50 + 50;
-						uni.setStorageSync("sheng_num" + this.detail.id, parseInt(num))
+						uni.setStorageSync("sheng_num" + this.detail.id, parseInt(num));
 						//100-300 已领
 						let ling_top = Math.random().toFixed(2) * 200 + 100;
-						uni.setStorageSync("ling_top" + this.detail.id, ling_top)
+						uni.setStorageSync("ling_top" + this.detail.id, ling_top);
 
 						let ling_bot = Math.random().toFixed(2) * 200 + 100;
-						uni.setStorageSync("ling_bot" + this.detail.id, ling_bot)
+						uni.setStorageSync("ling_bot" + this.detail.id, ling_bot);
 						this.goufang_date = time;
 						this.goufang_ling = ling_top;
 						this.seefang_sheng = parseInt(num);
@@ -1051,56 +1140,102 @@
 					//加一天
 					my_date = date1.setDate(date1.getDate() + 1);
 					my_date = new Date(my_date);
-					uni.setStorageSync("date_add_1" + this.detail.id, my_date.getTime(my_date));
+					uni.setStorageSync(
+						"date_add_1" + this.detail.id,
+						my_date.getTime(my_date)
+					);
 
 					let date2 = new Date();
 					date2.setDate(date2.getDate() + 7);
 					let time = date2.getMonth() + 1 + "月" + date2.getDate() + "日";
-					uni.setStorageSync("day" + this.detail.id, time)
+					uni.setStorageSync("day" + this.detail.id, time);
 					//50-100 剩余
 					let num = Math.random().toFixed(2) * 50 + 50;
-					uni.setStorageSync("sheng_num" + this.detail.id, parseInt(num))
+					uni.setStorageSync("sheng_num" + this.detail.id, parseInt(num));
 					//100-300 已领
 					let ling_top = Math.random().toFixed(2) * 200 + 100;
-					uni.setStorageSync("ling_top" + this.detail.id, ling_top)
+					uni.setStorageSync("ling_top" + this.detail.id, ling_top);
 
 					let ling_bot = Math.random().toFixed(2) * 200 + 100;
-					uni.setStorageSync("ling_bot" + this.detail.id, ling_bot)
+					uni.setStorageSync("ling_bot" + this.detail.id, ling_bot);
 					this.goufang_date = time;
 					this.goufang_ling = ling_top;
 					this.seefang_sheng = parseInt(num);
 					this.seefang_ling = ling_bot;
 				}
-
 			},
-			async getPhoneNumber(e, pid, remark, point, title, type, ping_id) {
-				let that = this
+			logined() {
+				this.pass = true;
+				this.$refs.login.hide();
+				let {
+					pid,
+					remark,
+					point,
+					title,
+					type,
+					ping_id
+				} = this.msgbox;
+				if (type == 1) {
+					// 点赞
+					this.getLike(ping_id);
+				} else if (type == 2) {
+					//收藏
+					this.goShou();
+				} else if (type == 3) {
+					this.deletePing(ping_id);
+				} else if (type == 4) {
+					//我要点评
+					this.goDianPing(pid);
+				} else if (type == 5) {
+					//我要提问
+					this.quTiwen(pid);
+				} else {
+					this.baoMing(pid, remark, point, title, 0);
+				}
+			},
+			async getPhoneNumber(e, pid, remark, point, title, type, ping_id,isbomtype) {
+				let that = this;
+				this.msgbox = {
+					pid,
+					remark,
+					point,
+					title,
+					type,
+					ping_id,
+				};
 				// #ifdef  MP-BAIDU
-				if (e.detail.errMsg == 'getPhoneNumber:fail auth deny') {
+				if (e.detail.errMsg == "getPhoneNumber:fail auth deny") {
 					if (type) {
-						let token = uni.getStorageSync('token');
+						let token = uni.getStorageSync("token");
 						if (token) {
-							if (type == 1) { //点赞
-								this.getLike(ping_id)
-							} else if (type == 2) { //收藏
+							if (type == 1) {
+								//点赞
+								this.getLike(ping_id);
+							} else if (type == 2) {
+								//收藏
 								this.goShou();
 							} else if (type == 3) {
 								this.deletePing(ping_id);
-							} else if (type == 4) { //我要点评
-								this.goDianPing(pid)
-							} else if (type == 5) { //我要提问
-								this.quTiwen(pid)
+							} else if (type == 4) {
+								//我要点评
+								this.goDianPing(pid);
+							} else if (type == 5) {
+								//我要提问
+								this.quTiwen(pid);
 							}
 						} else {
-							let url = "/pageA/content/content?id=" + this.detail.id;
-							console.log(url);
-							uni.setStorageSync("backurl", url)
-							uni.navigateTo({
-								url: "/pages/login/login"
-							})
+							this.$refs.login.show();
+							// let url = "/pageA/content/content?id=" + this.detail.id;
+							// console.log(url);
+							// uni.setStorageSync("backurl", url)
+							// uni.navigateTo({
+							// 	url: "/pages/login/login"
+							// })
 						}
+					} else if (isbomtype) {
+						this.logintype = false
 					} else {
-						that.baoMing(pid, remark, point, title, 0)
+						that.baoMing(pid, remark, point, title, 0);
 					}
 				} else {
 					uni.setStorageSync("pass", true);
@@ -1108,114 +1243,136 @@
 					if (type) {
 						let token = uni.getStorageSync("token");
 						if (token) {
-							if (type == 1) { //点赞
-								this.getLike(ping_id)
-							} else if (type == 2) { //收藏
+							if (type == 1) {
+								//点赞
+								this.getLike(ping_id);
+							} else if (type == 2) {
+								//收藏
 								this.goShou();
-							} else if (type == 3) { //删除
-								this.deletePing(ping_id)
-							} else if (type == 4) { //我要点评
-								this.goDianPing(pid)
-							} else if (type == 5) { //我要提问
-								this.quTiwen(pid)
+							} else if (type == 3) {
+								//删除
+								this.deletePing(ping_id);
+							} else if (type == 4) {
+								//我要点评
+								this.goDianPing(pid);
+							} else if (type == 5) {
+								//我要提问
+								this.quTiwen(pid);
 							}
 						} else {
-							let session = uni.getStorageSync('session')
+							let session = uni.getStorageSync("session");
 							if (session) {
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/decrypt',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/decrypt",
+									method: "post",
 									data: {
 										iv: e.detail.iv,
-										data: e.detail.encryptedData,
-										session_key: session,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
+										ciphertext: e.detail.encryptedData,
+										sessionKey: session,
+										other: uni.getStorageSync("other"),
+										uuid: uni.getStorageSync("uuid"),
+									},
+									header: {
+										"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 									},
 									success: (res) => {
-										console.log(res, 'session')
-										let tel = res.data.mobile
-										uni.setStorageSync('phone', tel)
-										let openid = uni.getStorageSync('openid')
+										console.log(res);
+										let tel = res.data.data.mobile;
+										uni.setStorageSync("phone", tel);
+										let openid = uni.getStorageSync("openid");
 										uni.request({
-											url: "https://api.edefang.net/applets/login",
-											method: 'GET',
+											url: "https://java.edefang.net/applets/jy/login",
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+											},
 											data: {
+												bid: that.pid,
 												phone: tel,
 												openid: openid,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												uuid: uni.getStorageSync("uuid"),
+												city: uni.getStorageSync("city"),
 											},
 											success: (res) => {
-												console.log(res)
-												uni.setStorageSync('token', res.data.token)
-												if (type == 1) { //点赞
-													that.getLike(ping_id)
-												} else if (type == 2) { //收藏
+												console.log(res);
+												uni.setStorageSync("token", res.data.data);
+												if (type == 1) {
+													//点赞
+													that.getLike(ping_id);
+												} else if (type == 2) {
+													//收藏
 													that.goShou();
 												} else if (type == 3) {
 													that.deletePing(ping_id);
-												} else if (type == 4) { //我要点评
+												} else if (type == 4) {
+													//我要点评
 													that.goDianPing(pid);
-												} else if (type == 5) { //我要提问
-													that.quTiwen(pid)
+												} else if (type == 5) {
+													//我要提问
+													that.quTiwen(pid);
 												}
-											}
-										})
-									}
-								})
+											},
+										});
+									},
+								});
 							} else {
-								console.log(session, "没保存session")
+								console.log(session, "没保存session");
 								swan.getLoginCode({
-									success: res => {
+									success: (res) => {
 										// console.log(res.code);
 										uni.request({
-											url: 'https://api.edefang.net/applets/baidu/get_session_key',
-											method: 'get',
+											url: "https://java.edefang.net/applets/jy/session_key/get",
+											method: "get",
 											data: {
 												code: res.code,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
 											},
 											success: (res) => {
-												console.log(res)
-												uni.setStorageSync('openid', res.data.openid)
-												uni.setStorageSync('session', res.data
-													.session_key)
+												console.log(res);
+												uni.setStorageSync("openid", res.data.data
+													.openid);
+												uni.setStorageSync("session", res.data.data
+													.session_key);
 												uni.request({
-													url: "https://api.edefang.net/applets/baidu/decrypt",
+													url: "https://java.edefang.net/applets/jy/decrypt",
 													data: {
-														data: e.detail.encryptedData,
+														ciphertext: e.detail
+															.encryptedData,
 														iv: e.detail.iv,
-														session_key: res.data
+														sessionKey: res.data.data
 															.session_key,
-														other: uni.getStorageSync(
-															'other'),
-														uuid: uni.getStorageSync(
-															'uuid')
+													},
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 													},
 													success: (res) => {
-														console.log(res)
-														let tel = res.data.mobile
-														uni.setStorageSync('phone',
-															tel)
+														console.log(res);
+														let tel = res.data.data
+															.mobile;
+														uni.setStorageSync("phone",
+															tel);
 														let openid = uni
 															.getStorageSync(
-																'openid')
+																"openid");
 														uni.request({
-															url: "https://api.edefang.net/applets/login",
-															method: 'GET',
+															url: "https://java.edefang.net/applets/jy/login",
+															method: "POST",
+															header: {
+																"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+															},
 															data: {
+																bid: that
+																	.pid,
 																phone: tel,
 																openid: openid,
-																other: uni
-																	.getStorageSync(
-																		'other'
-																	),
 																uuid: uni
 																	.getStorageSync(
-																		'uuid'
-																	)
+																		"uuid"
+																	),
+																city: uni
+																	.getStorageSync(
+																		"city"
+																	),
 															},
 															success: (
 																res
@@ -1223,23 +1380,25 @@
 																console
 																	.log(
 																		res
-																	)
+																	);
 																uni.setStorageSync(
-																	'token',
+																	"token",
 																	res
 																	.data
-																	.token
-																)
+																	.data
+																);
 																if (type ==
 																	1
-																) { //点赞
+																) {
+																	//点赞
 																	that.getLike(
 																		ping_id
-																	)
+																	);
 																} else if (
 																	type ==
 																	2
-																) { //收藏
+																) {
+																	//收藏
 																	that
 																		.goShou();
 																} else if (
@@ -1252,160 +1411,207 @@
 																} else if (
 																	type ==
 																	4
-																) { //我要点评
+																) {
+																	//我要点评
 																	that.goDianPing(
 																		pid
 																	);
 																} else if (
 																	type ==
 																	5
-																) { //我要提问
+																) {
+																	//我要提问
 																	that.quTiwen(
 																		pid
-																	)
+																	);
 																}
-
-															}
-														})
-
-													}
-												})
-
-											}
-										})
-									}
+															},
+														});
+													},
+												});
+											},
+										});
+									},
 								});
 							}
 						}
-					} else {
-						let session = uni.getStorageSync('session')
+					}else {
+						let session = uni.getStorageSync("session");
 						if (session) {
 							uni.request({
-								url: 'https://api.edefang.net/applets/baidu/decrypt',
-								method: 'get',
+								url: "https://java.edefang.net/applets/jy/decrypt",
+								method: "post",
 								data: {
 									iv: e.detail.iv,
-									data: e.detail.encryptedData,
-									session_key: session,
-									other: uni.getStorageSync('other'),
-									uuid: uni.getStorageSync('uuid')
+									ciphertext: e.detail.encryptedData,
+									sessionKey: session,
+									other: uni.getStorageSync("other"),
+									uuid: uni.getStorageSync("uuid"),
+								},
+								header: {
+									"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 								},
 								success: (res) => {
-									console.log(res, 'session')
-									let tel = res.data.mobile
-									uni.setStorageSync('phone', tel)
-									let openid = uni.getStorageSync('openid')
+									console.log(res);
+									let tel = res.data.data.mobile;
+									uni.setStorageSync("phone", tel);
+									let openid = uni.getStorageSync("openid");
 									that.tel = tel;
-									that.baoMing(pid, remark, point, title, 1)
-								}
-							})
+									that.baoMing(pid, remark, point, title, 1);
+								},
+							});
 						} else {
-							console.log(session, "没保存session")
-							uni.login({
-								provider: 'baidu',
-								success: function(res) {
-									console.log(res.code);
+							console.log(session, "没保存session");
+							swan.getLoginCode({
+								success: (res) => {
 									uni.request({
-										url: 'https://api.edefang.net/applets/baidu/get_session_key',
-										method: 'get',
+										url: "https://java.edefang.net/applets/jy/session_key/get",
+										method: "get",
 										data: {
 											code: res.code,
-											other: uni.getStorageSync('other'),
-											uuid: uni.getStorageSync('uuid')
 										},
 										success: (res) => {
-											console.log(res)
-											uni.setStorageSync('openid', res.data.openid)
-											uni.setStorageSync('session', res.data.session_key)
+											console.log(res);
+											uni.setStorageSync("openid", res.data.data.openid);
+											uni.setStorageSync("session", res.data.data
+												.session_key);
 											uni.request({
-												url: "https://api.edefang.net/applets/baidu/decrypt",
+												url: "https://java.edefang.net/applets/jy/decrypt",
 												data: {
-													data: e.detail.encryptedData,
+													ciphertext: e.detail.encryptedData,
 													iv: e.detail.iv,
-													session_key: res.data.session_key,
-													other: uni.getStorageSync('other'),
-													uuid: uni.getStorageSync('uuid')
+													sessionKey: res.data.data
+														.session_key,
+												},
+												method: "POST",
+												header: {
+													"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 												},
 												success: (res) => {
-													console.log(res)
-													let tel = res.data.mobile
-													uni.setStorageSync('phone',
-														tel)
+													console.log(res);
+													let tel = res.data.data.mobile;
+													uni.setStorageSync("phone",
+														tel);
 													let openid = uni
-														.getStorageSync('openid')
+														.getStorageSync("openid");
 													//	that.$refs.sign.tel = tel
-													that.baoMing(pid, remark,
-														point, title, 1)
-												}
-											})
-										}
-									})
-								}
+													if (!isbomtype) {
+														that.baoMing(pid, remark,
+															point, title, 1);
+													}
+													uni.request({
+														url: "https://java.edefang.net/applets/jy/login",
+														method: "POST",
+														header: {
+															"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+														},
+														data: {
+															bid: that.pid,
+															phone: tel,
+															openid: openid,
+															uuid: uni
+																.getStorageSync(
+																	"uuid"
+																),
+															city: uni
+																.getStorageSync(
+																	"city"
+																),
+														},
+														success: (res) => {
+															console
+																.log(
+																	res
+																);
+																that.logintype = false
+															uni.setStorageSync(
+																"token",
+																res
+																.data
+																.data
+															);
+														},
+													})
+												},
+											});
+										},
+									});
+								},
 							});
 						}
 					}
 				}
 				// #endif
 				// #ifdef  MP-WEIXIN
-				if (e.detail.errMsg != 'getPhoneNumber:ok') {
+				if (e.detail.errMsg != "getPhoneNumber:ok") {
 					if (type) {
-						let token = uni.getStorageSync('token');
+						let token = uni.getStorageSync("token");
 						if (token) {
-							if (type == 1) { //点赞
-								this.getLike(ping_id)
-							} else if (type == 2) { //收藏
+							if (type == 1) {
+								//点赞
+								this.getLike(ping_id);
+							} else if (type == 2) {
+								//收藏
 								this.goShou();
 							} else if (type == 3) {
 								this.deletePing(ping_id);
-							} else if (type == 4) { //我要点评
-								this.goDianPing(pid)
-							} else if (type == 5) { //我要提问
-								this.quTiwen(pid)
+							} else if (type == 4) {
+								//我要点评
+								this.goDianPing(pid);
+							} else if (type == 5) {
+								//我要提问
+								this.quTiwen(pid);
 							}
 						} else {
-							let url = "/pageA/content/content?id=" + this.detail.id;
-							console.log(url);
-							uni.setStorageSync("backurl", url)
-							uni.navigateTo({
-								url: "/pages/login/login"
-							})
+							this.$refs.login.show();
+							// let url = "/pageA/content/content?id=" + this.detail.id;
+							// console.log(url);
+							// uni.setStorageSync("backurl", url)
+							// uni.navigateTo({
+							// 	url: "/pages/login/login"
+							// })
 						}
 					} else {
-						that.baoMing(pid, remark, point, title, 0)
+						that.baoMing(pid, remark, point, title, 0);
 					}
 				} else {
 					if (type) {
 						let token = uni.getStorageSync("token");
 						if (token) {
-							if (type == 1) { //点赞
-								this.getLike(ping_id)
-							} else if (type == 2) { //收藏
+							if (type == 1) {
+								//点赞
+								this.getLike(ping_id);
+							} else if (type == 2) {
+								//收藏
 								this.goShou();
-							} else if (type == 3) { //删除
-								this.deletePing(ping_id)
-							} else if (type == 4) { //我要点评
-								this.goDianPing(pid)
-							} else if (type == 5) { //我要提问
-								this.quTiwen(pid)
+							} else if (type == 3) {
+								//删除
+								this.deletePing(ping_id);
+							} else if (type == 4) {
+								//我要点评
+								this.goDianPing(pid);
+							} else if (type == 5) {
+								//我要提问
+								this.quTiwen(pid);
 							}
 						} else {
 							uni.login({
-								provider: 'weixin',
+								provider: "weixin",
 								success: function(res) {
 									// console.log(res.code);
 									uni.request({
-										url: 'https://ll.edefang.net/api/weichat/jscode2session',
-										method: 'get',
+										url: "https://ll.edefang.net/api/weichat/jscode2session",
+										method: "get",
 										data: {
 											code: res.code,
-											other: uni.getStorageSync('other'),
-											uuid: uni.getStorageSync('uuid')
+											other: uni.getStorageSync("other"),
+											uuid: uni.getStorageSync("uuid"),
 										},
 										success: (res) => {
-											console.log(res)
-											uni.setStorageSync('openid', res.data.data.openid)
-											uni.setStorageSync('session', res.data.data
-												.session_key)
+											console.log(res);
+											uni.setStorageSync("openid", res.data.data.openid);
+											uni.setStorageSync("session", res.data.data
+												.session_key);
 											uni.request({
 												url: "https://ll.edefang.net/api/weichat/decryptData",
 												data: {
@@ -1413,38 +1619,38 @@
 													iv: e.detail.iv,
 													sessionKey: res.data.data
 														.session_key,
-													other: uni.getStorageSync('other'),
-													uuid: uni.getStorageSync('uuid')
+													other: uni.getStorageSync("other"),
+													uuid: uni.getStorageSync("uuid"),
 												},
 												success: (res) => {
-													console.log(res)
+													console.log(res);
 													if (res.code != 500) {
-														that.pass = true
-														uni.setStorageSync('pass',
-															that.pass)
+														that.pass = true;
+														uni.setStorageSync("pass",
+															that.pass);
 														let data = JSON.parse(res
-															.data.message)
+															.data.message);
 														let tel = data
-															.purePhoneNumber
-														uni.setStorageSync('phone',
-															tel)
+															.purePhoneNumber;
+														uni.setStorageSync("phone",
+															tel);
 														let openid = uni
 															.getStorageSync(
-																'openid')
+																"openid");
 														uni.request({
 															url: "https://api.edefang.net/applets/login",
-															method: 'GET',
+															method: "GET",
 															data: {
 																phone: tel,
 																openid: openid,
 																other: uni
 																	.getStorageSync(
-																		'other'
+																		"other"
 																	),
 																uuid: uni
 																	.getStorageSync(
-																		'uuid'
-																	)
+																		"uuid"
+																	),
 															},
 															success: (
 																res
@@ -1452,23 +1658,25 @@
 																console
 																	.log(
 																		res
-																	)
+																	);
 																uni.setStorageSync(
-																	'token',
+																	"token",
 																	res
 																	.data
 																	.token
-																)
+																);
 																if (type ==
 																	1
-																) { //点赞
+																) {
+																	//点赞
 																	that.getLike(
 																		ping_id
-																	)
+																	);
 																} else if (
 																	type ==
 																	2
-																) { //收藏
+																) {
+																	//收藏
 																	that
 																		.goShou();
 																} else if (
@@ -1481,90 +1689,91 @@
 																} else if (
 																	type ==
 																	4
-																) { //我要点评
+																) {
+																	//我要点评
 																	that.goDianPing(
 																		pid
 																	);
 																} else if (
 																	type ==
 																	5
-																) { //我要提问
+																) {
+																	//我要提问
 																	that.quTiwen(
 																		pid
-																	)
+																	);
 																}
-
-															}
-														})
+															},
+														});
 													} else {
 														uni.showToast({
 															title: "获取失败请重新报名",
-															icon: "none"
-														})
+															icon: "none",
+														});
 													}
-												}
-											})
-										}
-									})
-								}
+												},
+											});
+										},
+									});
+								},
 							});
 						}
 					} else {
 						uni.login({
-							provider: 'weixin',
+							provider: "weixin",
 							success: function(res) {
 								console.log(res.code);
 								uni.request({
-									url: 'https://ll.edefang.net/api/weichat/jscode2session',
-									method: 'get',
+									url: "https://ll.edefang.net/api/weichat/jscode2session",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
+										other: uni.getStorageSync("other"),
+										uuid: uni.getStorageSync("uuid"),
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.data.openid)
-										uni.setStorageSync('session', res.data.data
-											.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
 											url: "https://ll.edefang.net/api/weichat/decryptData",
 											data: {
 												data: e.detail.encryptedData,
 												iv: e.detail.iv,
 												sessionKey: res.data.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												other: uni.getStorageSync("other"),
+												uuid: uni.getStorageSync("uuid"),
 											},
 											success: (res) => {
-												console.log(res)
+												console.log(res);
 												if (res.data.code != 500) {
-													that.pass = true
-													uni.setStorageSync('pass', that
-														.pass)
+													that.pass = true;
+													uni.setStorageSync("pass", that
+														.pass);
 													let data = JSON.parse(res.data
-														.message)
-													let tel = data.purePhoneNumber
+														.message);
+													let tel = data.purePhoneNumber;
 													let token = uni.getStorageSync(
-														'token')
+														"token");
 													if (!token) {
 														let openid = uni
 															.getStorageSync(
-																'openid')
+																"openid");
 														uni.request({
 															url: "https://api.edefang.net/applets/login",
-															method: 'GET',
+															method: "GET",
 															data: {
 																phone: tel,
 																openid: openid,
 																other: uni
 																	.getStorageSync(
-																		'other'
+																		"other"
 																	),
 																uuid: uni
 																	.getStorageSync(
-																		'uuid'
-																	)
+																		"uuid"
+																	),
 															},
 															success: (
 																res
@@ -1572,47 +1781,58 @@
 																console
 																	.log(
 																		res
-																	)
+																	);
 																uni.setStorageSync(
-																	'token',
+																	"token",
 																	res
 																	.data
 																	.token
-																)
-															}
-														})
+																);
+																that.$refs.bomnav.pass = true
+															},
+														});
 													}
-													uni.setStorageSync('phone',
-														tel)
+													uni.setStorageSync("phone",
+														tel);
 													let openid = uni
-														.getStorageSync('openid')
+														.getStorageSync("openid");
 													that.baoMing(pid, remark,
-														point, title, 1)
+														point, title, 1);
 												} else {
 													uni.showToast({
 														title: "获取失败请重新报名",
-														icon: "none"
-													})
+														icon: "none",
+													});
 												}
-											}
-										})
-									}
-								})
-							}
+											},
+										});
+									},
+								});
+							},
 						});
 					}
 				}
 				// #endif
 			},
 			to(item, num) {
-				uni.createSelectorQuery().select(".detail").boundingClientRect(data => { //目标节点
-					uni.createSelectorQuery().select("." + item).boundingClientRect((res) => { //最外层盒子节点
-						uni.pageScrollTo({
-							duration: 0, //过渡时间必须为0，uniapp bug，否则运行到手机会报错
-							scrollTop: res.top - data.top - 60, //滚动到实际距离是元素距离顶部的距离减去最外层盒子的滚动距离
-						})
-					}).exec()
-				}).exec();
+				uni
+					.createSelectorQuery()
+					.select(".detail")
+					.boundingClientRect((data) => {
+						//目标节点
+						uni
+							.createSelectorQuery()
+							.select("." + item)
+							.boundingClientRect((res) => {
+								//最外层盒子节点
+								uni.pageScrollTo({
+									duration: 0, //过渡时间必须为0，uniapp bug，否则运行到手机会报错
+									scrollTop: res.top - data.top - 60, //滚动到实际距离是元素距离顶部的距离减去最外层盒子的滚动距离
+								});
+							})
+							.exec();
+					})
+					.exec();
 				if (num == 1) {
 					this.class_fixed.huxing = true;
 					this.class_fixed.dongtai = false;
@@ -1637,8 +1857,8 @@
 			},
 			goZhou(id) {
 				uni.navigateTo({
-					url: "/pages/aroundweb/aroundweb?id=" + id
-				})
+					url: "/pages/aroundweb/aroundweb?id=" + id,
+				});
 			},
 			showRules() {
 				this.$refs.rules.show();
@@ -1647,351 +1867,319 @@
 				let token = uni.getStorageSync("token");
 				if (token) {
 					uni.request({
-						url: this.apiserve + "/comment/like",
+						url: this.javaserve + "/applets/jy/comment/like",
 						data: {
 							token: token,
 							id: id,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
+							other: uni.getStorageSync("other"),
+							uuid: uni.getStorageSync("uuid"),
 						},
 						header: {
-							'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+							"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 						},
 						method: "POST",
 						success: (res) => {
-							if (res.data.code == 200) {
+							if (res.data.status == 200) {
 								this.$refs.msg.show();
-								this.msg = res.data.message;
-								this.getdata(this.detail.id)
+								this.msg = res.data.data;
+								this.getinfo(this.detail.id);
 							}
-						}
+						},
+					});
+					// uni.request({
+					// 	url: this.apiserve + "/comment/like",
+					// 	data: {
+					// 		token: token,
+					// 		id: id,
+					// 		other: uni.getStorageSync('other'),
+					// 		uuid: uni.getStorageSync('uuid')
+					// 	},
+					// 	header: {
+					// 		'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					// 	},
+					// 	method: "POST",
+					// 	success: (res) => {
+					// 		if (res.data.code == 200) {
+					// 			this.$refs.msg.show();
+					// 			this.msg = res.data.message;
+					// 			this.getinfo(this.detail.id)
+					// 		}
+					// 	}
 
-					})
+					// })
 				} else {
 					this.$refs.msg.show();
-					this.msg = "请先登录"
+					this.msg = "请先登录";
 					let url = "/pageA/content/content?id=" + this.detail.id;
-					uni.setStorageSync("backurl", url)
+					uni.setStorageSync("backurl", url);
 					uni.navigateTo({
-						url: "/pages/login/login"
-					})
-
+						url: "/pages/login/login",
+					});
 				}
 			},
 			deletePing(id) {
 				let token = uni.getStorageSync("token");
 				if (token) {
 					uni.request({
-						url: this.apiserve + '/comment/delete',
+						url: this.javaserve + "/applets/jy/comment/delete",
 						method: "POST",
 						data: {
 							token: token,
 							id: id,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
+							other: uni.getStorageSync("other"),
+							uuid: uni.getStorageSync("uuid"),
 						},
 						header: {
-							'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+							"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 						},
 						success: (res) => {
-							if (res.data.code == 200) {
+							if (res.data.status == 200) {
 								this.$refs.msg.show();
-								this.msg = res.data.message;
-								this.getdata(this.detail.id)
+								this.msg = res.data.data;
+								this.getinfo(this.detail.id);
 							} else {
-								console.log(res)
+								console.log(res);
 							}
 						},
-						fail: (err) => {
-							console.log(err)
-						}
-
-					})
+					});
 				} else {
 					this.$refs.msg.show();
-					this.msg = "请先登录"
+					this.msg = "请先登录";
 					let url = "/pageA/content/content?id=" + this.detail.id;
-					uni.setStorageSync("backurl", url)
+					uni.setStorageSync("backurl", url);
 					uni.navigateTo({
-						url: "/pages/login/login"
-					})
+						url: "/pages/login/login",
+					});
 				}
 			},
-			getdata(id) {
+			getinfo(id) {
 				uni.showLoading({
-					title: "加载中"
-				})
-				let ip = '';
+					title: "加载中",
+				});
+				let ip = "";
 				let other = uni.getStorageSync("other");
 				let token = uni.getStorageSync("token");
 				uni.request({
 					url: this.putserve + "/getIp.php",
 					method: "GET",
 					success: (res) => {
-						ip = res.data
-						ip = ip.split('=')[1].split(':')[1]
-						ip = ip.substring(1)
-						ip = ip.slice(0, -3)
+						ip = res.data;
+						ip = ip.split("=")[1].split(":")[1];
+						ip = ip.substring(1);
+						ip = ip.slice(0, -3);
 						uni.request({
-							url: this.apiserve + '/applets/building/detail',
+							url: this.javaserve + "/applets/jy/building",
+							method: "GET",
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+							},
 							data: {
 								id: id,
 								other: other,
 								ip: ip,
 								token: token,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
 							},
 							success: (res) => {
-								if (res.data.code == 200) {
-									console.log(res, "res");
+								console.log(res);
+								if (res.data.status == 200) {
 									let data = res.data.data;
-									this.pro_img = data.imgs.img.effects;
-
-									this.effects = data.imgs.img.effects;
-									this.house_types = data.imgs.img.house_types;
-
-									this.total = data.imgs.num;
-									this.detail = data.abstract;
-									uni.setNavigationBarTitle({
-										title: data.abstract.name
-									});
-									this.goodsList = data.house_types;
-									this.dongtai = data.dynamics;
-									this.staff = data.staff;
-									this.comments = data.comments;
-									this.questions = data.questions;
+									this.detail = data.building;
+									uni.setStorageSync("city", this.detail.city.id);
+									uni.setStorageSync("cityname", this.detail.city.name);
 									this.recommends = data.recommends;
-									this.common = data.common;
-									this.header = data.common.header;
-									this.collect = data.collect;
+									this.pro_img = data.image.effect;
 
-									this.latitude = data.abstract.latitude;
-									this.longitude = data.abstract.longitude;
-									this.covers[0].latitude = data.abstract.latitude;
-									this.covers[0].longitude = data.abstract.longitude;
-									// this.covers[0].width = 280;
-									// this.covers[0].height = 72;
-									this.covers[0].title = data.abstract.name;
-									this.covers[0].label.content = data.abstract.name;
-									let lng = data.abstract.longitude;
-									let lat = data.abstract.latitude;
-									let name = data.abstract.name;
+									this.effects = data.image.effect;
+									this.house_types = data.image.real;
+									this.jiao_types = data.image.traffic;
+									this.total = data.image.count;
+									uni.setNavigationBarTitle({
+										title: data.building.name,
+									});
+									this.goodsList = data.house_type;
+									this.dongtai = data.dynamics;
+									this.collect = data.collect;
+									this.latitude = data.building.latitude;
+									this.longitude = data.building.longitude;
+									let lng = data.building.longitude;
+									let lat = data.building.latitude;
+									let name = data.building.name;
 									console.log(name);
-									let img_map = require('../../static/content/map_icon.png');
 									this.map_image =
 										`http://api.map.baidu.com/staticimage/v2?ak=Tz47quqSiGkQi7RyS3QKaFZxMy3GbH5o&center=${lng},${lat}&width=315&height=130&zoom=17&markers=${lng},${lat}`;
 									this.map_image1 =
 										`http://api.map.baidu.com/staticimage/v2?ak=Tz47quqSiGkQi7RyS3QKaFZxMy3GbH5o&center=${lng},${lat}&width=315&height=150&zoom=17&markers=${lng},${lat}`;
-
 									this.suijiData();
-
-
-									console.log(this.covers, 'covers');
-
-									let phone = data.common.phone;
-									this.telphone = phone.replace(',', '转');
+									let phone = data.phone;
+									this.telphone = phone.replace(",", "转");
+									this.comments = data.comments;
+									this.questions = data.questions;
 									this.old_telphone = phone;
-									this.specials = data.specials;
-									let tejia = data.specials.data;
-									if (tejia == null) {
-										this.tejia = [];
+									this.specials = data.special_price_rooms;
+									if (this.specials) {
+										let tejia = data.special_price_rooms.rooms;
+										if (tejia == null) {
+											this.tejia = [];
+										} else {
+											this.tejia = data.special_price_rooms.rooms;
+										}
+										this.tableList = data.special_price_rooms.rooms;
 									} else {
-										this.tejia = data.specials.data;
+										this.specials = [];
 									}
 
-									this.deal_prices = data.deal_prices;
-									console.log(this.telphone);
-
+									this.deal_prices = data.transactionPrices;
 									let _self = this;
-
-									let arr_data = data.deal_prices;
-									let time = [];
-									let num = [];
-									arr_data.map(n => {
-										num.push(n.price);
-										let str = n.time.substring(n.time.length - 5);
-										let strr = str.replace("-", '.');
-										time.push(strr);
-										let year = n.time.substring(0, 4);
-										this.echarts_year = year;
-									})
-
-
-									let Column = {
-										categories: [],
-										series: []
-									};
-									Column.series = [{
-										"name": this.echarts_year + "年",
-										"textColor": "#fff",
-										"data": num,
-									}, ];
-
-									Column.categories = time;
-									this.Column = Column;
-									console.log(Column, 'Column');
-									_self.showColumn("canvasColumn", Column);
-
-
-
-									let arr = data.specials.data;
-									if (arr) {
-										arr.map(p => {
-											let str = p.diff.toString();
-											p.diff = str.substring(0, str.length - 2) +
-												'**'
-										})
-										this.tableList = arr;
+									let arr_data = data.transactionPrices;
+									if (arr_data) {
+										let time = [];
+										let num = [];
+										arr_data.map((n) => {
+											num.push(n.price);
+											let str = n.time.substring(n.time.length - 5);
+											let strr = str.replace("-", ".");
+											time.push(strr);
+											let year = n.time.substring(0, 4);
+											this.echarts_year = year;
+										});
 									}
 
 									let analysis = data.analysis;
-									let fenxi_tou = [];
-									let fenxi_yiju = [];
-									analysis.map(m => {
-										if (m.type == 1) { //投资分析
-											fenxi_tou.push(m);
-										} else if (m.type == 2) { //宜居分析
-											fenxi_yiju.push(m)
-										}
-									})
-
+									let fenxi_tou = analysis.investment;
+									let fenxi_yiju = analysis.livable;
 									this.fenxi_data = fenxi_tou;
 									this.fenxi_tou = fenxi_tou;
 									this.fenxi_yiju = fenxi_yiju;
-
+									this.staff = data.staffs;
+									this.infos = data.articles;
+									let header = data.header;
+									let img = data.image.effect;
 									// #ifdef MP-BAIDU
-									let header = data.common.header;
-									let img = data.imgs.img.effects;
 									let arrs = [];
 									if (img.length > 0) {
-										img.map(p => {
-											arrs.push(p.small)
-										})
+										img.map((p) => {
+											arrs.push(p.smallImg);
+										});
 									}
 									swan.setPageInfo({
 										title: header.title,
 										keywords: header.keywords,
 										description: header.description,
 										image: arrs,
-										success: res => {
-											console.log('setPageInfo success', res);
+										success: (res) => {
+											console.log("setPageInfo success", res);
 										},
-										fail: err => {
-											console.log('setPageInfo fail', err);
-										}
-									})
+										fail: (err) => {
+											console.log("setPageInfo fail", err);
+										},
+									});
 									// #endif
-									this.infos = data.article
-									uni.hideLoading()
-
 								}
-							}
-						})
-					}
-				})
 
+								uni.hideLoading();
+							},
+						});
+					},
+				});
 			},
 			goShou() {
-				let token = uni.getStorageSync('token');
+				let token = uni.getStorageSync("token");
 				if (token) {
 					uni.request({
-						url: this.apiserve + "/jy/collect",
+						url: this.javaserve + "/applets/jy/building/collect",
 						method: "POST",
 						data: {
 							token: token,
 							id: this.detail.id,
-							type: 1,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
+							other: uni.getStorageSync("other"),
+							uuid: uni.getStorageSync("uuid"),
 						},
 						header: {
-							'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+							"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 						},
 						success: (res) => {
-							if (res.data.code == 200) {
+							console.log(res);
+							if (res.data.status == 200) {
 								this.$refs.msg.show();
-								this.msg = res.data.message;
-								this.getdata(this.detail.id)
-							} else if (res.data.code == 500) {
+								this.msg = res.data.data;
+								this.getinfo(this.detail.id);
+							} else if (res.data.status == 508) {
 								this.$refs.msg.show();
-								this.msg = res.data.msg;
+								this.msg = res.data.msg || "收藏失败，请登录重试";
 							}
-						}
-
-					})
+						},
+					});
 				} else {
-					let url = "/pageA/content/content?id=" + this.detail.id;
-					this.$refs.msg.show();
-					this.msg = "请先登录"
-					uni.setStorageSync("backurl", url)
-					uni.navigateTo({
-						url: "/pages/login/login"
-					})
+					this.$refs.login.show()
+					// let url = "/pageA/content/content?id=" + this.detail.id;
+					// this.$refs.msg.show();
+					// this.msg = "请先登录";
+					// uni.setStorageSync("backurl", url);
+					// uni.navigateTo({
+					// 	url: "/pages/login/login",
+					// });
 				}
-
-
 			},
 			quTiwen(id) {
 				//先判断登陆了，再跳转
 				let url = "/pageA/content/content?id=" + this.detail.id;
-				uni.setStorageSync("backurl", url)
-				let token = uni.getStorageSync('token');
+				uni.setStorageSync("backurl", url);
+				let token = uni.getStorageSync("token");
 				if (token) {
 					uni.navigateTo({
-						url: "/pages/tiwen/tiwen?id=" + id
-					})
+						url: "/pages/tiwen/tiwen?id=" + id,
+					});
 				} else {
 					let url = "/pageA/content/content?id=" + this.detail.id;
 					this.msg = "请先登录";
 					this.$refs.msg.show();
-					uni.setStorageSync("backurl", url)
+					uni.setStorageSync("backurl", url);
 					uni.navigateTo({
-						url: "/pages/login/login"
-					})
+						url: "/pages/login/login",
+					});
 				}
-
 			},
 			goDianPing(id) {
 				//先判断登陆了，再跳转
 				let url = "/pageA/content/content?id=" + this.detail.id;
-				uni.setStorageSync("backurl", url)
+				uni.setStorageSync("backurl", url);
 				let token = uni.getStorageSync("token");
 				if (token) {
 					uni.navigateTo({
-						url: "/pages/senddian/senddian?id=" + id
-					})
+						url: "/pages/senddian/senddian?id=" + id,
+					});
 				} else {
 					let url = "/pageA/content/content?id=" + this.detail.id;
 					this.msg = "请先登录";
 					this.$refs.msg.show();
-					uni.setStorageSync("backurl", url)
+					uni.setStorageSync("backurl", url);
 					uni.navigateTo({
-						url: "/pages/login/login"
-					})
+						url: "/pages/login/login",
+					});
 				}
 			},
 			goDuibi(id) {
 				uni.navigateTo({
-					url: `/pages/loupk/loupk?ids=${id}`
-				})
+					url: `/pages/loupk/loupk?ids=${id}`,
+				});
 			},
 			setiscode() {
-				this.codenum = 0
+				this.codenum = 0;
 			},
 			boTel(tel) {
 				uni.makePhoneCall({
 					phoneNumber: tel,
 					success: function() {
-						console.log('拨打电话');
-					} //仅为示例
+						console.log("拨打电话");
+					}, //仅为示例
 				});
 			},
 			baoMing(pid, msg, point, title, n) {
-				this.isok = n
+				this.isok = n;
 				this.pid_d = pid;
-				this.position_n = point,
-					this.title_e = title;
+				(this.position_n = point), (this.title_e = title);
 				this.remark_k = msg;
 				this.$refs.popup.show();
 			},
@@ -2004,28 +2192,28 @@
 				this.table_show2 = false;
 			},
 			showColumn(canvasId, chartData) {
-				console.log("111", chartData.categories, chartData.series)
+				console.log("111", chartData.categories, chartData.series);
 				canvaColumn = new uCharts({
 					$this: _self,
 					canvasId: canvasId,
-					type: 'column',
+					type: "column",
 					legend: true,
 					fontSize: 11,
-					background: '#FFFFFF',
+					background: "#FFFFFF",
 					pixelRatio: _self.pixelRatio,
 					animation: true,
 					categories: chartData.categories,
 					series: chartData.series,
 					xAxis: {
 						disableGrid: true,
-						rotateLabel: true
+						rotateLabel: true,
 					},
 					yAxis: {
 						data: [{
-							format: val => {
-								return val + " w"
-							}
-						}]
+							format: (val) => {
+								return val + " w";
+							},
+						}, ],
 					},
 					dataLabel: true,
 					width: _self.cWidth * _self.pixelRatio,
@@ -2033,70 +2221,96 @@
 					padding: [0, 30, 0, 0],
 					extra: {
 						column: {
-							width: _self.cWidth * _self.pixelRatio * 0.45 / chartData.categories.length
-						}
-					}
+							width: (_self.cWidth * _self.pixelRatio * 0.45) /
+								chartData.categories.length,
+						},
+					},
 				});
 			},
 			clsshou(e) {
-				console.log(e)
+				console.log(e);
 				if (e) {
-					this.pass = true
-					this.$refs.bomnav.pass = true
+					this.pass = true;
+					this.$refs.bomnav.pass = true;
+					this.logintype = false
 				}
-				this.$refs.zidong.hide()
+				this.$refs.zidong.hide();
 			},
 			changeData() {
 				canvaColumn.updateData({
 					series: _self.serverData.ColumnB.series,
-					categories: _self.serverData.ColumnB.categories
+					categories: _self.serverData.ColumnB.categories,
 				});
 			},
 			showEffect() {
 				this.style_list.e_active = true;
 				this.style_list.hu_active = false;
+				this.style_list.jiao_active = false;
 				this.pro_img = this.effects;
 			},
 			showHuxing() {
 				this.style_list.e_active = false;
-
+				this.style_list.jiao_active = false;
 				this.style_list.hu_active = true;
 				this.pro_img = this.house_types;
+			},
+			showJiao() {
+				this.style_list.e_active = false;
+				this.style_list.hu_active = false;
+				this.style_list.jiao_active = true;
+				this.pro_img = this.jiao_types;
 			},
 			goDetail() {
 				let id = this.detail.id;
 				uni.navigateTo({
-					url: "/pages/prodetail/prodetail?id=" + id
-				})
+					url: "/pages/prodetail/prodetail?id=" + id,
+				});
 			},
 			moreHuxing(id) {
 				uni.navigateTo({
-					url: "/pages/prohuxing/prohuxing?id=" + id
-				})
+					url: "/pages/prohuxing/prohuxing?id=" + id,
+				});
 			},
 			allDong(id) {
 				uni.navigateTo({
-					url: "/pages/loudong/loudong?id=" + id + '&type=0'
-				})
+					url: "/pages/loudong/loudong?id=" + id + "&type=0",
+				});
 			},
 			allDian(id) {
 				uni.navigateTo({
-					url: "/pages/loudian/loudian?id=" + id
-				})
+					url: "/pages/loudian/loudian?id=" + id,
+				});
 			},
 			louwen(id) {
 				uni.navigateTo({
-					url: "/pages/allwenda/allwenda?id=" + id
-				})
+					url: "/pages/allwenda/allwenda?id=" + id,
+				});
 			},
 			goweb() {
 				let id = this.detail.id;
 				uni.navigateTo({
-					url: "/pages/test/test?id=" + id
-				})
+					url: "/pages/test/test?id=" + id,
+				});
+			},
+			showtime() {
+				var nowtime = new Date() //获取当前时间
+				let num = 0
+				if(uni.getStorageSync('endtime')) {
+					num = uni.getStorageSync('endtime')
+				} else {
+					num = nowtime.getTime()+1000 * 60 * 60 * 24*4
+					uni.setStorageSync('endtime',num)
+				}
+				let	endtime = new Date(num); //定义结束时间
+				var lefttime = endtime.getTime() - nowtime.getTime() //距离结束时间的毫秒数
+					this.day = Math.floor(lefttime / (1000 * 60 * 60 * 24)) //计算天数
+					this.hour = Math.floor(lefttime / (1000 * 60 * 60) % 24) //计算小时数
+					this.min = Math.floor(lefttime / (1000 * 60) % 60) //计算分钟数
+					this.second = Math.floor(lefttime / 1000 % 60); //计算秒数
+				
 			}
 		},
-	}
+	};
 </script>
 
 <style lang="less" scoped>
@@ -2144,11 +2358,11 @@
 	}
 
 	.detail {
-		background-color: #F5F5F5;
+		background-color: #f5f5f5;
 		padding-bottom: 128rpx;
 
 		.toptitle {
-			color: #17181A;
+			color: #17181a;
 			font-size: 29.88rpx;
 			padding: 0 29.88rpx;
 			line-height: 87.64rpx;
@@ -2177,7 +2391,7 @@
 					width: 221rpx;
 					font-size: 32rpx;
 					font-weight: 500;
-					color: #17181A;
+					color: #17181a;
 				}
 			}
 		}
@@ -2185,7 +2399,7 @@
 		.fixed_top {
 			width: 100%;
 			height: 88rpx;
-			background: #FFFFFF;
+			background: #ffffff;
 			display: flex;
 			justify-content: space-around;
 			position: fixed;
@@ -2200,7 +2414,7 @@
 
 			.active {
 				padding-bottom: 16rpx;
-				border-bottom: 4rpx solid #3EACF0;
+				border-bottom: 4rpx solid #38916c;
 			}
 		}
 
@@ -2234,7 +2448,7 @@
 					width: 92rpx;
 					height: 40rpx;
 					font-size: 20rpx;
-					color: #FFFFFF;
+					color: #ffffff;
 					line-height: 40rpx;
 					text-align: center;
 					display: inline-block;
@@ -2242,7 +2456,7 @@
 
 				.active {
 					border-radius: 20rpx;
-					background: #2AC66D;
+					background: #2ac66d;
 				}
 			}
 
@@ -2278,14 +2492,14 @@
 			margin: 0 30rpx;
 			position: relative;
 			top: -30rpx;
-			height: 667rpx;
-			background-color: #FFFFFF;
+			height: 676rpx;
+			background-color: #ffffff;
 			padding: 0 30rpx;
 			border-radius: 16rpx;
 
 			.top {
 				width: 100%;
-				height: 175rpx;
+				height: 182rpx;
 
 				.top_name {
 					float: left;
@@ -2295,22 +2509,22 @@
 					.name {
 						font-size: 40rpx;
 						font-weight: 800;
-						color: #17181A;
+						color: #17181a;
 						width: 100%;
 						line-height: 40rpx;
 						margin-top: 50rpx;
-						margin-bottom: 18rpx;
+						margin-bottom: 16rpx;
 					}
 
 					.tese {
 						.one {
 							width: 68rpx;
 							height: 36rpx;
-							background: #E6FAF0;
+							background: #e6faf0;
 							border-radius: 6rpx;
 							font-size: 22rpx;
 							font-weight: 500;
-							color: #20C657;
+							color: #20c657;
 							text-align: center;
 							line-height: 36rpx;
 							margin-right: 12rpx;
@@ -2318,8 +2532,8 @@
 						}
 
 						.other {
-							background-color: #F5F5F5;
-							color: #7D7E80;
+							background-color: #f5f5f5;
+							color: #7d7e80;
 							font-size: 22rpx;
 							line-height: 36rpx;
 							padding-left: 12rpx;
@@ -2352,33 +2566,36 @@
 						text {
 							font-size: 24rpx;
 							font-weight: 500;
-							color: #628BB9;
+							color: #628bb9;
 						}
 					}
 				}
-
 			}
 
 			.huiimg {
 				height: 74rpx;
 				border-radius: 12rpx;
 				position: relative;
-				margin-bottom: 26rpx;
+				margin-bottom: 24rpx;
+				background: url(../../static/content/topzixun.png);
+				background-size: 100%;
 
 				.btn {
 					color: #795636;
 					font-size: 28rpx;
 					position: absolute;
 					right: 18rpx;
-					top: 16rpx;
+					top: 4rpx;
+					padding: 0;
 					padding-left: 38rpx;
-					border-left: 1rpx dashed #C3A26D;
+					height: 60rpx;
+					line-height: 60rpx;
 
 					image {
-						width: 28rpx;
-						height: 28rpx;
+						width: 24rpx;
+						height: 24rpx;
 						margin-left: 4rpx;
-						margin-bottom: -4rpx;
+						margin-bottom: -2rpx;
 					}
 				}
 			}
@@ -2394,35 +2611,37 @@
 						float: left;
 
 						.price {
-							line-height: 58rpx;
+							line-height: 54rpx;
 
 							.left {
 								font-size: 28rpx;
 								font-weight: 500;
-								color: #7D7D80;
+								color: #7d7d80;
 								margin-right: 12rpx;
 							}
 
 							.strong_price {
 								font-size: 40rpx;
 								font-weight: 800;
-								color: #FF6040;
+								color: #ff6040;
+								position: relative;
+								top: 4rpx;
 							}
 
 							.dan {
 								font-size: 20rpx;
 								font-weight: bold;
-								color: #FF6040;
+								color: #ff6040;
 							}
 						}
 
 						.kai_time {
-							line-height: 58rpx;
+							line-height: 54rpx;
 
 							.left {
 								font-size: 28rpx;
 								font-weight: 500;
-								color: #7D7D80;
+								color: #7d7d80;
 								margin-right: 12rpx;
 							}
 
@@ -2443,7 +2662,7 @@
 							.left {
 								font-size: 28rpx;
 								font-weight: 500;
-								color: #7D7D80;
+								color: #7d7d80;
 								margin-right: 12rpx;
 							}
 
@@ -2455,8 +2674,8 @@
 						}
 
 						.zhu {
-							margin-top: 20rpx;
-							margin-bottom: 35rpx;
+							margin-top: 22rpx;
+							margin-bottom: 32rpx;
 
 							text {
 								font-size: 24rpx;
@@ -2490,6 +2709,7 @@
 						top: 410rpx;
 						width: 100rpx;
 						height: 64rpx;
+						border-radius: 8rpx;
 					}
 				}
 
@@ -2498,7 +2718,7 @@
 					padding-top: 20rpx;
 
 					.btn_box:after {
-						content: '';
+						content: "";
 						overflow: hidden;
 						height: 0;
 						clear: both;
@@ -2511,18 +2731,18 @@
 						height: 80rpx;
 						margin-bottom: 40rpx;
 						display: flex;
-						justify-content: space-between;
+						// justify-content: space-between;
 
 						button {
 							width: 304rpx;
 							height: 80rpx;
-							background: #E9F5EE;
+							background: #e9f5ee;
 							border-radius: 12rpx;
 							border: none;
 							float: left;
 							font-size: 30rpx;
 							font-weight: bold;
-							color: #38916C;
+							color: #38916c;
 							display: flex;
 							justify-content: center;
 							align-items: center;
@@ -2537,13 +2757,13 @@
 						view {
 							width: 304rpx;
 							height: 80rpx;
-							background: #E9F5EE;
+							background: #e9f5ee;
 							border-radius: 12rpx;
 							border: none;
 							float: left;
 							font-size: 30rpx;
 							font-weight: bold;
-							color: #38916C;
+							color: #38916c;
 							display: flex;
 							justify-content: center;
 							align-items: center;
@@ -2561,7 +2781,6 @@
 					}
 				}
 			}
-
 		}
 
 		.tel_box {
@@ -2569,27 +2788,28 @@
 			height: 128rpx;
 			margin-left: 30rpx;
 			position: relative;
-			background: url(../../static/content/tel_bg.png) no-repeat;
+			background: url(../../static/content/tel_bg.jpg) no-repeat;
 			background-size: 690rpx 128rpx;
-			padding-left: 24rpx;
+			padding-left: 40rpx;
 			padding-right: 20rpx;
+			margin-bottom: 30rpx;
+			border-radius: 16rpx;
 
 			.left {
-				width: 474rpx;
 				float: left;
 				padding-top: 32rpx;
 
 				.tel {
 					font-size: 36rpx;
 					font-weight: bold;
-					color: #4C726C;
+					color: #4c726c;
 					line-height: 36rpx;
 				}
 
 				.pp {
 					font-size: 24rpx;
 					font-weight: 400;
-					color: #68938C;
+					color: #68938c;
 					margin-top: 8rpx;
 				}
 			}
@@ -2597,7 +2817,7 @@
 			.right_btn {
 				width: 172rpx;
 				height: 62rpx;
-				background: #FFFFFF;
+				background: #ffffff;
 				border-radius: 31px;
 				float: right;
 				margin-top: 35rpx;
@@ -2613,7 +2833,7 @@
 				text {
 					font-size: 26rpx;
 					font-weight: 400;
-					color: #38916C;
+					color: #38916c;
 					line-height: 62rpx;
 					text-align: center;
 				}
@@ -2623,26 +2843,27 @@
 		.bg_hui {
 			width: 100%;
 			height: 20rpx;
-			background: #F7F7F7;
+			background: #f7f7f7;
 		}
 
-		//  优惠信息 
+		//  优惠信息
 		.hui {
 			margin: 0 30rpx;
 			// height: 475rpx;
-			background: #F7F7F7;
+			background: #f7f7f7;
 			padding-left: 30rpx;
 			padding-right: 30rpx;
 			box-sizing: border-box;
 			background-color: #fff;
 			padding-bottom: 40rpx;
-			margin-bottom: 30rpx;
+			margin-bottom: 20rpx;
+			border-radius: 16rpx;
 
 			.tit {
 				text {
 					font-size: 34rpx;
 					font-weight: 800;
-					color: #19191A;
+					color: #19191a;
 					line-height: 114rpx;
 				}
 
@@ -2650,6 +2871,8 @@
 					width: 32rpx;
 					height: 32rpx;
 					margin-left: 15rpx;
+					position: relative;
+					top: 2rpx;
 				}
 			}
 
@@ -2665,7 +2888,7 @@
 				.text {
 					font-size: 24rpx;
 					font-weight: 400;
-					color: #E6813D;
+					color: #e6813d;
 					position: absolute;
 					bottom: 22rpx;
 					left: 30rpx;
@@ -2673,7 +2896,7 @@
 					.jie {
 						font-size: 20rpx;
 						font-weight: 500;
-						color: #211C18;
+						color: #211c18;
 					}
 				}
 
@@ -2681,11 +2904,11 @@
 					.ling_btn {
 						width: 128rpx;
 						height: 48rpx;
-						background: linear-gradient(270deg, #FF7519, #FFAE3D);
+						background: linear-gradient(270deg, #ff7519, #ffae3d);
 						border-radius: 24rpx;
 						font-size: 24rpx;
 						font-weight: 500;
-						color: #FFFFFF;
+						color: #ffffff;
 						text-align: center;
 						line-height: 48rpx;
 						position: absolute;
@@ -2696,7 +2919,7 @@
 					text {
 						font-size: 24rpx;
 						font-weight: 500;
-						color: #FF7519;
+						color: #ff7519;
 						position: absolute;
 						right: 44rpx;
 						bottom: 19rpx;
@@ -2714,7 +2937,7 @@
 				.text {
 					font-size: 24rpx;
 					font-weight: 400;
-					color: #3A80BA;
+					color: #68938c;
 					position: absolute;
 					bottom: 22rpx;
 					left: 30rpx;
@@ -2722,7 +2945,7 @@
 					.jie {
 						font-size: 20rpx;
 						font-weight: 500;
-						color: #211C18;
+						color: #211c18;
 					}
 				}
 
@@ -2730,11 +2953,11 @@
 					.ling_btn {
 						width: 128rpx;
 						height: 48rpx;
-						background: linear-gradient(270deg, #348AFF, #6ACCFF);
+						background: linear-gradient(270deg, #28c567, #81db85);
 						border-radius: 24rpx;
 						font-size: 24rpx;
 						font-weight: 500;
-						color: #FFFFFF;
+						color: #ffffff;
 						text-align: center;
 						line-height: 48rpx;
 						position: absolute;
@@ -2745,7 +2968,7 @@
 					text {
 						font-size: 24rpx;
 						font-weight: 500;
-						color: #40A2F4;
+						color: #68938c;
 						position: absolute;
 						right: 44rpx;
 						bottom: 19rpx;
@@ -2754,14 +2977,14 @@
 			}
 		}
 
-		//  今日特价房 
+		//  今日特价房
 		.tejia {
 			margin: 0 30rpx;
 			height: auto;
 			background: #fff;
 			padding-bottom: 40rpx;
 			border-radius: 16rpx;
-			margin-bottom: 30rpx;
+			margin-bottom: 20rpx;
 
 			.tit {
 				width: 100%;
@@ -2798,9 +3021,9 @@
 						border-radius: 4rpx;
 						text-align: center;
 						line-height: 32rpx;
-						background-color: #FF4040;
+						background-color: #ff4040;
 						font-size: 22rpx;
-						color: #FFFFFF;
+						color: #ffffff;
 					}
 
 					.time:nth-of-type(1) {
@@ -2809,7 +3032,7 @@
 
 					text {
 						font-size: 20rpx;
-						color: #FF2F51;
+						color: #ff2f51;
 						margin: 0 6rpx;
 					}
 				}
@@ -2818,7 +3041,7 @@
 			.line {
 				width: 630rpx;
 				margin-left: 30rpx;
-				background-color: #EDEDED;
+				background-color: #ededed;
 				height: 1rpx;
 				margin-bottom: 40rpx;
 			}
@@ -2838,7 +3061,7 @@
 						width: 280rpx;
 						height: 160rpx;
 						border-radius: 16rpx;
-						background: linear-gradient(90deg, #F2444A, #FA8370);
+						background: linear-gradient(90deg, #f2444a, #fa8370);
 						position: absolute;
 						top: 30rpx;
 						left: 0;
@@ -2848,15 +3071,15 @@
 						width: 240rpx;
 						height: 156rpx;
 						border-radius: 16rpx;
-						border: 3rpx solid #ECE3D5;
+						border: 3rpx solid #ece3d5;
 						text-align: center;
 						position: absolute;
-						background-color: #FFFFFF;
+						background-color: #ffffff;
 						top: 0;
 						left: 20rpx;
 
 						text {
-							color: #69513D;
+							color: #69513d;
 							font-size: 22rpx;
 							padding-top: 22rpx;
 						}
@@ -2865,7 +3088,8 @@
 					.topmsg {
 						width: 280rpx;
 						height: 160rpx;
-						background: linear-gradient(-90deg, #F2444A 0%, #FA8370 100%);
+						background: url(../../static/content/tejiabg.jpg);
+						background-size: 100%;
 						border-radius: 0 0 16rpx 16rpx;
 						position: absolute;
 						bottom: 0;
@@ -2875,7 +3099,7 @@
 						align-items: center;
 
 						.newpri {
-							color: #FFFFFF;
+							color: #ffffff;
 							font-size: 20rpx;
 							margin-bottom: 0rpx;
 							padding-top: 12rpx;
@@ -2887,7 +3111,7 @@
 						}
 
 						.oldpri {
-							color: #FAD9D4;
+							color: #fad9d4;
 							font-size: 22rpx;
 							text-decoration: line-through;
 							margin-bottom: 6rpx;
@@ -2899,8 +3123,8 @@
 							border-radius: 20rpx;
 							text-align: center;
 							line-height: 40rpx;
-							background-color: #FFFFFF;
-							color: #7F5431;
+							background-color: #ffffff;
+							color: #7f5431;
 							font-size: 24rpx;
 						}
 					}
@@ -2910,7 +3134,6 @@
 					margin-left: 30rpx;
 				}
 			}
-
 
 			.xiaoxi {
 				// width: 100%;
@@ -2928,10 +3151,10 @@
 			.buttons {
 				width: 630rpx;
 				height: 80rpx;
-				background: #E9F5EE;
+				background: #e9f5ee;
 				font-size: 30rpx;
 				font-weight: 800;
-				color: #38916C;
+				color: #38916c;
 				text-align: center;
 				line-height: 80rpx;
 				margin-left: 30rpx;
@@ -2941,37 +3164,35 @@
 			.button {
 				width: 630rpx;
 				height: 80rpx;
-				background: #E9F5EE;
+				background: #e9f5ee;
 				font-size: 30rpx;
 				font-weight: 800;
-				color: #38916C;
+				color: #38916c;
 				text-align: center;
 				line-height: 80rpx;
 				margin-left: 30rpx;
 				margin-top: 30rpx;
 			}
-
 		}
 
-		//  主力户型 
+		//  主力户型
 		.huxing {
-			height: 646rpx;
 			margin: 0 30rpx;
 			background-color: #fff;
 			border-radius: 16rpx;
-			margin-bottom: 30rpx;
+			margin-bottom: 20rpx;
+			padding-bottom: 40rpx;
 
 			.tit {
 				line-height: 110rpx;
 				padding-left: 30rpx;
 				padding-right: 30rpx;
-				margin-bottom: 4px;
 				height: 110rpx;
 
 				.left {
 					font-size: 34rpx;
 					font-weight: 800;
-					color: #19191A;
+					color: #19191a;
 					float: left;
 				}
 
@@ -2993,41 +3214,43 @@
 
 			.floor-list {
 				white-space: nowrap;
-
+				height: 360rpx;
+				background: #fff;
 				.scoll-wrapper {
 					padding-left: 30rpx;
+					padding-top: 10rpx;
+					background-color: #fff;
 				}
 
 				.scoll-wrapper {
-					display: flex;
-					align-items: flex-start;
-
+					padding-right: 5.5rpx;
+					white-space: nowrap;
 					.floor-item {
-						width: 320rpx;
-						height: 379rpx;
+						display: inline-block;
+						width: 280rpx;
+						height: 340rpx;
 						margin-right: 20rpx;
-
+						box-shadow: 0px 0px 10rpx 0px rgba(0, 0, 0, 0.04);
+						border-radius: 12rpx;
+						overflow: hidden;
 						.bg_image {
-							width: 320rpx;
-							height: 214rpx;
-							background: #F5F5F5;
-							border: 1rpx solid #EDEDED;
+							width: 280rpx;
+							height: 189rpx;
+							background: #f5f5f5;
 							border-radius: 12rpx 12rpx 0rpx 0rpx;
 
 							image {
-								width: 164rpx;
-								height: 211rpx;
-								margin-left: 80rpx;
+								width: 146rpx;
+								height: 189rpx;
+								margin-left: 67rpx;
 							}
 						}
 
 						.bottom {
-							width: 297rpx;
-							height: 160rpx;
-							border: 1rpx solid #EDEDED;
-							border-top: none;
+							width: 280rpx;
+							height: 152rpx;
 							border-radius: 0rpx 0rpx 12rpx 12rpx;
-							padding-left: 23rpx;
+							padding-left: 20rpx;
 
 							.title {
 								padding-top: 16rpx;
@@ -3035,16 +3258,23 @@
 								font-weight: 800;
 								color: #323233;
 								line-height: 42rpx;
-
+								display: flex;
+								align-items: center;
+								.tittxt {
+									overflow: hidden;
+									text-overflow:ellipsis;
+									white-space: nowrap;
+									width: 170rpx;
+								}
 								// margin-top: 5rpx;
 								.status {
 									width: 54rpx;
 									height: 28rpx;
-									background: #29CC72;
+									background: #29cc72;
 									border-radius: 6rpx;
 									font-size: 20rpx;
 									font-weight: 500;
-									color: #FFFFFF;
+									color: #ffffff;
 									line-height: 28rpx;
 									margin-left: 24rpx;
 									display: inline-block;
@@ -3055,45 +3285,43 @@
 							.area {
 								font-size: 24rpx;
 								font-weight: 500;
-								color: #7D7E80;
+								color: #7d7e80;
 								line-height: 42rpx;
 							}
 
 							.yue {
 								font-size: 20rpx;
 								font-weight: 500;
-								color: #FF6040;
+								color: #ff6040;
 								line-height: 42rpx;
 
 								.num {
 									font-size: 32rpx;
 									font-weight: 800;
-									color: #FF6040;
+									color: #ff6040;
 								}
 							}
 						}
-
 					}
-
 				}
 			}
 
 			.hu_zi {
 				width: 630rpx;
 				height: 80rpx;
-				background: #E9F5EE;
+				background: #e9f5ee;
 				border-radius: 12rpx;
 				font-size: 30rpx;
 				font-weight: 800;
-				color: #38916C;
+				color: #38916c;
 				text-align: center;
 				line-height: 80rpx;
-				margin-top: 40rpx;
+				margin-top: 26.5rpx;
 				margin-left: 30rpx;
 			}
 		}
 
-		//  最新动态 
+		//  最新动态
 		.dongtai {
 			height: auto;
 			margin: 0 30rpx;
@@ -3106,8 +3334,8 @@
 
 			.title {
 				width: 100%;
-				margin-top: 10rpx;
-				height: 94rpx;
+				margin-top: 20rpx;
+				height: 98rpx;
 
 				.dong_left {
 					font-size: 34rpx;
@@ -3122,10 +3350,10 @@
 						width: 64rpx;
 						height: 26rpx;
 						border-radius: 6rpx 6rpx 6rpx 0;
-						background: #FF4040;
+						background: #ff4040;
 						text-align: center;
 						line-height: 26rpx;
-						color: #FFFFFF;
+						color: #ffffff;
 						font-size: 18rpx;
 						font-weight: bold;
 						left: 140rpx;
@@ -3134,7 +3362,7 @@
 						.jiao {
 							position: absolute;
 							border: 10rpx solid rgba(0, 0, 0, 0);
-							border-left-color: #FF4040;
+							border-left-color: #ff4040;
 							left: 0;
 							bottom: -8rpx;
 						}
@@ -3162,23 +3390,22 @@
 				.dong_one {
 					padding-left: 29rpx;
 					position: relative;
-					border-left: 1rpx solid #DFE1E6;
-					padding-bottom: 40rpx;
+					border-left: 1rpx solid #dfe1e6;
+					padding-bottom: 38rpx;
 
 					.round {
 						position: absolute;
 						width: 20rpx;
 						height: 20rpx;
 						border-radius: 50%;
-						background-color: #DFE1E6;
+						background-color: #dfe1e6;
 						left: -10rpx;
 						top: 0;
 					}
 
 					.dong {
 						font-size: 28rpx;
-						font-weight: 500;
-						color: #646466;
+						color: #323233;
 						line-height: 44rpx;
 						display: -webkit-box;
 						-webkit-box-orient: vertical;
@@ -3190,14 +3417,15 @@
 					.more {
 						width: 150rpx;
 						height: 36rpx;
-						background: linear-gradient(270deg, #FFFFFF, rgba(0, 0, 0, 0));
+						background: linear-gradient(270deg, #ffffff 80%, rgba(0, 0, 0, 0));
 						text-align: right;
 						line-height: 36rpx;
 						position: absolute;
 						right: 0;
 						top: 46rpx;
-						color: #6796CA;
+						color: #6796ca;
 						font-size: 28rpx;
+						z-index: 2;
 					}
 
 					.time {
@@ -3205,7 +3433,9 @@
 						justify-content: space-between;
 						align-items: center;
 						font-size: 24rpx;
-						color: #AFAFB3;
+						color: #afafb3;
+						position: relative;
+						height: 40rpx;
 
 						.icon {
 							width: 110rpx;
@@ -3213,13 +3443,17 @@
 							border-radius: 6rpx;
 							text-align: center;
 							line-height: 36rpx;
-							border: 1rpx solid #FF4040;
-							color: #FF4040;
+							border: 1rpx solid #ff4040;
+							color: #ff4040;
 						}
 
 						.ic1 {
-							border-color: #FFA235;
-							color: #FFA235;
+							border-color: #ffa235;
+							color: #ffa235;
+						}
+						.timedate {
+							position: absolute;
+							right: 0;
 						}
 					}
 				}
@@ -3231,18 +3465,16 @@
 				.button {
 					width: 630rpx;
 					height: 80rpx;
-					background: #E9F5EE;
+					background: #e9f5ee;
 					border-radius: 12rpx;
 					font-size: 30rpx;
 					font-weight: 800;
-					color: #38916C;
+					color: #38916c;
 					line-height: 80rpx;
 					text-align: center;
-					margin-top: 40rpx;
+					margin-top: 42rpx;
 				}
-
 			}
-
 		}
 
 		//最新成交价
@@ -3260,8 +3492,8 @@
 			.tit {
 				font-size: 34rpx;
 				font-weight: 800;
-				color: #19191A;
-				line-height: 114rpx;
+				color: #19191a;
+				line-height: 110rpx;
 
 				.cha {
 					font-size: 28rpx;
@@ -3272,7 +3504,7 @@
 
 					text {
 						font-size: 34rpx;
-						color: #FF6040;
+						color: #ff6040;
 						font-weight: bold;
 					}
 				}
@@ -3304,14 +3536,14 @@
 					}
 
 					.thead {
-						background-color: #F2F2F2;
+						background-color: #f2f2f2;
 					}
 				}
 
 				.yincang {
 					width: 691rpx;
 					height: 100rpx;
-					background: linear-gradient(0deg, #FFFFFF, rgba(255, 255, 255, 0));
+					background: linear-gradient(0deg, #ffffff, rgba(255, 255, 255, 0));
 					position: absolute;
 					bottom: 0px;
 					left: -30rpx;
@@ -3357,15 +3589,14 @@
 			.get_di_price {
 				width: 100%;
 				height: 80rpx;
-				background: #E9F5EE;
+				background: #e9f5ee;
 				font-size: 30rpx;
 				font-weight: 800;
-				color: #38916C;
+				color: #38916c;
 				text-align: center;
 				line-height: 80rpx;
-				margin-top: 38rpx;
+				margin-top: 34rpx;
 			}
-
 		}
 
 		//置业分析报告
@@ -3374,7 +3605,7 @@
 			border-radius: 16rpx;
 			padding-left: 30rpx;
 			padding-right: 30rpx;
-			padding-bottom: 30rpx;
+			padding-bottom: 35rpx;
 			background: #fff;
 			box-sizing: border-box;
 			position: relative;
@@ -3382,39 +3613,42 @@
 			.tit {
 				font-size: 34rpx;
 				font-weight: 800;
-				color: #1F1F1F;
+				color: #1f1f1f;
 				line-height: 114rpx;
 			}
 
 			.map {
-				margin-bottom: 20rpx;
+				margin-bottom: 24rpx;
 
 				image {
 					width: 100%;
 					height: 260rpx;
+					border-radius: 8rpx;
 				}
 			}
 
 			.li {
-				margin-bottom: 40rpx;
+				margin-bottom: 36rpx;
 
 				.title {
 					color: #121212;
 					font-size: 30rpx;
 					font-weight: bold;
-					margin-bottom: 28rpx;
+					margin-bottom: 24rpx;
 
 					image {
 						width: 32rpx;
 						height: 32rpx;
 						margin-right: 10rpx;
+						position: relative;
+						top: 4rpx;
 					}
 				}
 
 				.licon {
 					color: #323233;
 					font-size: 28rpx;
-					line-height: 42rpx;
+					line-height: 40rpx;
 					display: -webkit-box;
 					-webkit-box-orient: vertical;
 					-webkit-line-clamp: 2;
@@ -3428,7 +3662,7 @@
 				position: absolute;
 				bottom: 110rpx;
 				left: -30rpx;
-				background: linear-gradient(0deg, #FFFFFF, rgba(255, 255, 255, 0));
+				background: linear-gradient(0deg, #ffffff 40%, rgba(255, 255, 255, 0));
 				display: flex;
 				justify-content: center;
 				align-items: center;
@@ -3443,9 +3677,9 @@
 				width: 100%;
 				font-size: 30rpx;
 				font-weight: 800;
-				color: #38916C;
+				color: #38916c;
 				height: 80rpx;
-				background: #E9F5EE;
+				background: #e9f5ee;
 				border-radius: 12rpx;
 				margin-top: 40rpx;
 				text-align: center;
@@ -3462,19 +3696,19 @@
 			padding-right: 30rpx;
 			box-sizing: border-box;
 			height: auto;
-			padding-bottom: 10rpx;
-			margin-bottom: 30rpx;
+			padding-bottom: 6rpx;
+			margin-bottom: 20rpx;
 
 			.tit {
 				font-size: 34rpx;
 				font-weight: 800;
-				color: #17181A;
-				line-height: 114rpx;
+				color: #17181a;
+				line-height: 110rpx;
 			}
 
 			.tese:after {
 				display: block;
-				content: '';
+				content: "";
 				height: 0;
 				overflow: hidden;
 				visibility: hidden;
@@ -3483,7 +3717,7 @@
 
 			.tese {
 				width: 100%;
-				margin-bottom: 50rpx;
+				margin-bottom: 48rpx;
 
 				view {
 					font-size: 26rpx;
@@ -3513,7 +3747,7 @@
 
 			.ye_one:after {
 				display: block;
-				content: '';
+				content: "";
 				height: 0;
 				overflow: hidden;
 				visibility: hidden;
@@ -3546,11 +3780,11 @@
 						text {
 							width: 115rpx;
 							height: 30rpx;
-							background: #FA941B;
+							background: #fa941b;
 							border-radius: 6rpx;
 							font-size: 20rpx;
 							font-weight: 500;
-							color: #FFFFFF;
+							color: #ffffff;
 							display: inline-block;
 							text-align: center;
 							margin-left: 12rpx;
@@ -3560,7 +3794,7 @@
 					.bottom {
 						font-size: 24rpx;
 						font-weight: 500;
-						color: #7D7D80;
+						color: #7d7d80;
 						margin-top: 10rpx;
 					}
 				}
@@ -3584,7 +3818,6 @@
 						width: 80rpx;
 						height: 80rpx;
 						border-radius: 50%;
-
 					}
 
 					.bo_zi {
@@ -3592,7 +3825,6 @@
 					}
 				}
 			}
-
 		}
 
 		// /周边配套/
@@ -3607,18 +3839,17 @@
 			.zhou {
 				font-size: 34rpx;
 				font-weight: 800;
-				color: #1F1F1F;
+				color: #1f1f1f;
 				padding-left: 30rpx;
 				padding-right: 30rpx;
 				box-sizing: border-box;
-				line-height: 114rpx;
-
+				line-height: 110rpx;
 			}
 
 			.wei {
 				padding-left: 30rpx;
 				display: flex;
-				margin-bottom: 25rpx;
+				margin-bottom: 20rpx;
 
 				// align-items: center;
 				.left {
@@ -3641,16 +3872,13 @@
 					line-height: 32rpx;
 					//margin-bottom: 32rpx;
 				}
-
-
-
 			}
 
 			.pei {
 				padding-left: 30rpx;
 				padding-right: 30rpx;
 				box-sizing: border-box;
-				margin-bottom: 34rpx;
+				margin-bottom: 36rpx;
 				display: flex;
 				align-items: center;
 
@@ -3663,7 +3891,7 @@
 
 				font-size: 30rpx;
 				font-weight: 500;
-				color: #628BB9;
+				color: #628bb9;
 				line-height: 36rpx;
 
 				image {
@@ -3684,15 +3912,15 @@
 						border-radius: 28rpx;
 						text-align: center;
 						line-height: 56rpx;
-						background-color: #F5F5F5;
-						color: #4B4B4D;
+						background-color: #f5f5f5;
+						color: #4b4b4d;
 						font-size: 26rpx;
 						margin-right: 20rpx;
 					}
 
 					.active {
-						background-color: #E6FAEF;
-						color: #2AC66D;
+						background-color: #e6faef;
+						color: #2ac66d;
 						font-weight: bold;
 					}
 
@@ -3706,7 +3934,6 @@
 			.address {
 				width: 100%;
 
-
 				.map {
 					width: 100%;
 					height: 300rpx;
@@ -3715,38 +3942,10 @@
 					box-sizing: border-box;
 					position: relative;
 
-					.nav_nav {
-						width: 596rpx;
-						height: 90rpx;
-						background: #fff;
-						position: absolute;
-						bottom: 19rpx;
-						z-index: 4000;
-						display: flex;
-						justify-content: space-between;
-						padding-left: 27rpx;
-						padding-right: 27rpx;
-						margin-left: 20rpx;
-
-						.nav_list {
-							display: flex;
-							align-items: center;
-
-							image {
-								width: 32rpx;
-								height: 32rpx;
-							}
-
-							font-size: 26rpx;
-							font-weight: 400;
-							color: #3D3D3D;
-						}
-
-					}
-
 					image {
 						width: 630rpx;
 						height: 300rpx;
+						border-radius: 8rpx;
 					}
 				}
 
@@ -3784,18 +3983,16 @@
 						}
 					}
 				}
-
-
 			}
 
 			.button {
 				width: 630rpx;
 				height: 80rpx;
-				background: #E9F5EE;
+				background: #e9f5ee;
 				border-radius: 12rpx;
 				font-size: 30rpx;
 				font-weight: bold;
-				color: #38916C;
+				color: #38916c;
 				text-align: center;
 				line-height: 80rpx;
 				margin-left: 30rpx;
@@ -3803,7 +4000,7 @@
 			}
 		}
 
-		// 楼盘点评 
+		// 楼盘点评
 		.lou_dian {
 			margin: 0 30rpx;
 			height: auto;
@@ -3845,7 +4042,7 @@
 			.bottom {
 				.ping_one:after {
 					height: 0;
-					content: '';
+					content: "";
 					display: block;
 					overflow: hidden;
 					visibility: hidden;
@@ -3864,7 +4061,6 @@
 							width: 73rpx;
 							height: 73rpx;
 						}
-
 					}
 
 					.right {
@@ -3877,7 +4073,7 @@
 							.tel {
 								font-size: 32rpx;
 								font-weight: 800;
-								color: #19191A;
+								color: #19191a;
 								float: left;
 								line-height: 32rpx;
 							}
@@ -3885,7 +4081,7 @@
 							.zan {
 								font-size: 24rpx;
 								font-weight: 400;
-								color: #2FCB72;
+								color: #2fcb72;
 								float: right;
 								display: flex;
 								align-items: center;
@@ -3900,7 +4096,7 @@
 							.no_zan {
 								font-size: 24rpx;
 								font-weight: 400;
-								color: #B2B2B6;
+								color: #b2b2b6;
 								float: right;
 								display: flex;
 								align-items: center;
@@ -3919,7 +4115,7 @@
 								.no_zan {
 									font-size: 24rpx;
 									font-weight: 400;
-									color: #B2B2B6;
+									color: #b2b2b6;
 									float: right;
 									display: flex;
 									align-items: center;
@@ -3931,12 +4127,10 @@
 									}
 								}
 							}
-
 						}
 
 						.content {
 							font-size: 28rpx;
-							font-weight: 500;
 							color: #333333;
 							line-height: 44rpx;
 							display: -webkit-box;
@@ -3951,14 +4145,14 @@
 
 							.time {
 								font-size: 24rpx;
-								color: #AFAFB3;
+								color: #afafb3;
 								line-height: 26rpx;
 							}
 
 							.delete {
 								font-size: 26rpx;
 								font-weight: 500;
-								color: #6888A2;
+								color: #6888a2;
 								margin-left: 19rpx;
 								line-height: 26rpx;
 								padding-left: 0rpx;
@@ -3966,7 +4160,6 @@
 								margin-top: 10rpx;
 							}
 						}
-
 					}
 				}
 
@@ -3983,11 +4176,11 @@
 			.dian_btn {
 				width: 100%;
 				height: 80rpx;
-				background-color: #E9F5EE;
+				background-color: #e9f5ee;
 
 				font-size: 30rpx;
 				font-weight: 800;
-				color: #38916C;
+				color: #38916c;
 
 				line-height: 80rpx;
 				text-align: center;
@@ -4004,7 +4197,7 @@
 			box-sizing: border-box;
 			padding-bottom: 40rpx;
 			border-radius: 16rpx;
-			margin-bottom: 30rpx;
+			margin-bottom: 20rpx;
 
 			.title {
 				height: 114rpx;
@@ -4040,11 +4233,11 @@
 						.wen {
 							width: 30rpx;
 							height: 30rpx;
-							background: #FF5454;
+							background: #ff5454;
 							border-radius: 4rpx;
 							font-size: 20rpx;
 							font-weight: 400;
-							color: #FFFFFF;
+							color: #ffffff;
 							text-align: center;
 							line-height: 30rpx;
 							display: inline-block;
@@ -4082,10 +4275,10 @@
 					line-height: 80rpx;
 					font-size: 30rpx;
 					font-weight: bold;
-					color: #38916C;
+					color: #38916c;
 					line-height: 80rpx;
 					text-align: center;
-					background: #E9F5EE;
+					background: #e9f5ee;
 					margin-top: 35rpx;
 				}
 			}
@@ -4098,20 +4291,21 @@
 			padding-right: 30rpx;
 			margin: 0 30rpx;
 			box-sizing: border-box;
-			padding-bottom: 75rpx;
+			padding-bottom: 50rpx;
 			border-radius: 16rpx;
 			margin-bottom: 30rpx;
 
 			.tit {
 				font-size: 34rpx;
 				font-weight: 800;
-				color: #17181A;
-				line-height: 114rpx;
+				color: #17181a;
+				padding-top: 38rpx;
+				margin-bottom: 38rpx;
 			}
 
 			.pro_list {
 				.peo_one:after {
-					content: '';
+					content: "";
 					height: 0;
 					clear: both;
 					overflow: hidden;
@@ -4150,15 +4344,14 @@
 								display: block;
 							}
 
-
 							.status {
 								width: 68rpx;
 								height: 36rpx;
-								background: #E6FAF0;
+								background: #e6faf0;
 								border-radius: 6rpx;
 								font-size: 22rpx;
 								font-weight: 500;
-								color: #20C657;
+								color: #20c657;
 								line-height: 36rpx;
 								float: right;
 								text-align: center;
@@ -4168,7 +4361,7 @@
 						.price {
 							font-size: 32rpx;
 							font-weight: 800;
-							color: #FF6040;
+							color: #ff6040;
 							line-height: 56rpx;
 						}
 
@@ -4187,11 +4380,11 @@
 							.zhuang {
 								width: 68rpx;
 								height: 36rpx;
-								background: #EBF8FF;
+								background: #ebf8ff;
 								border-radius: 6rpx;
 								font-size: 22rpx;
 								font-weight: 500;
-								color: #3EACF0;
+								color: #3eacf0;
 								line-height: 36rpx;
 								margin-right: 12rpx;
 								display: inline-block;
@@ -4201,9 +4394,9 @@
 							.other {
 								font-size: 22rpx;
 								font-weight: 500;
-								color: #7D7D80;
+								color: #7d7d80;
 								padding: 5rpx 14rpx;
-								background-color: #F5F5F5;
+								background-color: #f5f5f5;
 								margin-right: 12rpx;
 							}
 						}
@@ -4249,7 +4442,7 @@
 					font-size: 28rpx;
 					line-height: 44rpx;
 					padding-bottom: 30rpx;
-					border-bottom: 1rpx solid #F2F2F2;
+					border-bottom: 1rpx solid #f2f2f2;
 					margin-bottom: 26rpx;
 				}
 
@@ -4274,7 +4467,7 @@
 		.rules {
 			width: 650rpx;
 			height: 750rpx;
-			background: #FFFFFF;
+			background: #ffffff;
 			border-radius: 24rpx;
 			position: absolute;
 			top: 50%;
@@ -4287,7 +4480,7 @@
 			.title {
 				font-size: 34rpx;
 				font-weight: 800;
-				color: #19191A;
+				color: #19191a;
 				line-height: 114rpx;
 			}
 
@@ -4303,7 +4496,44 @@
 				}
 			}
 		}
-
+		.fixbom {
+			width: 100%;
+			height: 100rpx;
+			position: fixed;
+			bottom: 128rpx;
+			left: 0;
+			z-index: 500;
+			background: rgba(0, 0, 0, 0.8);
+			display: flex;
+			align-items: center;
+		
+			image {
+				width: 48rpx;
+				height: 48rpx;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+		
+			.txt {
+				color: #E6E6E6;
+				font-size: 30rpx;
+				margin-left: 74rpx;
+				margin-right: 162rpx;
+			}
+		
+			.fixbtn {
+				width: 156rpx;
+				height: 56rpx;
+				border-radius: 6rpx;
+				background: linear-gradient(270deg, #28C567, #81DB85);
+				text-align: center;
+				line-height: 56rpx;
+				color: #FFFFFF;
+				font-size: 28rpx;
+				padding: 0;
+			}
+		}
 		// im弹框
 		.talkbox {
 			padding: 50rpx 50rpx 0 50rpx;
@@ -4328,16 +4558,16 @@
 
 				.peoname {
 					.name {
-						color: #1F1F1F;
+						color: #1f1f1f;
 						font-size: 34rpx;
 						font-weight: bold;
 						margin-bottom: 18rpx;
 
 						text {
-							color: #7495BD;
+							color: #7495bd;
 							font-size: 22rpx;
 							padding: 6rpx 10rpx;
-							background-color: #F2F8FF;
+							background-color: #f2f8ff;
 							border-radius: 3rpx;
 						}
 					}
@@ -4356,7 +4586,7 @@
 				.li {
 					text-align: center;
 					width: 33%;
-					border-right: 1rpx solid #F0F0F2;
+					border-right: 1rpx solid #f0f0f2;
 
 					.litop {
 						color: #121212;
@@ -4396,18 +4626,17 @@
 				}
 
 				.talknow {
-					color: #FFFFFF;
-					background: linear-gradient(-270deg, #348aff, #6accff);
+					color: #ffffff;
+					background: linear-gradient(270deg, #28C567, #81DB85);
 				}
 
 				.talklate {
-					background-color: #edf5fa;
-					border: 1rpx solid #3eacf0;
-					color: #3eacf0;
+					background-color: #D5EDDF;
+					border: 1rpx solid #38916C;
+					color: #38916C;
 					margin-left: auto;
 				}
 			}
 		}
-
 	}
 </style>

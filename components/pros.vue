@@ -4,7 +4,7 @@
 			<!-- <navigator :url="`/pageA/content/content?id=${item.id}`" class="nav_to"> -->
 	
 			<view class="left">
-				<image :src="item.img" mode=""></image>
+				<image :src="item.img?item.img:item.image" mode=""></image>
 			</view>
 			<view class="right">
 				<view class="right-name">
@@ -47,7 +47,7 @@
 		margin-top: 31.87rpx;
 		.item {
 			//display: flex;
-			margin-bottom: 59.76rpx;
+			margin-bottom: 56rpx;
 			width: 100%;
 			display: flex;
 		
@@ -126,6 +126,7 @@
 					color: #FF6040;
 					font-size: 25.89rpx;
 					font-weight: 800;
+					margin-bottom: 2rpx;
 				}
 		
 				.right-msg {
@@ -148,7 +149,7 @@
 					}
 		
 					.jing {
-						background-color: #EBF8FF;
+						background-color: #EDF3FA;
 						color: #628BB9;
 					}
 				}

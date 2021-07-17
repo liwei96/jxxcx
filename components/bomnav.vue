@@ -43,32 +43,34 @@
 				weixin: false
 			}
 		},
-		mounted(){
-			if(this.projectid !== 0 || this.projectid == '') {
+		mounted() {
+			if (this.projectid !== 0 || this.projectid == '') {
 				this.register()
 			}
 			let that = this
 			this.pass = uni.getStorageSync('pass')
 			// this.num = uni.getStorageSync('total')
 			uni.onSocketMessage(function(res) {
-				if(res.data.indexOf('{') ===-1){
+				if (res.data.indexOf('{') === -1) {
 					return
 				}
 				let data = JSON.parse(res.data)
 				console.log(data)
-				if(data.action == 302) {
+				if (data.action == 302) {
 					that.sid = data.sid
-				}else if(data.action == 301) {
+				} else if (data.action == 301) {
 					if (String(data.fromUserName).length < 10) {
 						that.sid = data.fromUserName
-						if(uni.getStorageSync(String(data.fromUserName))) {
-							console.log(uni.setStorageSync(String(data.fromUserName)),(parseInt(uni.getStorageSync(String(data.fromUserName))) + 1))
-							uni.setStorageSync(String(data.fromUserName),parseInt(uni.getStorageSync(String(data.fromUserName))) + 1)
-						}else {
-							uni.setStorageSync(String(data.fromUserName),1)
+						if (uni.getStorageSync(String(data.fromUserName))) {
+							console.log(uni.setStorageSync(String(data.fromUserName)), (parseInt(uni
+								.getStorageSync(String(data.fromUserName))) + 1))
+							uni.setStorageSync(String(data.fromUserName), parseInt(uni.getStorageSync(String(data
+								.fromUserName))) + 1)
+						} else {
+							uni.setStorageSync(String(data.fromUserName), 1)
 						}
-						if(uni.getStorageSync('total') && uni.getStorageSync('total') != 'NaN') {
-							uni.setStorageSync('total',parseInt(uni.getStorageSync('total')))
+						if (uni.getStorageSync('total') && uni.getStorageSync('total') != 'NaN') {
+							uni.setStorageSync('total', parseInt(uni.getStorageSync('total')))
 							that.num = that.num + 1;
 						} else {
 							uni.setStorageSync('total', 1)
@@ -79,43 +81,45 @@
 			})
 		},
 		methods: {
-			register(){
+			register() {
 				let uuid = uni.getStorageSync('uuid')
 				let city = uni.getStorageSync('city')
 				let ip = uni.getStorageSync('ip')
 				let arr = getCurrentPages()
-				let url = arr[arr.length-1].route
+				let url = arr[arr.length - 1].route
 				let host = this.host
 				let pro = this.projectid
+					url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')
 				console.log(pro)
 				let pp = {
-				      controller: "Info",
-				      action: "register",
-				      params: {
-				        city: city,
-				        project: pro,
-				        ip: ip,
-				        url: url,
-				        uuid: uuid,
-				        host: host
-				      },
-				    };
+					controller: "Info",
+					action: "register",
+					params: {
+						city: city,
+						project: pro,
+						ip: ip,
+						url: url,
+						uuid: uuid,
+						host: host
+					},
+				};
 				uni.sendSocketMessage({
 					data: JSON.stringify(pp)
 				});
 			},
-			gotalk(){
+			gotalk() {
 				let id = String(this.sid)
-				if(uni.getStorageSync(id)){
+				if (uni.getStorageSync(id)) {
 					let num = uni.getStorageSync(id)
 					let total = uni.getStorageSync('total')
 					total = total - num
-					uni.setStorageSync('total',total)
+					uni.setStorageSync('total', total)
 					uni.removeStorageSync(id)
 				}
 				this.num = 0
+				let pid = this.projectid
 				uni.navigateTo({
-					url:'/pages/talk/talk?id='+id
+					url: '/pages/talk/talk?id=' + id + '&bid=' + pid
 				})
 			},
 			call() {
@@ -128,30 +132,97 @@
 				console.log(e)
 				let that = this
 				// #ifdef  MP-BAIDU
-				if(e.detail.errMsg == 'getPhoneNumber:fail auth deny') {
+				if (e.detail.errMsg == 'getPhoneNumber:fail auth deny') {
 					this.$emit('show', {
 						position: 103,
 						title: '预约看房',
 						isok: 0
 					})
-				}else{
-					uni.setStorageSync('pass',true)
-					this.pass = true
-					this.$emit('show', {
-						position: 103,
-						title: '预约看房',
-						isok: 1
-					})
+				} else {
+					swan.getLoginCode({
+						success: (res) => {
+							console.log(res.code);
+							uni.request({
+								url: "https://java.edefang.net/applets/jy/session_key/get",
+								method: "get",
+								data: {
+									code: res.code,
+								},
+								success: (res) => {
+									console.log(res);
+									uni.setStorageSync("openid", res.data.data.openid);
+									uni.setStorageSync("session", res.data.data
+										.session_key);
+									uni.request({
+										url: "https://java.edefang.net/applets/jy/decrypt",
+										data: {
+											ciphertext: e.detail.encryptedData,
+											iv: e.detail.iv,
+											sessionKey: res.data.data.session_key,
+										},
+										method: "POST",
+										header: {
+											"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+										},
+										success: (res) => {
+											console.log(res);
+											let tel = res.data.data.mobile;
+											uni.setStorageSync('phone', tel)
+											let openid = uni.getStorageSync(
+												'openid')
+											uni.setStorageSync('pass', true)
+											that.pass = true
+											
+											uni.request({
+												url: "https://java.edefang.net/applets/jy/login",
+												method: "POST",
+												header: {
+													"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+												},
+												data: {
+													phone: tel,
+													openid: openid,
+													bid: that.projectid,
+													uuid: uni
+														.getStorageSync(
+															"uuid"),
+													city: uni
+														.getStorageSync(
+															"city"),
+												},
+												success: (res) => {
+													console.log(
+														res);
+														that.$emit('show', {
+															position: 103,
+															title: '预约看房',
+															isok: 1
+														})
+													uni.setStorageSync(
+														"token",
+														res
+														.data
+														.data);
+												},
+											})
+										}
+									})
+
+								}
+							})
+						}
+					});
+
 				}
 				// #endif
 				// #ifdef  MP-WEIXIN
-				if(e.detail.errMsg != 'getPhoneNumber:ok') {
+				if (e.detail.errMsg != 'getPhoneNumber:ok') {
 					this.$emit('show', {
 						position: 103,
 						title: '预约看房',
 						isok: 0
 					})
-				}else{
+				} else {
 					uni.login({
 						provider: 'weixin',
 						success: function(res) {
@@ -186,8 +257,11 @@
 													openid: openid
 												},
 												success: (res) => {
-													uni.setStorageSync('token', res.data.token)
-													uni.setStorageSync('phone', tel)
+													uni.setStorageSync(
+														'token', res
+														.data.token)
+													uni.setStorageSync(
+														'phone', tel)
 													that.$emit('show', {
 														position: 103,
 														title: '预约看房',
@@ -201,7 +275,7 @@
 							})
 						}
 					});
-					uni.setStorageSync('pass',true)
+					uni.setStorageSync('pass', true)
 				}
 				// #endif
 			},
@@ -214,7 +288,7 @@
 			}
 		},
 		watch: {
-			projectid(news,val) {
+			projectid(news, val) {
 				if (news != val && val == '') {
 					this.register()
 				}
@@ -283,17 +357,21 @@
 				margin-right: 6rpx;
 			}
 		}
+
 		.btn1 {
 			margin-left: 22rpx;
 		}
+
 		.btn2 {
 			background: linear-gradient(270deg, #28C567, #81DB85);
 		}
+
 		button {
 			padding: 0;
 			margin-left: 0;
 			border: 0;
 		}
+
 		button:after {
 			border: 0;
 		}

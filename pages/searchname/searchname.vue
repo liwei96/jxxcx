@@ -7,10 +7,13 @@
 			<text>搜索楼盘</text>
 		</view> -->
 		<view class="box">
-			<view class="top-input">
-				<image src="../../static/other/searchname-icon.png" mode=""></image>
-				<input type="text" value="" placeholder="请输入楼盘名称" placeholder-class="istxt" v-model="name" />
+			<view class="top-bx">
+				<view class="top-input">
+					<image src="../../static/other/searchname-icon.png" mode=""></image>
+					<input type="text" value="" placeholder="请输入楼盘名称" placeholder-class="istxt" v-model="name" />
+				</view>
 			</view>
+			
 			<view class="hots">
 				<view class="tit">
 					<image src="../../static/other/searchname-hot.png" mode=""></image>
@@ -23,13 +26,13 @@
 						</view>
 						<view class="icons">
 							<view class="icon">
-								住宅
+								{{item.type}}
 							</view>
 							<view class="icon">
-								住宅
+								{{item.decorate}}
 							</view>
-							<view class="icon">
-								住宅
+							<view class="icon" v-if="item.railway">
+								{{item.railway}}
 							</view>
 						</view>
 						<view class="price">
@@ -39,52 +42,24 @@
 					</view>
 				</view>
 			</view>
-			<view class="hots">
+			<view class="hots looks">
 				<view class="tit">
 					<image src="../../static/other/searchname-eye.png" mode=""></image>
 					<text>大家都在看</text>
 				</view>
 				<view class="content">
-					<view class="item">
-						<text class="key active">1</text>
+					<view class="item" v-for="(item,key) in sees" :key="key" @tap="go(item.id,item.name)">
+						<text class="key active">{{key+1}}</text>
 						<view class="con">
 							<view class="name">
-								融信杭州世纪
+								{{item.name}}
 							</view>
 							<view class="msg">
-								公寓 | 杭州-滨江 | 78-132m²
+								{{item.type}} | {{item.city}}-{{item.country}} | {{item.area}}m²
 							</view>
 						</view>
 						<view class="price">
-							26800<text>元/m²</text>
-						</view>
-					</view>
-					<view class="item">
-						<text class="key active">1</text>
-						<view class="con">
-							<view class="name">
-								融信杭州世纪
-							</view>
-							<view class="msg">
-								公寓 | 杭州-滨江 | 78-132m²
-							</view>
-						</view>
-						<view class="price">
-							26800<text>元/m²</text>
-						</view>
-					</view>
-					<view class="item">
-						<text class="key active">1</text>
-						<view class="con">
-							<view class="name">
-								融信杭州世纪
-							</view>
-							<view class="msg">
-								公寓 | 杭州-滨江 | 78-132m²
-							</view>
-						</view>
-						<view class="price">
-							26800<text>元/m²</text>
+							{{item.price}}<text>元/m²</text>
 						</view>
 					</view>
 				</view>
@@ -118,7 +93,8 @@
 				name: '',
 				hots: [],
 				lists: [],
-				city: 1
+				city: 1,
+				sees: []
 			}
 		},
 		methods: {
@@ -131,6 +107,33 @@
 				let token = uni.getStorageSync('token')
 				let city = this.city
 				uni.request({
+					url: that.javaserve + '/applets/jy/search/recommends',
+					method: 'GET',
+					data: {
+						city: city,
+						other: uni.getStorageSync('other'),
+						uuid: uni.getStorageSync('uuid')
+					},
+					success: (res) => {
+						console.log(res)
+						that.hots = res.data.data.searches
+						that.sees = res.data.data.us_see
+						//#ifdef MP-BAIDU
+						swan.setPageInfo({
+							title: '家园新房-楼盘搜索',
+							keywords: '家园新房-楼盘搜索',
+							description: '家园新房-楼盘搜索',
+							success: res => {
+								console.log('setPageInfo success', res);
+							},
+							fail: err => {
+								console.log('setPageInfo fail', err);
+							}
+						})
+						//#endif
+					}
+				})
+				uni.request({
 					url: that.apiserve + '/jy/us/search',
 					method: 'GET',
 					data: {
@@ -140,21 +143,7 @@
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
-						console.log(res)
-						that.hots = res.data.hot_search
-						//#ifdef MP-BAIDU
-						swan.setPageInfo({
-							title: '允家新房-楼盘搜索',
-							keywords: '允家新房-楼盘搜索',
-							description: '允家新房-楼盘搜索',
-							success: res => {
-								console.log('setPageInfo success', res);
-							},
-							fail: err => {
-								console.log('setPageInfo fail', err);
-							}
-						})
-						//#endif
+						// that.hots = res.data.hot_search
 					}
 				})
 			},
@@ -227,42 +216,55 @@
 
 	.box {
 		padding: 0 30rpx;
-
-		.top-input {
-			height: 64rpx;
-			border-radius: 32rpx;
-			background-color: #F5F5F5;
+		.top-bx {
+			width: 690rpx;
+			padding: 0 30rpx;
+			position: fixed;
+			z-index: 10;
+			top: 0;
+			height: 88rpx;
 			display: flex;
 			align-items: center;
-			margin-bottom: 50rpx;
-
-			image {
-				width: 36rpx;
-				height: 36rpx;
-				margin-right: 10rpx;
-				margin-left: 16rpx;
-			}
-
-			.istxt {
-				color: #969799;
-				font-size: 28rpx;
-			}
-
-			input {
-				font-size: 28rpx;
-				width: 86%;
+			background-color: #fff;
+			left: 0;
+			.top-input {
+				height: 64rpx;
+				border-radius: 32rpx;
+				background-color: #F5F5F5;
+				display: flex;
+				align-items: center;
+				width: 100%;
+			
+				image {
+					width: 36rpx;
+					height: 36rpx;
+					margin-right: 10rpx;
+					margin-left: 16rpx;
+				}
+			
+				.istxt {
+					color: #969799;
+					font-size: 28rpx;
+				}
+			
+				input {
+					font-size: 28rpx;
+					width: 86%;
+				}
 			}
 		}
+		
 
 		.hots {
+			margin-top: 124rpx;
 			.tit {
-				margin-bottom: 42rpx;
+				margin-bottom: 38rpx;
 
 				image {
 					width: 36rpx;
 					height: 36rpx;
 					margin-right: 20rpx;
-					margin-bottom: -2rpx;
+					margin-bottom: -4rpx;
 				}
 
 				text {
@@ -290,8 +292,8 @@
 						font-size: 28rpx;
 						font-weight: bold;
 						color: #AA6231;
-						padding-top: 20rpx;
-						margin-bottom: 10rpx;
+						padding-top: 22rpx;
+						margin-bottom: 12rpx;
 					}
 
 					.icons {
@@ -316,6 +318,8 @@
 
 						text {
 							font-size: 26rpx;
+							position: relative;
+							top: -2rpx;
 						}
 					}
 
@@ -336,7 +340,7 @@
 					display: flex;
 					align-items: center;
 					border-bottom: 1rpx solid #F2F2F2;
-					padding-bottom: 30rpx;
+					padding-bottom: 28rpx;
 					margin-bottom: 30rpx;
 
 					.key {
@@ -356,7 +360,7 @@
 							color: #313233;
 							font-size: 32rpx;
 							font-weight: bold;
-							margin-bottom: 22rpx;
+							margin-bottom: 20rpx;
 						}
 
 						.msg {
@@ -382,18 +386,20 @@
 				}
 			}
 		}
+		.looks {
+			margin-top: 42rpx;
+		}
 	}
 
 	.upbox {
 		width: 96%;
 		padding-left: 4%;
 		position: fixed;
-		top: 220rpx;
-		min-height: 60vh;
-		max-height: 83vh;
+		top: 74rpx;
+		height: 92vh;
 		background-color: #FFFFFF;
 		overflow: auto;
-
+		padding-top: 50rpx;
 		.tit {
 			color: #333436;
 			font-size: 28rpx;

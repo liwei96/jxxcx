@@ -70,7 +70,7 @@
     },
     "mp-baidu" : {
         "usingComponents" : true,
-        "appid" : "23164853",
+        "appid" : "24396449",
         "setting" : {
             "urlCheck" : false
         }

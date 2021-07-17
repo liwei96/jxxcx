@@ -9,18 +9,18 @@
 			</navigator>
 		</view> -->
 		<view class="top_img">
-			<image :src="one.big" mode="" @tap="showbig(one.big)"></image>
+			<image :src="one.small_img" mode="" :data-src="one.small_img" @tap="showbig"></image>
 		</view>
 		<view class="name_box">
-			<view class="name">{{one.title}} <text>{{one.state}}</text></view>
+			<view class="name">{{one.title}} <text>{{one.sale_state}}</text></view>
 			<view class="price">约 <text>{{one.price}}</text>万/套</view>
 			<view class="jian_box">
 				<view class="line pric"> <text>单价：</text>{{one.single_price}}<text class="pri">元/m²</text></view>
 				<view class="line"> <text>建面：</text>{{one.area}}m²</view>
 				<view class="line"> <text>类型：</text>{{one.type}}</view>
-				<view class="line"> <text>层高：</text>{{one.height}}</view>
+				<view class="line"> <text>层高：</text>{{one.floor_height}}</view>
 			</view>
-			<view class="tese_one"> <text>特色：</text>{{one.special}}</view>
+			<view class="tese_one"> <text>特色：</text>{{one.feature}}</view>
 			<view class="address">
 				<view class="left" @tap="goaround">
 					<image src="../../static/address.png" mode="" class="icon_ad"></image>
@@ -30,15 +30,16 @@
 				<image src="../../static/content/right.png" mode="" class="right"></image>
 			</view>
 			<view class="bot">
-				<button open-type="getPhoneNumber" hover-class="none" class="dijia" @getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+咨询楼盘底价',105,'咨询楼盘底价')"
-				 v-if="!pass&&!weixin">
+				<button open-type="getPhoneNumber" hover-class="none" class="dijia"
+					@getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+咨询楼盘底价',105,'咨询楼盘底价')"
+					v-if="!pass&&!weixin">
 					查底价
 				</button>
 				<view class="dijia" @tap="baoMing(one.bid,'楼盘户型详情页+咨询楼盘底价',105,'咨询楼盘底价',1)" v-if="pass||weixin">
 					查底价
 				</view>
-				<button open-type="getPhoneNumber" class="zixun" hover-class="none" @getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+咨询详细户型',97,'咨询户型底价')"
-				 v-if="!pass&&!weixin">
+				<button open-type="getPhoneNumber" class="zixun" hover-class="none"
+					@getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+咨询详细户型',97,'咨询户型底价')" v-if="!pass&&!weixin">
 					首付贷款明细
 				</button>
 				<view class="zixun" @tap="baoMing(one.bid,'楼盘户型详情页+咨询详细户型',97,'贷款方案咨询',1)" v-if="pass||weixin">
@@ -49,7 +50,7 @@
 		<view class="bg_hui"></view>
 
 		<view class="zixunshi">
-			<view class="tit">允家咨询师</view>
+			<view class="tit">家园咨询师</view>
 			<view class="tese">
 				<view class="te_01">
 					<image src="../../static/content/zhuan.png" mode=""></image>
@@ -65,22 +66,24 @@
 				</view>
 			</view>
 			<view class="ye_one">
-				<image :src="staff.head_img" mode="" class="head_img"></image>
+				<image :src="staff.image" mode="" class="head_img"></image>
 				<view class="peo">
 					<view class="top">
 						{{staff.name}}
-						<text>满意度{{staff.num}}分</text>
+						<text>满意度5分</text>
 					</view>
 					<view class="bottom">
 						了解房源特色，专业挑好房
 					</view>
 				</view>
 				<view class="bo_tel">
-					<button open-type="getPhoneNumber" hover-class="none" @getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+咨询服务',104,'咨询服务')"
-					 class="bo_zi" v-if="!pass&&!weixin">
+					<button open-type="getPhoneNumber" hover-class="none"
+						@getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+咨询服务',104,'咨询服务')" class="bo_zi"
+						v-if="!pass&&!weixin">
 						<image src="../../static/content/zixun.png" mode=""></image>
 					</button>
-					<image src="../../static/content/zixun.png" mode="" v-if="pass||weixin" class="bo_zi" @tap="baoMing(one.bid,'楼盘户型详情页+咨询服务',104,'咨询服务',1)"></image>
+					<image src="../../static/content/zixun.png" mode="" v-if="pass||weixin" class="bo_zi"
+						@tap="baoMing(one.bid,'楼盘户型详情页+咨询服务',104,'咨询服务',1)"></image>
 					<image src="../../static/content/tel.png" mode="" @tap="boTel(telphone)"></image>
 				</view>
 			</view>
@@ -104,38 +107,38 @@
 			</view>
 			<view class="youhui_01">
 				<text class="text">
-					售楼处专供允家平台客户
+					售楼处专供家园平台客户
 					<text class="jie">
-						（{{num.dead_line}}截止）
+						（{{deadline}}截止）
 					</text>
 				</text>
 				<view class="right">
-					<button open-type="getPhoneNumber" class="ling_btn" hover-class="none" @getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+领取优惠',94,'领取优惠')"
-					 v-if='!pass&&!weixin'>
+					<button open-type="getPhoneNumber" class="ling_btn" hover-class="none"
+						@getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+领取优惠',94,'领取优惠')" v-if='!pass&&!weixin'>
 						立即领
 					</button>
 					<view class="ling_btn" v-if="pass||weixin" @tap="baoMing(one.bid,'楼盘户型详情页+领取优惠',94,'领取优惠',1)">
 						立即领
 					</view>
-					<text>{{num.receive_num}}人已领</text>
+					<text>{{received_coupon}}人已领</text>
 				</view>
 			</view>
 			<view class="youhui_02">
 				<text class="text">
 					免费专车1对1服务限时券
 					<text class="jie">
-						（剩余{{shengnum}}张）
+						（剩余{{rest_car}}张）
 					</text>
 				</text>
 				<view class="right">
-					<button class="ling_btn" open-type="getPhoneNumber" hover-class="none" @getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+免费领取',95,'免费领取')"
-					 v-if="!pass&&!weixin">
+					<button class="ling_btn" open-type="getPhoneNumber" hover-class="none"
+						@getphonenumber="getPhoneNumber($event,one.bid,'楼盘户型详情页+免费领取',95,'免费领取')" v-if="!pass&&!weixin">
 						免费领
 					</button>
 					<view class="ling_btn" v-if="pass||weixin" @tap="baoMing(one.bid,'楼盘户型详情页+免费领取',95,'免费领取',1)">
 						免费领
 					</view>
-					<text>{{num.remain_num}}人已领</text>
+					<text>{{received_car}}人已领</text>
 				</view>
 			</view>
 		</view>
@@ -151,7 +154,7 @@
 					<view class="hu_one" v-for="item in other_rooms" :key="item.id">
 						<navigator :url="`../hudetail/hudetail?id=${item.id}`">
 							<view class="left_pro">
-								<image :src="item.small" mode=""></image>
+								<image :src="item.small_img" mode=""></image>
 							</view>
 							<view class="right_pro">
 								<view class="name_box_box">
@@ -168,7 +171,7 @@
 								</view>
 								<view class="price">
 									<text class="left">总价：</text>
-									<text class="right">约 <text class="em">{{item.price}}</text>万/套</text>
+									<text class="right">约 <text class="em">{{item.total_price}}</text>万/套</text>
 								</view>
 							</view>
 						</navigator>
@@ -192,11 +195,13 @@
 			<seebottom :recommends="recommends"></seebottom>
 		</view>
 		<bottom :remark="'项目户型详情页+预约看房'" :point="103" :title="'预约看房'" :pid="one.bid" :telphone="telphone"></bottom>
-		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true" @hide="setiscode">
-			<sign :type="codenum" @closethis="setpop" :title="title_e" :pid="pid_d" :remark="remark_k" :position="position_n"
-			 :isok="isok"></sign>
+		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"
+			@hide="setiscode">
+			<sign :type="codenum" @closethis="setpop" :title="title_e" :pid="pid_d" :remark="remark_k"
+				:position="position_n" :isok="isok"></sign>
 		</wyb-popup>
-		<wyb-popup ref="popup1" type="center" height="1000" width="700" radius="0" :showCloseIcon="false" @hide="setiscode">
+		<wyb-popup ref="popup1" type="center" height="1000" width="700" radius="0" :showCloseIcon="false"
+			@hide="setiscode">
 			<image :src="url" mode="" class="bigimg" @tap="hideimg"></image>
 		</wyb-popup>
 	</view>
@@ -233,7 +238,11 @@
 				isok: 0,
 				shengnum: "123",
 				pass: false,
-				weixin: false
+				weixin: false,
+				deadline: '',
+				received_coupon: 0,
+				received_car: 0,
+				rest_car: 0
 			};
 		},
 		onLoad(option) {
@@ -250,9 +259,16 @@
 			hideimg() {
 				this.$refs.popup1.hide()
 			},
-			showbig(url) {
-				this.url = url
-				this.$refs.popup1.show()
+			showbig(e) {
+				let that = this
+				let imgsArray = [];
+					imgsArray[0] = e.target.dataset.src;
+				// let currentUrl = e.target.dataset.src
+				//预览图片
+				uni.previewImage({
+					urls: imgsArray,
+					current: 0
+				});
 			},
 			goaround() {
 				let id = this.one.bid
@@ -275,18 +291,21 @@
 					let session = uni.getStorageSync('session')
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res, 'session')
-								let tel = res.data.mobile
+								console.log(res);
+								let tel = res.data.data.mobile;
 								uni.setStorageSync('phone', tel)
 								let openid = uni.getStorageSync('openid')
 								that.tel = tel;
@@ -296,36 +315,66 @@
 					} else {
 						console.log(session, "没保存session")
 						swan.getLoginCode({
-											success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
-												that.$refs.sign.tel = tel
-												that.baoMing(pid, remark, point, title, 1)
+												let openid = uni.getStorageSync(
+													'openid')
+												// that.$refs.sign.tel = tel
+												that.baoMing(pid, remark, point,
+													title, 1)
+												uni.request({
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
+													data: {
+														bid: one.bid,
+														phone: tel,
+														openid: openid,
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
+													},
+													success: (res) => {
+														console.log(
+															res);
+														uni.setStorageSync(
+															"token",
+															res
+															.data
+															.data);
+													},
+												})
 											}
 										})
 
@@ -377,27 +426,39 @@
 											let data = JSON.parse(res.data.message)
 											let tel = data.purePhoneNumber
 											uni.setStorageSync('phone', tel)
-											let openid = uni.getStorageSync('openid')
+											let openid = uni.getStorageSync(
+												'openid')
 											let token = uni.getStorageSync('token')
 											if (!token) {
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												uni.request({
 													url: "https://api.edefang.net/applets/login",
 													method: 'GET',
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														other: uni
+															.getStorageSync(
+																'other'),
+														uuid: uni
+															.getStorageSync(
+																'uuid')
 													},
 													success: (res) => {
-														console.log(res)
-														uni.setStorageSync('token', res.data.token)
+														console.log(
+															res)
+														uni.setStorageSync(
+															'token',
+															res
+															.data
+															.token)
 													}
 												})
 											}
 											that.$refs.sign.tel = tel
-											that.baoMing(pid, remark, point, title, 1)
+											that.baoMing(pid, remark, point, title,
+												1)
 										}
 									})
 
@@ -439,7 +500,7 @@
 				let other = uni.getStorageSync('other')
 				let token = uni.getStorageSync('token')
 				uni.request({
-					url: this.apiserve + "/applets/house/one",
+					url: this.javaserve + "/applets/jy/house_type",
 					data: {
 						id: id,
 						other: other,
@@ -447,27 +508,28 @@
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
-					method: "GET",
+					method: "get",
 					success: (res) => {
-						if (res.data.code == 200) {
-							this.one = res.data.one,
-								this.common = res.data.common;
-							this.other_rooms = res.data.other_rooms;
-							this.recommends = res.data.recommends;
-							this.num = res.data.num;
-							this.staff = res.data.common.staff;
-							this.telphone = res.data.common.phone;
-
-							let id = uni.getStorageSync("sheng_num" + res.data.one.bid);
+						if (res.data.status == 200) {
+							this.one = res.data.data.house_type
+							this.other_rooms = res.data.data.others;
+							this.recommends = res.data.data.recommends;
+							this.staff = res.data.data.people;
+							this.telphone = res.data.data.phone;
+							this.deadline = res.data.data.deadline;
+							this.received_coupon = res.data.data.received_coupon
+							this.received_car = res.data.data.received_car
+							this.rest_car = res.data.data.rest_car
+							let id = uni.getStorageSync("sheng_num" + res.data.data.house_type.bid);
 							if (id) {
 								this.shengnum = id;
 							} else {
 								this.shengnum = this.shengnum;
 							}
-
-
+				
+				
 							// #ifdef MP-BAIDU
-							let header = res.data.common.header;
+							let header = res.data.data.header;
 							swan.setPageInfo({
 								title: header.title,
 								keywords: header.keywords,
@@ -481,7 +543,7 @@
 								}
 							})
 							// #endif
-
+				
 							uni.hideLoading();
 						}
 					}
@@ -557,12 +619,13 @@
 			height: 538rpx;
 			width: 100%;
 			background-color: #fff;
-			padding-top: 50rpx;
+			padding-top: 46rpx;
 
 			.name {
 				font-size: 40rpx;
 				font-weight: 800;
 				color: #17181A;
+				display: flex;
 
 				// margin-top: 50rpx;
 				text {
@@ -577,6 +640,7 @@
 					display: inline-block;
 					text-align: center;
 					margin-left: 24rpx;
+					margin-top: 10rpx;
 				}
 			}
 
@@ -584,7 +648,7 @@
 				font-size: 24rpx;
 				font-weight: 500;
 				color: #FE582F;
-				line-height: 74rpx;
+				line-height: 70rpx;
 
 				text {
 					font-size: 32rpx;
@@ -618,11 +682,13 @@
 						color: #7D7E80;
 					}
 				}
+
 				.pric {
 					color: #FF5747;
 					font-size: 30rpx;
 					font-weight: bold;
 					line-height: 48rpx;
+
 					.pri {
 						font-size: 24rpx;
 						color: #FF5747;
@@ -675,7 +741,7 @@
 						text-overflow: ellipsis;
 						white-space: nowrap;
 						display: inline-block;
-						line-height: 92rpx;
+						line-height: 88rpx;
 					}
 
 				}
@@ -735,7 +801,7 @@
 				font-size: 34rpx;
 				font-weight: 800;
 				color: #17181A;
-				line-height: 114rpx;
+				line-height: 110rpx;
 			}
 
 			.tese:after {
@@ -749,7 +815,7 @@
 
 			.tese {
 				width: 100%;
-				margin-bottom: 50rpx;
+				margin-bottom: 48rpx;
 
 				view {
 					font-size: 26rpx;
@@ -791,6 +857,7 @@
 				width: 100%;
 				margin-bottom: 50rpx;
 				display: flex;
+				
 
 				.head_img {
 					width: 80rpx;
@@ -864,7 +931,7 @@
 
 			.hu_fen {
 				padding-bottom: 30rpx;
-
+				border-top: 1rpx solid #f7f7f7;
 				.tit {
 					font-size: 34rpx;
 					font-weight: bold;
@@ -912,6 +979,7 @@
 					width: 32rpx;
 					height: 32rpx;
 					margin-left: 15rpx;
+					margin-bottom: -4rpx;
 				}
 			}
 
@@ -1041,7 +1109,7 @@
 				.hu_one {
 					padding-bottom: 28rpx;
 					border-bottom: 1rpx solid #F2F2F2;
-					padding-top: 30rpx;
+					padding-top: 18rpx;
 
 					.left_pro {
 						width: 220rpx;
@@ -1068,6 +1136,8 @@
 								font-weight: bold;
 								color: #323233;
 								line-height: 40rpx;
+								position: relative;
+								top: -4rpx;
 							}
 
 							.status {
@@ -1145,7 +1215,9 @@
 
 					}
 				}
-
+				.hu_one:nth-last-of-type(1) {
+					border: 0;
+				}
 				.zanwu {
 					font-size: 24rpx;
 					font-weight: 500;
@@ -1161,6 +1233,7 @@
 			background-color: #FFFFFF;
 			padding: 0 30rpx;
 			padding-bottom: 140rpx;
+
 			.tit {
 				color: #19191A;
 				font-size: 34rpx;

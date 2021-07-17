@@ -9,6 +9,7 @@ App.mpType = 'app'
 Vue.prototype.apiserve = 'https://api.edefang.net'
 Vue.prototype.putserve = 'https://ll.edefang.net/'
 Vue.prototype.dianserve = 'https://api.edefang.net/'
+Vue.prototype.javaserve = 'https://java.edefang.net/'
 Vue.prototype.host = 'm.jy1980.com'
 
 Vue.prototype.login = function(e,that){

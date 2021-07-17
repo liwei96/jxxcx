@@ -30,7 +30,7 @@
 				uuid = timestamp
 			}
 			let socket = await uni.connectSocket({
-				url: 'wss://ws.edefang.net?uuid=' + uuid,
+				url: 'wss://ws.jy1980.com?uuid=' + uuid,
 				complete: ()=> {}
 			});
 			console.log(socket)
@@ -88,6 +88,7 @@
 			},
 			async openConnection() {
 				// 打开连接
+				clearInterval(this.timeoutObj);
 				uni.closeSocket(); // 确保已经关闭后再重新打开
 				let uuid = uni.getStorageSync('uuid')
 				if (!uuid) {
@@ -106,7 +107,7 @@
 				}
 				
 				let socket = await uni.connectSocket({
-								url: 'wss://ws.edefang.net?uuid=' + uuid,
+								url: 'wss://ws.jy1980.com?uuid=' + uuid,
 								complete: ()=> {}
 							});
 							this.$store.state.socket = socket

@@ -9,10 +9,11 @@
 			</navigator>
 		</view> -->
 		<view class="tit">
-			允家在线咨询师帮您解答
+			家园在线咨询师帮您解答
 		</view>
 		<view class="da_box">
-			<textarea placeholder="在这里输入您的问题" class="text_box" v-model="text" maxlength="50" placeholder-style="color:#7D7E80;fontSize:30rpx;">
+			<textarea placeholder="在这里输入您的问题" class="text_box" v-model="text" maxlength="50"
+				placeholder-style="color:#7D7E80;fontSize:30rpx;">
 			</textarea>
 			<view class="num_range">
 				{{text.length}}/50
@@ -58,46 +59,58 @@
 						that.SendTiwen()
 					} else {
 						swan.getLoginCode({
-											success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												that.tel = tel
 												uni.request({
-													url: "https://api.edefang.net/applets/login",
-													method: 'GET',
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
 													},
 													success: (res) => {
-														uni.setStorageSync('token', res.data.token)
+														console.log(res);
+														uni.setStorageSync(
+															"token",
+															res.data
+															.data);
 														that.SendTiwen()
 													}
 												})
@@ -154,7 +167,8 @@
 												let data = JSON.parse(res.data.message)
 												let tel = data.purePhoneNumber
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												that.tel = tel
 												uni.request({
 													url: "https://api.edefang.net/applets/login",
@@ -162,11 +176,18 @@
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														other: uni
+															.getStorageSync(
+																'other'),
+														uuid: uni
+															.getStorageSync(
+																'uuid')
 													},
 													success: (res) => {
-														uni.setStorageSync('token', res.data.token)
+														uni.setStorageSync(
+															'token',
+															res.data
+															.token)
 														that.SendTiwen()
 													}
 												})

@@ -27,7 +27,7 @@
 				</view>
 				<view class="item">
 					<view class="tit">
-						<text>20</text>千万业绩
+						<text>2</text>千万业绩
 					</view>
 					<view class="msg">
 						人均100万业绩
@@ -409,6 +409,9 @@
 				</view>
 			</view>
 		</view>
+		<view class="tishi">
+			投资有风险，加盟需谨慎
+		</view>
 		<view class="titmsg">
 			<view class="big">
 				JOIN US
@@ -462,7 +465,7 @@
 				</view>
 			</view>
 		</view>
-		<view class="img">
+		<view class="img" v-if="false">
 			<!-- <image src="../../static/other/alliance-code.jpg" mode=""></image v-if="false">
 			<view class="sao" v-if="false">
 				扫码加盟官方微信号
@@ -552,9 +555,9 @@
 			that = this
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-城市加盟',
-				keywords: '允家新房-城市加盟',
-				description: '允家新房-城市加盟',
+				title: '家园新房-城市加盟',
+				keywords: '家园新房-城市加盟',
+				description: '家园新房-城市加盟',
 				success: res => {
 					console.log('setPageInfo success', res);
 				},
@@ -628,6 +631,7 @@
 <style lang="less">
 	page{
 		background: #FFFFFF;
+		padding-bottom: 100rpx;
 	}
 	.toptitle {
 		color: #17181A;
@@ -1028,7 +1032,19 @@
 			}
 		}
 	}
-
+	.tishi {
+		width: 520rpx;
+		height: 80rpx;
+		border-radius: 8rpx;
+		border: 1rpx solid #FF0000;
+		text-align: center;
+		line-height: 80rpx;
+		margin: 0 auto;
+		background-color: #FFF7F7;
+		color: #FF0000;
+		margin-bottom: 94rpx;
+		font-size: 30rpx;
+	}
 	.form {
 		margin-bottom: 80rpx;
 

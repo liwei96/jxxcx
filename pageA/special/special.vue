@@ -645,7 +645,7 @@
 					position: absolute;
 					left: 50%;
 					margin-left: -95.61rpx;
-					top: -31rpx;
+					top: -22rpx;
 					width: 195.21rpx;
 					height: 155.37rpx;
 					border-radius: 16rpx;
@@ -691,26 +691,27 @@
 				}
 
 				.up {
-					width: 221.11rpx;
-					height: 159.36rpx;
-					background: linear-gradient(-45deg, #F5243D 0%, #FF907F 100%);
+					width: 222rpx;
+					height: 150rpx;
+					background: url(../static/special/bg.jpg);
+					background-size: 100%;
 					border-radius: 0 0 23.9rpx 23.9rpx;
 					text-align: center;
 					position: absolute;
 					bottom: -43.82rpx;
 
 					.topmsg {
+						margin-top: 8rpx;
 						margin-bottom: 7.96rpx;
-						margin-top: 7.96rpx;
 
 						.small {
 							color: #FFFFFF;
-							font-size: 23.9rpx;
+							font-size: 24rpx;
 						}
 
 						.big {
 							color: #FFFFFF;
-							font-size: 47.8rpx;
+							font-size: 40rpx;
 							font-weight: bold;
 						}
 					}

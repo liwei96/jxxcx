@@ -9,10 +9,10 @@
 			<input type="text" value="" placeholder="搜搜你想要了解的房产知识吧" placeholder-class="txt" v-model="name" @input="sou" />
 		</view>
 		<view class="box">
-			<view class="hot-tit">
+			<view class="hot-tit" v-if="false">
 				热门关键词
 			</view>
-			<view class="hot-content">
+			<view class="hot-content" v-if="false">
 				<view>新房</view>
 				<view>买房能力</view>
 				<view>摇号</view>
@@ -124,7 +124,7 @@
 			},
 			go(id) {
 				uni.navigateTo({
-					url: "/pages/article/article?id=" + id
+					url: "/pages/info/info?id=" + id
 				})
 			},
 			back() {
@@ -136,24 +136,20 @@
 				let token = uni.getStorageSync('token')
 				let city = this.city
 				uni.request({
-					url: that.apiserve + '/jy/article/recommends',
-					method: 'GET',
-					data: {
+					url: that.javaserve + "/applets/jy/article/recommends",
+					method: "GET",
+					data:{
 						city: city,
-						token: token,
-						limit: 5,
-						page: 1,
-						other: uni.getStorageSync('other'),
-						uuid: uni.getStorageSync('uuid')
+						limit: 5
 					},
 					success: (res) => {
 						console.log(res)
-						that.list = res.data.recommends
+						that.list = res.data.data
 						//#ifdef MP-BAIDU
 						swan.setPageInfo({
-							title: '允家新房-特色楼盘',
-							keywords: '允家新房-特色楼盘',
-							description: '允家新房-特色楼盘',
+							title: '家园新房-文章搜索',
+							keywords: '家园新房-文章搜索',
+							description: '家园新房-文章搜索',
 							success: res => {
 								console.log('setPageInfo success', res);
 							},
@@ -217,6 +213,7 @@
 
 	.box {
 		padding: 0 30rpx;
+		padding-top: 48rpx;
 	}
 
 	.hot-tit {

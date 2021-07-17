@@ -60,17 +60,17 @@
 		},
 		onLoad(option){
 			this.project_id = option.id;
-			this.getData(option.id);
+			this.getinfo(option.id);
 		},
 		methods:{
 			setiscode(){
 				this.codenum = 0
 			},
-			getData(id){
+			getinfo(id) {
 				let other = uni.getStorageSync('other')
 				let token = uni.getStorageSync('token')
 				uni.request({
-					url:this.apiserve+"/applets/house/listing",
+					url:this.javaserve+"applets/jy/building/house_types",
 				    data:{
 						id:id,
 						other: uni.getStorageSync('other'),
@@ -79,12 +79,12 @@
 					},
 					method:"GET",
 					success: (res) => {
-						if(res.data.code==200){
-							console.log(res);
-							this.other_rooms = res.data.other_rooms;
-							this.telphone = res.data.common.phone;
+						console.log(res);
+						if(res.data.status == 200) {
+							this.other_rooms = res.data.data.house_types
+							this.telphone = res.data.data.phone
 							// #ifdef MP-BAIDU
-							let  header = res.data.common.header;
+							let  header = res.data.data.header;
 							    swan.setPageInfo({
 									  title:header.title,
 									  keywords:header.keywords,
@@ -100,7 +100,7 @@
 						}
 					}
 				})
-			}
+			},
 		}
 	}
 </script>

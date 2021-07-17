@@ -63,9 +63,9 @@
 			},4000)
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-我的联系',
-				keywords: '允家新房-我的联系',
-				description: '允家新房-我的联系',
+				title: '家园新房-我的联系',
+				keywords: '家园新房-我的联系',
+				description: '家园新房-我的联系',
 				success: res => {
 					console.log('setPageInfo success', res);
 				},
@@ -173,6 +173,9 @@
 			});
 		},
 		beforeDestroy() {
+			clearInterval(this.timer)
+		},
+		onHide() {
 			clearInterval(this.timer)
 		}
 	}

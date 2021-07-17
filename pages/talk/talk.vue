@@ -13,14 +13,14 @@
 			let pro = options.bid || 0
 			let uuid = uni.getStorageSync('uuid')
 			let staffid = options.id
-			let url = `https://m.jy1980.com/chengdu/cxtalk/${uuid}/${staffid}/${pro},${city}?uuid=${uuid}`
+			let url = `https://m.jy1980.com/chengdu/jytalk/${uuid}/${staffid}/${pro},${city}?uuid=${uuid}`
 			this.url = url
 			console.log(url)
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-im聊天',
-				keywords: '允家新房-im聊天',
-				description: '允家新房-im聊天',
+				title: '家园新房-im聊天',
+				keywords: '家园新房-im聊天',
+				description: '家园新房-im聊天',
 				success: res => {
 					console.log('setPageInfo success', res);
 				},

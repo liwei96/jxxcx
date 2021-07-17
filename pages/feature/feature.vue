@@ -172,9 +172,9 @@
 						that.city = res.data.data.city_info.current.short
 						//#ifdef MP-BAIDU
 						swan.setPageInfo({
-							title: '允家新房-特色楼盘',
-							keywords: '允家新房-特色楼盘',
-							description: '允家新房-特色楼盘',
+							title: '家园新房-特色楼盘',
+							keywords: '家园新房-特色楼盘',
+							description: '家园新房-特色楼盘',
 							success: res => {
 								console.log('setPageInfo success', res);
 							},

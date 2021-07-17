@@ -9,7 +9,7 @@
 		<view class="youhui_box" v-if="num>0">
 			<view class="youhui_01">
 				<text class="text">
-					售楼处专供允家平台客户
+					售楼处专供家园平台客户
 					<text class="jie">
 						（{{deadline}}截止）
 					</text>
@@ -18,7 +18,7 @@
 					<view class="ling_btn">
 						已领取
 					</view>
-					<text>{{receive_num_5000}}人已领取</text>
+					<!-- <text>{{receive_num_5000}}人已领取</text> -->
 				</view>
 			</view>
 			<view class="youhui_02">
@@ -32,7 +32,7 @@
 					<view class="ling_btn">
 						已领取
 					</view>
-					<text>{{receive_num_car}}人已领取</text>
+					<!-- <text>{{receive_num_car}}人已领取</text> -->
 				</view>
 			</view>
 		</view>
@@ -67,9 +67,9 @@
 			this.getdata();
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-我的卡券',
-				keywords: '允家新房-我的卡券',
-				description: '允家新房-我的卡券',
+				title: '家园新房-我的卡券',
+				keywords: '家园新房-我的卡券',
+				description: '家园新房-我的卡券',
 				success: res => {
 					console.log('setPageInfo success', res);
 				},
@@ -86,25 +86,13 @@
 				})
 			},
 			getdata(){
-				let  token = uni.getStorageSync("token");
-				uni.request({
-					url:this.apiserve+"/applets/mine/ticket",
-					method:"GET",
-					data:{
-						token:token,
-						other: uni.getStorageSync('other'),
-						uuid: uni.getStorageSync('uuid')
-					},
-					success:(res)=>{
-						 if(res.data.code == 200){
-							this.num = res.data.num;
-							this.receive_num_5000 = res.data.receive_num_5000;
-							this.receive_num_car = res.data.receive_num_car;
-							this.deadline = res.data.deadline;
-							this.remain_num = res.data.remain_num;
-						 }
-					}
-				})
+				if(uni.getStorageSync('token')) {
+					this.num=2
+				}
+				let date = new Date(new Date().getTime()+1000 * 60 * 60 * 24*4)
+				
+				this.deadline = ((date.getMonth()+1)>=10?(date.getMonth()+1):'0'+(date.getMonth()+1))+'-'+(date.getDate()>=10?date.getDate():'0'+date.getDate());
+				this.remain_num = Math.floor(Math.random() * (200 - 100)) + 100;
 			}
 		}
 	}
@@ -189,7 +177,7 @@
 					text-align: center;
 					line-height: 52rpx;
 					position: absolute;
-					top: 28rpx;
+					top: 44rpx;
 					right: 30rpx;
 				}
 		
@@ -213,7 +201,7 @@
 			.text {
 				font-size: 24rpx;
 				font-weight: 400;
-				color: #3A80BA;
+				color: #68938C;
 				position: absolute;
 				bottom: 22rpx;
 				left: 30rpx;
@@ -229,7 +217,7 @@
 				.ling_btn {
 					width: 150rpx;
 					height: 52rpx;
-					background: linear-gradient(270deg, #348AFF, #6ACCFF);
+					background: linear-gradient(270deg, #28C567, #81DB85);
 					border-radius: 26rpx;
 					font-size: 24rpx;
 					font-weight: 500;
@@ -237,7 +225,7 @@
 					text-align: center;
 					line-height: 52rpx;
 					position: absolute;
-					top: 28rpx;
+					top: 44rpx;
 					right: 30rpx;
 				}
 		

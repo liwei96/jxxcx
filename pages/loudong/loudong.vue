@@ -63,7 +63,7 @@
 							</view>
 						</view>
 						<view class="right">
-							<image :src="item.img" mode=""></image>
+							<image :src="item.image" mode=""></image>
 						</view>
 					</view>
 				</view>
@@ -71,7 +71,7 @@
 		</view>
 		<!-- 交房时间 -->
 		<view class="dong_list" v-show='type==2'>
-			<view class="dong_list_one" v-for="item in data" :key="item.id">
+			<view class="dong_list_one" v-for="item in data1" :key="item.id">
 				<navigator :url="`../dynamicdetail/dynamicdetail?id=${item.id}`">
 					<view class="time">{{item.time}}</view>
 					<view class="tit">
@@ -128,7 +128,7 @@
 				total: '',
 				project_id: '',
 
-				telphone: '4009669995',
+				telphone: '',
 
 				pull_time: '',
 				jiao_time: '',
@@ -136,7 +136,8 @@
 				page: 1,
 				hua: true,
 				type: 0,
-				infos: []
+				infos: [],
+				data1: []
 			};
 		},
 		components: {
@@ -212,28 +213,33 @@
 				let other = uni.getStorageSync("other");
 				let city_id = uni.getStorageSync("city");
 				uni.request({
-					url: this.apiserve + "/applets/dynamic/info",
+					url: this.javaserve + "/applets/jy/building/dynamics",
 					data: {
 						// id 项目id
 						// city 城市id
 						// page 第几页
 						// limit 每页几条
 						id: id,
-						city: city_id,
+						push: 0,
 						page: this.page,
 						limit: 10,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
-					method: 'GET',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					success: (res) => {
-						if (res.data.code == 200) {
-							console.log(res);
-							this.data = res.data.data;
-							this.total = res.data.total;
-							//this.telphone = res.data.common;
+						if (res.data.status == 200) {
+							console.log(res,888);
+							this.total = res.data.data.total;
+							this.data = res.data.data.data;
+							uni.setStorageSync('city',res.data.data.city.id)
+							uni.setStorageSync('cityname',res.data.data.city.name)
+							this.telphone = res.data.data.phone
 							// #ifdef MP-BAIDU
-							let header = res.data.common.header;
+							let header = res.data.data.header;
 							swan.setPageInfo({
 								title: header.title,
 								keywords: header.keywords,
@@ -251,50 +257,71 @@
 					}
 				})
 				uni.request({
-					url: this.apiserve + "/applets/building/base",
+					url: this.javaserve + "/applets/jy/building/dynamics",
+					data: {
+						id: id,
+						push: 1,
+						page: this.page,
+						limit: 10,
+						other: uni.getStorageSync('other'),
+						uuid: uni.getStorageSync('uuid')
+					},
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
+					success: (res) => {
+						if (res.data.status == 200) {
+							this.data1 = res.data.data.data;
+						}
+					}
+				})
+				uni.request({
+					url: this.javaserve + "/applets/jy/articles/project",
 					data: {
 						// id 项目id
 						// city 城市id
 						// page 第几页
 						// limit 每页几条
 						id: id,
-						other: other,
-						token: token,
-						other: uni.getStorageSync('other'),
-						uuid: uni.getStorageSync('uuid')
-					},
-					method: 'GET',
-					success: (res) => {
-						if (res.data.code == 200) {
-							console.log(res);
-							this.pull_time = res.data.building.push_time;
-							this.jiao_time = res.data.building.give_time;
-							this.zheng = res.data.building.license;
-						}
-					}
-				})
-				uni.request({
-					url: this.apiserve + "/jy/project/article",
-					data: {
-						// id 项目id
-						// city 城市id
-						// page 第几页
-						// limit 每页几条
-						project: id,
 						page: 1,
 						limit: 20,
-						site: 2,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
-					method: 'GET',
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					success: (res) => {
-						if (res.data.code == 200) {
+						if (res.data.status == 200) {
 							console.log(res);
-							this.infos = res.data.data
+							this.infos = res.data.data.data
 						}
 					}
 				})
+				// uni.request({
+				// 	url: this.apiserve + "/jy/project/article",
+				// 	data: {
+				// 		// id 项目id
+				// 		// city 城市id
+				// 		// page 第几页
+				// 		// limit 每页几条
+				// 		project: id,
+				// 		page: 1,
+				// 		limit: 20,
+				// 		site: 2,
+				// 		other: uni.getStorageSync('other'),
+				// 		uuid: uni.getStorageSync('uuid')
+				// 	},
+				// 	method: 'GET',
+				// 	success: (res) => {
+				// 		if (res.data.code == 200) {
+				// 			console.log(res);
+				// 			this.infos = res.data.data
+				// 		}
+				// 	}
+				// })
 			},
 			dongClick() {
 				this.dong_show = true;
@@ -330,38 +357,6 @@
 	}
 
 	.loudong {
-		.toptitle {
-			color: #17181A;
-			font-size: 29.88rpx;
-			padding: 0 29.88rpx;
-			line-height: 87.64rpx;
-			background-color: #fff;
-			position: fixed;
-			top: 0;
-			width: 100%;
-			z-index: 30000;
-
-			.status_bar {
-				height: var(--status-bar-height);
-				width: 100%;
-			}
-
-			.nav_top {
-				image {
-					width: 31.87rpx;
-					height: 31.87rpx;
-					margin-right: 11.95rpx;
-					margin-bottom: -3.98rpx;
-				}
-
-				text {
-					width: 221rpx;
-					font-size: 32rpx;
-					font-weight: 500;
-					color: #17181A;
-				}
-			}
-		}
 
 		.dong_nav {
 			background: #fff;
@@ -374,7 +369,7 @@
 
 			view {
 				font-size: 28rpx;
-				color: #323233;
+				color: #616466;
 				width: 168rpx;
 				height: 64rpx;
 				border-radius: 32rpx;
@@ -385,7 +380,6 @@
 			}
 
 			.active {
-				color: #323233;
 				background-color: #E6FAEF;
 				color: #2AC66D;
 			}
@@ -405,14 +399,15 @@
 
 				.time {
 					font-size: 24rpx;
-					color: #ABB0B3;
+					color: #949799;
 					line-height: 72rpx;
 				}
 
 				.tit {
 					margin-bottom: 22rpx;
-					color: #272B2E;
+					color: #2E3133;
 					font-size: 32rpx;
+					font-weight: bold;
 					.box {
 						width: 16rpx;
 						height: 16rpx;
@@ -430,10 +425,10 @@
 					margin-left: 9rpx;
 
 					.con {
-						font-size: 28rpx;
+						font-size: 32rpx;
 						font-weight: 500;
-						color: #2F3438;
-						line-height: 38rpx;
+						color: #616466;
+						line-height: 46rpx;
 						margin-bottom: 20rpx;
 						display: -webkit-box;
 						-webkit-box-orient: vertical;

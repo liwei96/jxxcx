@@ -11,8 +11,8 @@
 				{{info.title}}
 			</view>
 			<view class="infos">
-				<text>发布：{{info.begin}} &nbsp;&nbsp;&nbsp;来源：{{info.source}}</text>
-				<text class="right">浏览：{{info.visit_num}}</text>
+				<text>发布：{{info.time}} &nbsp;&nbsp;&nbsp;来源：{{info.source}}</text>
+				<text class="right">浏览：{{info.visit_count}}</text>
 			</view>
 			<view class="txtbox">
 				<text>
@@ -35,14 +35,14 @@
 					<view :class="info.my_like == 0 ? 'agree-box' : 'agree-box active'">
 						<image src="../../static/other/article-agree.png" mode=""></image>
 						<view class="agree-num">
-							{{info.like_num}}
+							{{info.like_count}}
 						</view>
 					</view>
 				</button>
 				<view :class="info.my_like == 0 ? 'agree-box' : 'agree-box active'" v-if="pass||weixin" @tap="agree">
 					<image src="../../static/other/article-agree.png" mode=""></image>
 					<view class="agree-num">
-						{{info.like_num}}
+						{{info.like_count}}
 					</view>
 				</view>
 			</view>
@@ -51,9 +51,14 @@
 					免责声明：
 				</text>
 				凡本站注明
-				“来自：XXX(非允家新房)”的资讯稿件和图片作品，系本站转载自其它媒体，转载目的在于信息传递，并不代表本站赞同其观点和对其真实性负责。如有资讯稿件和图片作品的内容、版权以及其它问题的，请联系本站，电话：400-966-9995
+				“来自：XXX(非家园新房)”的资讯稿件和图片作品，系本站转载自其它媒体，转载目的在于信息传递，并不代表本站赞同其观点和对其真实性负责。如有资讯稿件和图片作品的内容、版权以及其它问题的，请联系本站，电话：400-966-9995
 
 			</view>
+			<!-- 登录弹框 -->
+			<wyb-popup ref="login" type="bottom" height="570" width="650" radius="0" :showCloseIcon="true"
+				closeIconSize="32" @hide="setiscode">
+				<login @login="logined"></login>
+			</wyb-popup>
 			<infos :others="others" :tit="'大家都在看'"></infos>
 		</view>
 	</view>
@@ -62,19 +67,21 @@
 <script>
 	var that
 	import infos from '@/components/articles/articles.vue'
+	import login from "@/components/login.vue";
 	export default {
 		onLoad(options) {
 			console.log(options)
 			that = this
 			this.id = options.id
-			this.getinfo()
+			this.getdata()
 			this.pass = uni.getStorageSync('pass')
 			// #ifdef  MP-WEIXIN
 			// this.weixin = true
 			// #endif
 		},
-		components:{
-			infos
+		components: {
+			infos,
+			login
 		},
 		data() {
 			return {
@@ -93,13 +100,16 @@
 					data: 1
 				})
 			},
-			getinfo() {
+			getdata() {
 				let city = uni.getStorageSync('city')
 				let other = uni.getStorageSync('other')
 				let token = uni.getStorageSync('token')
 				uni.request({
-					url: that.apiserve + "/applets/article/detail",
-					method: "GET",
+					url: that.javaserve + "/applets/jy/article",
+					method: "POST",
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						id: that.id,
 						city: city,
@@ -109,12 +119,15 @@
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
-						that.info = res.data.article
-						that.others = res.data.others
-						let data = res.data.article.content
+						console.log(res)
+						uni.setStorageSync('city', res.data.data.current_city.id)
+						uni.setStorageSync('cityname', res.data.data.current_city.name)
+						that.info = res.data.data.article
+						let data = res.data.data.article.content
 						that.content = data.replace(/\<img/gi, '<img style="max-width:100%;height:auto" ');
+						that.others = res.data.data.recommends
 						//#ifdef MP-BAIDU
-						let header = res.data.common.header
+						let header = res.data.data.header
 						swan.setPageInfo({
 							title: header.title,
 							keywords: header.keywords,
@@ -138,7 +151,7 @@
 			},
 			agree() {
 				let token = uni.getStorageSync('token')
-				if(!token) {
+				if (!token) {
 					let url = '/pages/article/article?id=' + this.id
 					uni.setStorageSync('backurl', url)
 					uni.navigateTo({
@@ -147,7 +160,7 @@
 					return
 				}
 				uni.request({
-					url: that.apiserve + "/jy/article/like",
+					url: that.javaserve + "/applets/jy/article/like",
 					method: 'POST',
 					data: {
 						id: that.info.id,
@@ -161,14 +174,19 @@
 					success: (res) => {
 						console.log(res)
 						if (that.info.my_like == 0) {
-							that.info.like_num++
+							that.info.like_count++
 							that.info.my_like = 1
 						} else {
-							that.info.like_num--
+							that.info.like_count--
 							that.info.my_like = 0
 						}
 					}
 				})
+			},
+			logined() {
+				this.pass = true;
+				this.$refs.login.hide();
+				this.agree()
 			},
 			async getPhoneNumber(e) {
 				console.log(e)
@@ -177,11 +195,12 @@
 				// #ifdef  MP-BAIDU
 				if (e.detail.errMsg == 'getPhoneNumber:fail auth deny') {
 					if (!token) {
-						let url = '/pages/article/article?id=' + this.id
-						uni.setStorageSync('backurl', url)
-						uni.navigateTo({
-							url: '/pages/login/login'
-						})
+						this.$refs.login.show();
+						// let url = '/pages/article/article?id=' + this.id
+						// uni.setStorageSync('backurl', url)
+						// uni.navigateTo({
+						// 	url: '/pages/login/login'
+						// })
 					} else {
 						that.agree()
 					}
@@ -195,32 +214,39 @@
 					let session = uni.getStorageSync('session')
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res)
-								let tel = res.data.mobile
+								console.log(res);
+								let tel = res.data.data.mobile;
 								uni.setStorageSync('phone', tel)
 								let openid = uni.getStorageSync('openid')
 								uni.request({
-									url: "https://api.edefang.net/applets/login",
-									method: 'GET',
+									url: "https://java.edefang.net/applets/jy/login",
+									method: "POST",
+									header: {
+										"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+									},
 									data: {
 										phone: tel,
 										openid: openid,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
+										uuid: uni.getStorageSync("uuid"),
+										city: uni.getStorageSync("city"),
 									},
 									success: (res) => {
+										console.log(res);
+										uni.setStorageSync("token", res.data.data);
 										uni.setStorageSync('phone', tel)
-										uni.setStorageSync('token', res.data.token)
 										that.agree()
 									}
 								})
@@ -228,46 +254,63 @@
 						})
 					} else {
 						swan.getLoginCode({
-							success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												uni.request({
-													url: "https://api.edefang.net/applets/login",
-													method: 'GET',
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
 													},
 													success: (res) => {
-														uni.setStorageSync('token', res.data.token)
-														uni.setStorageSync('phone', tel)
+														console.log(
+															res);
+														uni.setStorageSync(
+															"token",
+															res
+															.data
+															.data);
+														uni.setStorageSync(
+															'phone',
+															tel)
 														that.agree()
 													}
 												})
@@ -327,19 +370,29 @@
 											let data = JSON.parse(res.data.message)
 											let tel = data.purePhoneNumber
 											uni.setStorageSync('phone', tel)
-											let openid = uni.getStorageSync('openid')
+											let openid = uni.getStorageSync(
+												'openid')
 											uni.request({
 												url: "https://api.edefang.net/applets/login",
 												method: 'GET',
 												data: {
 													phone: tel,
 													openid: openid,
-													other: uni.getStorageSync('other'),
-													uuid: uni.getStorageSync('uuid')
+													other: uni
+														.getStorageSync(
+															'other'),
+													uuid: uni
+														.getStorageSync(
+															'uuid')
 												},
 												success: (res) => {
-													uni.setStorageSync('token', res.data.token)
-													uni.setStorageSync('phone', tel)
+													uni.setStorageSync(
+														'token',
+														res.data
+														.token)
+													uni.setStorageSync(
+														'phone',
+														tel)
 													that.agree()
 												}
 											})

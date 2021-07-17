@@ -1,5 +1,5 @@
 <template>
-	<view class="article">
+	<view class="article" v-if="issure">
 		<!-- <view class="toptitle" @tap="back">
 			<view class="status_bar">
 			</view>
@@ -11,10 +11,10 @@
 				{{info.title}}
 			</view>
 			<view class="infos">
-				<text>发布：{{info.begin}} &nbsp;&nbsp;&nbsp;来源：{{info.source}}</text>
-				<text class="right">浏览：{{info.visit_num}}</text>
+				<text>发布：{{info.time}} &nbsp;&nbsp;&nbsp;来源：{{info.source}}</text>
+				<text class="right">浏览：{{info.visit_count}}</text>
 			</view>
-			<view class="txtbox">
+			<view class="txtbox" v-if="info.description">
 				<text>
 					摘要：
 				</text>
@@ -29,7 +29,7 @@
 			<view class="build" v-if="build.length != 0">
 				<view class="top" @tap="gobuild(build.id)">
 					<view class="left">
-						<image :src="build.img" mode=""></image>
+						<image :src="build.image" mode=""></image>
 					</view>
 					<view class="right">
 						<view class="right-tit">
@@ -43,16 +43,19 @@
 							<text>元/m²</text>
 						</view>
 						<view class="right-infos">
-							{{build.type}} | {{build.city}}-{{build.country}} <text v-if="build.area">| {{build.area}}m²</text>
+							{{build.type}} | {{build.city}}-{{build.country.substr(0,2)}} | {{build.area}}m²
 						</view>
 						<view class="right-icons">
 							<text class="zhuang" v-if="build.decorate">{{build.decorate}}</text>
-							<text v-for="(item,key) in build.features">{{item}}</text>
+							<text v-if="build.railway">{{build.railway}}</text>
+							<text v-if="build.feature">{{build.feature}}</text>
+
 						</view>
 					</view>
 				</view>
 				<view class="bom">
-					<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber($event,build.id,'文章详情页+在线问')" v-if="!pass&&!weixin">
+					<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber($event,build.id,'文章详情页+在线问')"
+						v-if="!pass&&!weixin">
 						<view class="btn">
 							在线问
 						</view>
@@ -72,16 +75,18 @@
 			<view class="agree">
 				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" v-if="!pass&&!weixin">
 					<view :class="info.my_like == 0 ? 'agree-box' : 'agree-box active'">
-						<image src="../../static/other/article-agree.png" mode=""></image>
+						<image v-if="info.my_like == 0" src="../../static/content/no_zan.png" mode=""></image>
+						<image v-if="info.my_like == 1" src="../../static/content/zan.png" mode=""></image>
 						<view class="agree-num">
-							{{info.like_num}}
+							{{info.like_count}}
 						</view>
 					</view>
 				</button>
 				<view :class="info.my_like == 0 ? 'agree-box' : 'agree-box active'" v-if="pass||weixin" @tap="agree">
-					<image src="../../static/other/article-agree.png" mode=""></image>
+					<image v-if="info.my_like == 0" src="../../static/content/no_zan.png" mode=""></image>
+					<image v-if="info.my_like == 1" src="../../static/content/zan.png" mode=""></image>
 					<view class="agree-num">
-						{{info.like_num}}
+						{{info.like_count}}
 					</view>
 				</view>
 			</view>
@@ -90,12 +95,19 @@
 					免责声明：
 				</text>
 				凡本站注明
-				“来自：XXX(非允家新房)”的资讯稿件和图片作品，系本站转载自其它媒体，转载目的在于信息传递，并不代表本站赞同其观点和对其真实性负责。如有资讯稿件和图片作品的内容、版权以及其它问题的，请联系本站，电话：400-966-9995
+				“来自：XXX(非家园新房)”的资讯稿件和图片作品，系本站转载自其它媒体，转载目的在于信息传递，并不代表本站赞同其观点和对其真实性负责。如有资讯稿件和图片作品的内容、版权以及其它问题的，请联系本站，电话：400-966-9995
 			</view>
 			<infos :others="others" :tit="'大家都在看'"></infos>
 		</view>
-		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true" @hide="setiscode">
-			<sign :type="codenum" @closethis="setpop" :title="'咨询服务'" :pid="pid" :remark="remark" :position="position" :isok="isok"></sign>
+		<!-- 登录弹框 -->
+		<wyb-popup ref="login" type="bottom" height="570" width="650" radius="0" :showCloseIcon="true"
+			closeIconSize="32" @hide="setiscode">
+			<login @login="logined" :pid="build.id"></login>
+		</wyb-popup>
+		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"
+			@hide="setiscode">
+			<sign :type="codenum" @closethis="setpop" :title="'咨询服务'" :pid="pid" :remark="remark" :position="position"
+				:isok="isok"></sign>
 		</wyb-popup>
 	</view>
 </template>
@@ -104,12 +116,14 @@
 	import wybPopup from '@/components/wyb-popup/wyb-popup.vue'
 	import sign from '@/components/sign.vue'
 	import infos from '@/components/articles/articles.vue'
+	import login from "@/components/login.vue";
 	var that
 	export default {
 		onLoad(options) {
 			that = this
 			this.id = options.id
-			this.getinfo()
+			// this.getinfo()
+			this.getdata()
 			this.pass = uni.getStorageSync('pass')
 			// #ifdef  MP-WEIXIN
 			// this.weixin = true
@@ -127,15 +141,22 @@
 				pass: false,
 				position: 104,
 				isok: 0,
-				weixin: false
+				weixin: false,
+				issure: false
 			}
 		},
 		components: {
 			sign,
 			wybPopup,
-			infos
+			infos,
+			login
 		},
 		methods: {
+			logined() {
+				this.pass = true;
+				this.$refs.login.hide();
+				this.agree()
+			},
 			setpop() {
 				this.$refs.popup.hide()
 			},
@@ -144,13 +165,19 @@
 					data: 1
 				})
 			},
-			getinfo() {
+			getdata() {
+				uni.showLoading({
+					title: "加载中"
+				})
 				let city = uni.getStorageSync('city')
 				let other = uni.getStorageSync('other')
 				let token = uni.getStorageSync('token')
 				uni.request({
-					url: that.apiserve + "/applets/article/detail",
-					method: "GET",
+					url: that.javaserve + "/applets/jy/article",
+					method: "POST",
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+					},
 					data: {
 						id: that.id,
 						city: city,
@@ -160,13 +187,20 @@
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
-						that.info = res.data.article
-						that.others = res.data.others
-						that.build = res.data.project_info
-						that.tel = res.data.common.phone
-						that.info.content = that.info.content.replace(/\<img/gi, '<img style="max-width:100%;height:auto" ');
+						console.log(res)
+						uni.setStorageSync('city', res.data.data.current_city.id)
+						uni.setStorageSync('cityname', res.data.data.current_city.name)
+						that.info = res.data.data.article
+						that.build = that.info.building
+						uni.hideLoading()
+						let data = res.data.data.article.content
+						that.info.content = data.replace(/\<img/gi,
+						'<img style="max-width:100%;height:auto" ');
+						that.others = res.data.data.recommends
+						this.tel = res.data.data.phone
+						that.issure = true
 						//#ifdef MP-BAIDU
-						let header = res.data.common.header
+						let header = res.data.data.header
 						swan.setPageInfo({
 							title: header.title,
 							keywords: header.keywords,
@@ -180,7 +214,6 @@
 							}
 						})
 						//#endif
-						console.log(res)
 					}
 				})
 			},
@@ -192,7 +225,7 @@
 
 			gobuild(id) {
 				uni.redirectTo({
-					url: "/pages/content/content?id=" + id
+					url: "/pageA/content/content?id=" + id
 				})
 			},
 			show(id, txt, n) {
@@ -225,7 +258,7 @@
 			},
 			agree() {
 				let token = uni.getStorageSync('token')
-				if(!token) {
+				if (!token) {
 					let url = '/pages/info/info?id=' + this.id
 					uni.setStorageSync('backurl', url)
 					uni.navigateTo({
@@ -234,7 +267,7 @@
 					return
 				}
 				uni.request({
-					url: that.apiserve + "/jy/article/like",
+					url: that.javaserve + "/applets/jy/article/like",
 					method: 'POST',
 					data: {
 						id: that.info.id,
@@ -248,10 +281,10 @@
 					success: (res) => {
 						console.log(res)
 						if (that.info.my_like == 0) {
-							that.info.like_num++
+							that.info.like_count++
 							that.info.my_like = 1
 						} else {
-							that.info.like_num--
+							that.info.like_count--
 							that.info.my_like = 0
 						}
 					}
@@ -267,11 +300,12 @@
 						that.show(bid, txt, 0)
 					} else {
 						if (!token) {
-							let url = '/pages/info/info?id=' + this.id
-							uni.setStorageSync('backurl', url)
-							uni.navigateTo({
-								url: '/pages/login/login'
-							})
+							this.$refs.login.show();
+							// let url = '/pages/info/info?id=' + this.id
+							// uni.setStorageSync('backurl', url)
+							// uni.navigateTo({
+							// 	url: '/pages/login/login'
+							// })
 						} else {
 							that.agree()
 						}
@@ -286,31 +320,39 @@
 					let session = uni.getStorageSync('session')
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res)
-								let tel = res.data.mobile
+								console.log(res);
+								let tel = res.data.data.mobile;
 								uni.setStorageSync('phone', tel)
 								let openid = uni.getStorageSync('openid')
 								uni.request({
-									url: "https://api.edefang.net/applets/login",
-									method: 'GET',
+									url: "https://java.edefang.net/applets/jy/login",
+									method: "POST",
+									header: {
+										"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+									},
 									data: {
+										bid:that.build.id,
 										phone: tel,
 										openid: openid,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
+										uuid: uni.getStorageSync("uuid"),
+										city: uni.getStorageSync("city"),
 									},
 									success: (res) => {
-										uni.setStorageSync('token', res.data.token)
+										console.log(res);
+										uni.setStorageSync("token", res.data.data);
 										uni.setStorageSync('phone', tel)
 										if (bid) {
 											that.show(bid, txt, 1)
@@ -323,48 +365,69 @@
 						})
 					} else {
 						swan.getLoginCode({
-											success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												uni.request({
-													url: "https://api.edefang.net/applets/login",
-													method: 'GET',
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
 													data: {
+														bid:that.build.id,
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
 													},
 													success: (res) => {
-														uni.setStorageSync('token', res.data.token)
-														uni.setStorageSync('phone', tel)
+														console.log(
+															res);
+														uni.setStorageSync(
+															"token",
+															res
+															.data
+															.data);
+														uni.setStorageSync(
+															'phone',
+															tel)
 														if (bid) {
-															that.show(bid, txt, 1)
+															that.show(
+																bid,
+																txt,
+																1)
 														} else {
 															that.agree()
 														}
@@ -431,21 +494,32 @@
 											let data = JSON.parse(res.data.message)
 											let tel = data.purePhoneNumber
 											uni.setStorageSync('phone', tel)
-											let openid = uni.getStorageSync('openid')
+											let openid = uni.getStorageSync(
+												'openid')
 											uni.request({
 												url: "https://api.edefang.net/applets/login",
 												method: 'GET',
 												data: {
 													phone: tel,
 													openid: openid,
-													other: uni.getStorageSync('other'),
-													uuid: uni.getStorageSync('uuid')
+													other: uni
+														.getStorageSync(
+															'other'),
+													uuid: uni
+														.getStorageSync(
+															'uuid')
 												},
 												success: (res) => {
-													uni.setStorageSync('token', res.data.token)
-													uni.setStorageSync('phone', tel)
+													uni.setStorageSync(
+														'token',
+														res.data
+														.token)
+													uni.setStorageSync(
+														'phone',
+														tel)
 													if (bid) {
-														that.show(bid, txt, 1)
+														that.show(bid,
+															txt, 1)
 													} else {
 														that.agree()
 													}
@@ -511,13 +585,14 @@
 
 	.box {
 		padding: 0 30rpx;
+
 		.tit {
 			color: #17191A;
 			font-size: 44rpx;
 			line-height: 62rpx;
 			font-weight: bold;
-			padding-top: 28rpx;
-			margin-bottom: 38rpx;
+			padding-top: 26rpx;
+			margin-bottom: 32rpx;
 		}
 
 		.infos {
@@ -536,7 +611,7 @@
 			color: #646566;
 			font-size: 32rpx;
 			line-height: 52rpx;
-
+			border-radius: 24rpx;
 			text {
 				color: #2AC66D;
 			}
@@ -603,6 +678,7 @@
 						color: #FF6040;
 						font-size: 26rpx;
 						font-weight: 800rpx;
+
 						.big {
 							font-size: 32rpx;
 						}
@@ -613,6 +689,7 @@
 						font-size: 24rpx;
 						margin-top: 4rpx;
 						margin-bottom: 4rpx;
+						display: flex;
 					}
 
 					.right-icons {
@@ -648,13 +725,15 @@
 				}
 
 				.btn {
-					background: linear-gradient(270deg, #28C567, #81DB85);;
+					background: linear-gradient(270deg, #28C567, #81DB85);
+					;
 					margin-right: 7rpx;
 					margin-left: 24rpx;
 				}
 
 				.tel {
-					background: linear-gradient(270deg, #FF7519, #FFAE3D);;
+					background: linear-gradient(270deg, #FF7519, #FFAE3D);
+					;
 				}
 			}
 		}
@@ -697,8 +776,15 @@
 				}
 
 				.agree-num {
+					height: 32rpx;
 					color: #969899;
 					font-size: 24rpx;
+					line-height: 32rpx;
+				}
+			}
+			.active {
+				.agree-num {
+					color: #38916C;
 				}
 			}
 		}

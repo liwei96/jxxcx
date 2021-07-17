@@ -1,65 +1,31 @@
 <template>
 	<view class="about">
-		<!-- <view class="toptitle" @tap="back">
-			<image src="../../static/all-back.png" mode=""></image>
-			<text>预约看房</text>
-		</view> -->
-		<image src="../../static/other/about-top.jpg" mode="" class="topimg"></image>
 		<view class="con">
-			<view class="tit" @tap="test">
-				关于我们
-			</view>
-			<view class="titabc">
-				ABOUT US
-			</view>
-			<view class="toptxt">
-				<view class="left">
-					<image src="../../static/other/about-logo.jpg" mode=""></image>
+			<view class="titmsg">
+				<view class="small" @tap="test">
+					关于我们
 				</view>
-				<view class="right">
-					允家是杭州易得房科技有限公司打造的一手房信息平台，集房源展示、实时咨询、房产动态跟踪、价格对比等功能于一体。
+				<view class="big">
+					ABOUT US
 				</view>
 			</view>
 			<view class="item-txt">
-				www.jy8006.com是我们专属的网站域名，其中“jy”是家园的缩写，“8006”则是为了纪念1980年6月我国开始正式实施住房商品化政策，这两个简写也是允家的初衷，为让更多购房者买到属于自己的家园而努力。
+				家园新房是杭州亚汉网络科技科技有限公司打造的一手房信息平台，集房源展示、实时咨询、房产动态跟踪、价格对比等功能于一体。
 			</view>
 			<view class="item-txt">
-				允家正在打造一个全面的房产信息库，让购房这件事更透明、更简单。目前平台内汇集了碧桂园，恒大，融创，融信、绿城等众多知名房企开发的优质项目。这些楼盘的近期动态和房价变化也都能够做到第一时间更新，为购房者分享着新鲜、全面的房产资讯。而且这些项目信息全部存放在项目数据库中，通过平台的智能搜索便能快速直达。
+				www.jy1980.com是我们专属的网站域名，其中“jy”是家园的缩写，“1980”则是为了纪念1980年6月我国开始正式实施住房商品化政策，这两个简写也是家园的初衷，为让更多购房者买到属于自己的家园而努力。
+			</view>
+			<view class="item-txt">
+				家园正在打造一个全面的房产信息库，让购房这件事更透明、更简单。目前平台内汇集了碧桂园，恒大，融创，融信、绿城等众多知名房企开发的优质项目。这些楼盘的近期动态和房价变化也都能够做到第一时间更新，为购房者分享着新鲜、全面的房产资讯。而且这些项目信息全部存放在项目数据库中，通过平台的智能搜索便能快速直达。
 			</view>
 			<view class="item-txt">
 				我们欢迎有想法有资源的人士以任意方式加入我们平台，你可以选择以分站合作运营、媒体合作，开发商直接推广合作等方式加入我们，古人云“海内存知己，天涯若比邻”，希望我们能有这个机会一起努力，共创房产新时代
 			</view>
-		</view>
-		<view class="icons">
-			<view class="item">
-				<image src="../../static/other/about-1.png" mode=""></image>
-				<view class="icon-tit">
-					愿景
-				</view>
-				<view class="icon-txt">
-					让购房更透明、更简单
-				</view>
+			<view class="item-txt bomtxt">
+				公司位于：浙江省杭州市萧山区宁围街道杭州国际办公中心嘉润铭座7幢2单元1303室-1
 			</view>
-			<view class="item">
-				<image src="../../static/other/about-2.png" mode=""></image>
-				<view class="icon-tit">
-					特色
-				</view>
-				<view class="icon-txt">
-
-					房源展示、实时咨询、房产
-					动态等多功能于一体
-
-				</view>
-			</view>
-			<view class="item">
-				<image src="../../static/other/about-3.png" mode=""></image>
-				<view class="icon-tit">
-					使命
-				</view>
-				<view class="icon-txt">
-					打造全面的房产信息库
-				</view>
+			<view class="item-txt bomtxt">
+				联系电话：400-718-6686
 			</view>
 		</view>
 	</view>
@@ -75,9 +41,9 @@
 		onLoad() {
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-关于我们',
-				keywords: '允家新房-关于我们',
-				description: '允家新房-关于我们',
+				title: '家园新房-关于我们',
+				keywords: '家园新房-关于我们',
+				description: '家园新房-关于我们',
 				success: res => {
 					console.log('setPageInfo success', res);
 				},
@@ -121,116 +87,53 @@
 		background: #FFFFFF;
 	}
 	.about {
-		background-color: #FAFAFA;
-	}
-
-	.toptitle {
-		color: #17181A;
-		font-size: 29.88rpx;
-		padding: 0 29.88rpx;
-		padding-top: 40rpx;
-		line-height: 88rpx;
-		position: fixed;
-		width: 100%;
 		background-color: #FFFFFF;
-		top: 0;
-		z-index: 9999;
-
-		image {
-			width: 32rpx;
-			height: 32rpx;
-			margin-right: 14rpx;
-			margin-bottom: -4rpx;
-		}
-	}
-
-	.topimg {
-		width: 100%;
-		height: 220rpx;
 	}
 
 	.con {
-		width: 630rpx;
 		padding: 0 30rpx;
-		height: 1145rpx;
-		border-radius: 12rpx;
-		box-shadow: 0px 0px 38rpx 2rpx rgba(0, 0, 0, 0.03);
-		background-color: #FFFFFF;
-		margin-left: 30rpx;
-		position: relative;
-		top: -36rpx;
 		margin-bottom: 10rpx;
-
-		.tit {
-			text-align: center;
-			padding-top: 20rpx;
-			margin-bottom: 2rpx;
-			color: #101214;
-			font-size: 24rpx;
-		}
-
-		.titabc {
-			color: #101214;
-			font-size: 32rpx;
-			text-align: center;
-			font-weight: 800;
-			margin-bottom: 26rpx;
-		}
-
-		.toptxt {
-			display: flex;
-			margin-bottom: 4rpx;
-
-			.left {
-				image {
-					width: 160rpx;
-					height: 160rpx;
-					margin-right: 30rpx;
-				}
+		padding-bottom: 50rpx;
+		.titmsg {
+			position: relative;
+			margin-bottom: 44rpx;
+			margin-top: 68rpx;
+			.big {
+				position: absolute;
+				color: #F2F2F2;
+				font-size: 48rpx;
+				font-weight: bold;
+				left: 50%;
+				transform: translateX(-50%);
+				top: -18rpx;
 			}
-
-			.right {
-				color: #626466;
-				font-size: 26rpx;
-				line-height: 46rpx;
+		
+			.small {
+				color: #2A2A2A;
+				font-size: 36rpx;
+				font-weight: bold;
+				margin-bottom: 8rpx;
+				text-align: center;
+				z-index: 2;
 				position: relative;
-				top: -12rpx;
+			}
+		
+			.small-txt {
+				color: #2A2A2A;
+				font-size: 18rpx;
+				text-align: center;
 			}
 		}
 
 		.item-txt {
-			color: #4D4D4D;
-			font-size: 26rpx;
+			color: #303233;
+			font-size: 28rpx;
 			line-height: 46rpx;
 			text-indent: 52rpx;
-			margin-bottom: 16rpx;
+			margin-bottom: 24rpx;
 		}
-	}
-	.icons {
-		display: flex;
-		justify-content: space-around;
-		padding-bottom: 40rpx;
-		.item {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			width: 240rpx;
-			image {
-				width: 88rpx;
-				height: 88rpx;
-				margin-bottom: 20rpx;
-			}
-			.icon-tit {
-				color: #101214;
-				font-size: 28rpx;
-				margin-bottom: 8rpx;
-			}
-			.icon-txt {
-				color: #626466;
-				font-size: 20rpx;
-				text-align: center;
-				line-height: 28rpx;
-			}
+		.bomtxt {
+			text-indent: 0;
 		}
 	}
 </style>

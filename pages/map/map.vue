@@ -14,14 +14,14 @@
 		onLoad() {
 			let name = uni.getStorageSync('cityname')
 			let city = uni.getStorageSync('city')
-			let url = `https://m.jy1980.com/hangzhou/map/${name}/${city}?uuid=kWNznYTEzB3s1608096182000`
+			let url = `https://m.jy1980.com/hangzhou/map/${name}/${city}/jy?uuid=kWNznYTEzB3s1608096182000`
 			console.log(url)
 			this.url = url
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-地图找房',
-				keywords: '允家新房-地图找房',
-				description: '允家新房-地图找房',
+				title: '家园新房-地图找房',
+				keywords: '家园新房-地图找房',
+				description: '家园新房-地图找房',
 				success: res => {
 					console.log('setPageInfo success', res);
 				},

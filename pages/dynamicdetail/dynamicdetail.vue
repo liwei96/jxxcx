@@ -1,5 +1,5 @@
 <template>
-	<view class="dynamicdetail">
+	<view class="dynamicdetail" v-if="issure">
 		<!-- <view class="toptitle" @tap="goback">
 			<view class="status_bar">
 			</view>
@@ -10,7 +10,8 @@
 			<view class="dynamic-tit">{{info.title}}</view>
 			<text class="txt">{{info.content}}</text>
 			<view class="time">{{info.time}}</view>
-			<button open-type="getPhoneNumber" @tap="type = 0" @getphonenumber="getPhoneNumber($event,98)" v-if="!pass&&!weixin">
+			<button open-type="getPhoneNumber" @tap="type = 0" @getphonenumber="getPhoneNumber($event,98)"
+				v-if="!pass&&!weixin">
 				<view class="btn">
 					订阅最新动态
 				</view>
@@ -20,7 +21,7 @@
 			</view>
 			<view class="build" @tap="gobuild(build.id)">
 				<view class="left">
-					<image :src="build.img" mode=""></image>
+					<image :src="build.image" mode=""></image>
 				</view>
 				<view class="right">
 					<view class="right-tit">
@@ -32,28 +33,28 @@
 						<text class="small">元/m²</text>
 					</view>
 					<view class="build-msg">
-						{{build.type}} | {{build.cityname}}-{{build.country}} | {{build.area}}m²
+						{{build.type}} &nbsp;|&nbsp; {{build.city}}-{{build.country}} &nbsp;|&nbsp; {{build.area}}m²
 					</view>
 					<view class="icons">
 						<text class="zhuang" v-if="build.decorate">{{build.decorate}}</text>
-						<template v-if="build.features">
-							<text v-for="(item,key) in build.features">{{item}}</text>
-						</template>
+						<text v-if="build.railway">{{build.railway}}</text>
+						<text v-if="build.feature">{{build.feature}}</text>
 					</view>
 				</view>
 			</view>
 			<view class="staff">
 				<view class="left">
-					<image :src="staff.staff.head_img" mode="widthFix"></image>
+					<image :src="staff.image" mode="widthFix"></image>
 				</view>
 				<view class="staffmsg">
-					<text class="name">{{staff.staff.name}}</text>
+					<text class="name">{{staff.name}}</text>
 					<text class="rate">满意度{{staff.num}}分</text>
 					<view class="stafftxt">
 						为客户提供专业的购房建议
 					</view>
 				</view>
-				<button open-type="getPhoneNumber" @tap="type = 1" @getphonenumber="getPhoneNumber($event,87)" v-if="!pass&&!weixin">
+				<button open-type="getPhoneNumber" @tap="type = 1" @getphonenumber="getPhoneNumber($event,87)"
+					v-if="!pass&&!weixin">
 					<view class="staffbtn">
 						免费咨询
 					</view>
@@ -69,13 +70,13 @@
 				<view class="tit">本楼盘户型</view>
 				<view class="other-item" v-for="item in other" :key="item.id" @tap="gohu(item.id)">
 					<view class="left">
-						<image :src="item.img" mode=""></image>
+						<image :src="item.small" mode=""></image>
 					</view>
 					<view class="right">
 						<view class="right-tit">
 							<text class="name">{{item.title}}</text>
 							<view class="status">
-								{{item.status}}
+								{{item.state}}
 							</view>
 						</view>
 						<view class="list">
@@ -96,9 +97,11 @@
 				</view>
 			</view>
 		</view>
-		<bom-nav :tel="tel" @show="nav" :projectid="bid"></bom-nav>
-		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true" @hide="setiscode">
-			<sign :type="codenum" @closethis="setpop" :title="title" :pid="pid" :remark="remark" :position="position" :isok="isok"></sign>
+		<bom-nav ref="bottom" :tel="tel" @show="nav" :projectid="bid"></bom-nav>
+		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"
+			@hide="setiscode">
+			<sign :type="codenum" @closethis="setpop" :title="title" :pid="pid" :remark="remark" :position="position"
+				:isok="isok"></sign>
 		</wyb-popup>
 
 	</view>
@@ -125,6 +128,7 @@
 		},
 		data() {
 			return {
+				issure: false,
 				id: 0,
 				info: {},
 				build: {},
@@ -162,26 +166,26 @@
 				let other = uni.getStorageSync('other')
 				let token = uni.getStorageSync('token')
 				uni.request({
-					url: that.apiserve + "/applets/dynamic/detail",
+					url: that.javaserve + "/applets/jy/dynamic",
 					method: "GET",
 					data: {
 						id: that.id,
 						other: other,
-						token: token,
 						other: uni.getStorageSync('other'),
 						uuid: uni.getStorageSync('uuid')
 					},
 					success: (res) => {
 						console.log(res)
-						that.info = res.data.info
-						that.build = res.data.building
-						that.bid = res.data.building.id
-						console.log(that.bid)
-						that.other = res.data.house_types
-						that.tel = res.data.common.phone
-						that.staff = res.data.common.staffs
+						that.build = res.data.data.building
+						that.bid = res.data.data.building.id
+						that.other = res.data.data.house_types
+						that.info = res.data.data.dynamic
+						that.staff = res.data.data.staff
+						that.tel = res.data.data.phone
+						uni.setStorageSync('city', res.data.data.city.id)
+						uni.setStorageSync('cityname', res.data.data.city.name)
 						// #ifdef MP-BAIDU
-						let header = res.data.common.header;
+						let header = res.data.data.header;
 						swan.setPageInfo({
 							title: header.title,
 							keywords: header.keywords,
@@ -195,6 +199,7 @@
 						})
 						// #endif
 						uni.hideLoading();
+						that.issure = true
 					}
 				})
 			},
@@ -226,18 +231,21 @@
 					let session = uni.getStorageSync('session')
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res)
-								let tel = res.data.mobile
+								console.log(res);
+								let tel = res.data.data.mobile;
 								uni.setStorageSync('phone', tel)
 								let openid = uni.getStorageSync('openid')
 								that.tel = tel
@@ -246,36 +254,68 @@
 						})
 					} else {
 						swan.getLoginCode({
-											success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												that.tel = tel
-												that.show(that.build.id, title, message, 1, p)
+												that.show(that.build.id, title,
+													message, 1, p)
+												uni.request({
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
+													data: {
+														phone: tel,
+														openid: openid,
+														bid: that.build.id,
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
+													},
+													success: (res) => {
+														console.log(
+															res);
+															uni.setStorageSync('pass',true)
+															that.$refs.bottom.pass = true
+														uni.setStorageSync(
+															"token",
+															res
+															.data
+															.data);
+													},
+												})
 
 											}
 										})
@@ -325,26 +365,38 @@
 											let tel = data.purePhoneNumber
 											let token = uni.getStorageSync('token')
 											if (!token) {
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												uni.request({
 													url: "https://api.edefang.net/applets/login",
 													method: 'GET',
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														other: uni
+															.getStorageSync(
+																'other'),
+														uuid: uni
+															.getStorageSync(
+																'uuid')
 													},
 													success: (res) => {
-														console.log(res)
-														uni.setStorageSync('token', res.data.token)
+														console.log(
+															res)
+														uni.setStorageSync(
+															'token',
+															res
+															.data
+															.token)
 													}
 												})
 											}
 											uni.setStorageSync('phone', tel)
-											let openid = uni.getStorageSync('openid')
+											let openid = uni.getStorageSync(
+												'openid')
 											that.tel = tel
-											that.show(that.build.id, title, message, 1, p)
+											that.show(that.build.id, title,
+												message, 1, p)
 
 										}
 									})
@@ -608,7 +660,8 @@
 			}
 
 			.staffbtn {
-				background: linear-gradient(270deg, #28C567, #81DB85);;
+				background: linear-gradient(270deg, #28C567, #81DB85);
+				;
 				border-radius: 27.88rpx;
 				width: 147.41rpx;
 				height: 55.77rpx;
@@ -824,7 +877,7 @@
 						color: #7D7E80;
 						font-size: 23.9rpx;
 						background-color: #F5F5F5;
-						border-radius: 3.98rpx;
+						border-radius: 5rpx;
 						margin-right: 11.95rpx;
 					}
 

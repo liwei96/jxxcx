@@ -6,57 +6,61 @@
 		<view class="top-nav">
 			<view class="login">
 				<image src="../../static/home/home-peo.png" mode=""></image>
-				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" @tap="type=4"
-					v-if="!tel"><text>登录/注册</text>
+				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" @tap="type = 4" v-if="!tel">
+					<text>登录/注册</text>
 				</button>
 				<!-- <text v-if="weixin&&!tel" @click="gologin">登录/注册</text> -->
-				<text v-if="tel">{{tel}}</text>
+				<text v-if="tel">{{ tel }}</text>
 			</view>
 			<view class="navs">
-				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" @tap="type=1" v-if="!pass&&!weixin">
+				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" @tap="type = 1"
+					v-if="!pass && !weixin">
 					<view class="nav">
-						<text class="num">{{footnum}}</text>
+						<text class="num">{{ footnum }}</text>
 						<view>
 							<text class="msg">浏览足迹</text>
 						</view>
 					</view>
 				</button>
 				<view class="nav" v-if="pass || weixin" @tap="gofoot">
-					<text class="num">{{footnum}}</text>
+					<text class="num">{{ footnum }}</text>
 					<view>
 						<text class="msg">浏览足迹</text>
 					</view>
 				</view>
-				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" @tap="type=2" v-if="!pass&&!weixin">
+				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" @tap="type = 2"
+					v-if="!pass && !weixin">
 					<view class="nav">
-						<text class="num">{{collectnum}}</text>
+						<text class="num">{{ collectnum }}</text>
 						<view>
 							<text class="msg">我的收藏</text>
 						</view>
 					</view>
 				</button>
 				<view class="nav" v-if="pass || weixin" @tap="gofork">
-					<text class="num">{{collectnum}}</text>
+					<text class="num">{{ collectnum }}</text>
 					<view>
 						<text class="msg">我的收藏</text>
 					</view>
 				</view>
-				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" @tap="type=3" v-if="!pass&&!weixin">
+				<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" @tap="type = 3"
+					v-if="!pass && !weixin">
 					<view class="nav">
-						<text class="num">{{cardnum}}</text>
+						<text class="num">{{ cardnum }}</text>
 						<view>
 							<text class="msg">我的卡券</text>
 						</view>
 					</view>
 				</button>
 				<view class="nav" v-if="pass || weixin" @tap="gocards">
-					<text class="num">{{cardnum}}</text>
+					<text class="num">{{ cardnum }}</text>
 					<view>
 						<text class="msg">我的卡券</text>
 					</view>
 				</view>
 				<view class="nav" @tap="gotalk">
-					<text class="num">{{talknum}}</text>
+					<text class="num">1</text>
+					<!-- <text class="num">{{ talknum }}</text> -->
 					<!-- <text class="abo">1</text> -->
 					<view>
 						<text class="msg">我的联系</text>
@@ -82,7 +86,7 @@
 						<text>地图找房</text>
 					</view>
 				</view>
-				<view class="nav" @tap="gojia" v-if="!baidu">
+				<view class="nav" @tap="gojia" v-if="false">
 					<image src="../../static/home/home-join.png" mode=""></image>
 					<view>
 						<text>城市加盟</text>
@@ -94,7 +98,7 @@
 			<view class="connav">
 				<view class="nav" @tap="goabout">
 					<image class="icon" src="../../static/home/home-about.png" mode=""></image>
-					<text>关于允家</text>
+					<text>关于家园</text>
 					<image class="goicon" src="../../static/other/goicon.png" mode=""></image>
 				</view>
 				<view class="nav" @tap="show">
@@ -131,21 +135,14 @@
 				</view>
 			</view>
 		</view>
+		<view class="outbtn" v-if="tel" @tap="getout"> 退出登录 </view>
 		<popup ref="popup" type="center" height="300" width="540" radius="12">
 			<view class="popup-content">
-				<view class="txt">
-					拨打电话
-				</view>
-				<view class="tel">
-					400-718-6686
-				</view>
+				<view class="txt"> 拨打电话 </view>
+				<view class="tel"> 400-718-6686 </view>
 				<view class="btnbox">
-					<view class="left" @tap="hide">
-						取消
-					</view>
-					<view class="right" @tap="call">
-						确定
-					</view>
+					<view class="left" @tap="hide"> 取消 </view>
+					<view class="right" @tap="call"> 确定 </view>
 				</view>
 			</view>
 		</popup>
@@ -154,13 +151,13 @@
 </template>
 
 <script>
-	import wybPopup from '@/components/wyb-popup/wyb-popup.vue'
-	import tabbar from '../../components/tabbar/tabbar.vue'
-	var that
+	import wybPopup from "@/components/wyb-popup/wyb-popup.vue";
+	import tabbar from "../../components/tabbar/tabbar.vue";
+	var that;
 	export default {
 		components: {
-			"popup": wybPopup,
-			tabbar
+			popup: wybPopup,
+			tabbar,
 		},
 		data() {
 			return {
@@ -168,603 +165,621 @@
 				collectnum: 0,
 				cardnum: 0,
 				talknum: 0,
-				tel: '',
+				tel: "",
 				pass: false,
 				weixin: false,
-				baidu: true
-			}
+				baidu: true,
+				sid: 152
+			};
 		},
 		onShow() {
-			that = this
-			this.getlist()
-			this.timer = setInterval(() => {
-				that.getlist()
-			}, 2000)
-			this.pass = uni.getStorageSync('pass')
-			this.getinfo()
-			if (uni.getStorageSync('phone')) {
-				let tel = uni.getStorageSync('phone')
-				this.tel = tel.substr(0, 3) + '****' + tel.substr(7)
+			that = this;
+			// this.getlist();
+			// this.timer = setInterval(() => {
+			// 	that.getlist();
+			// }, 2000);
+			this.pass = uni.getStorageSync("pass");
+			this.getinfo();
+			if (uni.getStorageSync("phone")) {
+				let tel = uni.getStorageSync("phone");
+				this.tel = tel.substr(0, 3) + "****" + tel.substr(7);
 			}
 			// #ifdef  MP-WEIXIN
 			// this.weixin = true
-			this.baidu = false
+			this.baidu = false;
 			// #endif
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-我的主页',
-				keywords: '允家新房-我的主页',
-				description: '允家新房-我的主页',
-				success: res => {
-					console.log('setPageInfo success', res);
+				title: "家园新房-我的主页",
+				keywords: "家园新房-我的主页",
+				description: "家园新房-我的主页",
+				success: (res) => {
+					console.log("setPageInfo success", res);
 				},
-				fail: err => {
-					console.log('setPageInfo fail', err);
-				}
-			})
+				fail: (err) => {
+					console.log("setPageInfo fail", err);
+				},
+			});
 			//#endif
 		},
 		methods: {
+			getout() {
+				uni.removeStorageSync("phone");
+				uni.removeStorageSync("token");
+				uni.removeStorageSync("pass");
+				this.pass = false;
+				this.tel = "";
+			},
 			getlist() {
-				let uuid = uni.getStorageSync('uuid')
+				let uuid = uni.getStorageSync("uuid");
 				let pp = {
 					controller: "Staff",
 					action: "lists",
 					params: {
-						uuid: uuid
-					}
+						uuid: uuid,
+					},
 				};
 				try {
-					uni.sendSocketMessage({
-						data: JSON.stringify(pp)
+					this.$store.state.socket.send({
+						data: JSON.stringify(pp),
 					});
 				} catch (e) {
-					alert(e)
+					alert(e);
 				}
-
 			},
 			gologin() {
 				uni.navigateTo({
-					url: "/pages/login/login"
-				})
+					url: "/pages/login/login",
+				});
 			},
 			call() {
 				uni.makePhoneCall({
-					phoneNumber: '400-718-6686' //仅为示例
-				})
+					phoneNumber: "400-718-6686", //仅为示例
+				});
 			},
 			getinfo() {
-				let token = uni.getStorageSync('token')
+				let token = uni.getStorageSync("token");
 				if (token) {
 					uni.showLoading({
-						title: '加载中'
-					})
+						title: "加载中",
+					});
 					uni.request({
-						url: that.apiserve + '/jy/mine/foots',
-						method: "GET",
-						data: {
+						url:that.javaserve+'/applets/jy/mine',
+						method:"GET",
+						data:{
 							token: token,
-							page: 1,
-							limit: 10,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
 						},
 						success: (res) => {
-							that.footnum = res.data.total
+							console.log(res,'res')
+							that.footnum = res.data.data.my_foot_count;
+							that.collectnum = res.data.data.collect_count;
 							uni.hideLoading()
 						}
 					})
-					uni.request({
-						url: that.apiserve + '/jy/mine/collect',
-						method: 'GET',
-						data: {
-							token: token,
-							page: 1,
-							limit: 10,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
-						},
-						success: (res) => {
-							that.collectnum = res.data.total
-							uni.hideLoading()
-						}
-					})
-					uni.request({
-						url: this.apiserve + "/applets/mine/ticket",
-						method: "GET",
-						data: {
-							token: token,
-							other: uni.getStorageSync('other'),
-							uuid: uni.getStorageSync('uuid')
-						},
-						success: (res) => {
-							if (res.data.code == 200) {
-								if (res.data.num > 0) {
-									that.cardnum = 2
-								}
-							}
-							uni.hideLoading()
-						}
-					})
+					that.cardnum = 1;
 				}
 			},
 			show() {
-				this.$refs.popup.show()
+				this.$refs.popup.show();
 			},
 			hide() {
-				this.$refs.popup.hide()
+				this.$refs.popup.hide();
 			},
 			gofoot() {
 				// #ifdef  MP-WEIXIN
-				let token = uni.getStorageSync('token')
+				let token = uni.getStorageSync("token");
 				if (!token) {
-					let url = '/pages/footprint/footprint'
-					uni.setStorageSync('backurl', url)
+					let url = "/pages/footprint/footprint";
+					uni.setStorageSync("backurl", url);
 					uni.navigateTo({
-						url: '/pages/login/login'
-					})
-					return
+						url: "/pages/login/login",
+					});
+					return;
 				}
 				// #endif
 				uni.navigateTo({
-					url: '/pages/footprint/footprint'
-				})
+					url: "/pages/footprint/footprint",
+				});
 			},
 			gofork() {
 				// #ifdef  MP-WEIXIN
-				let token = uni.getStorageSync('token')
+				let token = uni.getStorageSync("token");
 				if (!token) {
-					let url = '/pages/collect/collect'
-					uni.setStorageSync('backurl', url)
+					let url = "/pages/collect/collect";
+					uni.setStorageSync("backurl", url);
 					uni.navigateTo({
-						url: '/pages/login/login'
-					})
-					return
+						url: "/pages/login/login",
+					});
+					return;
 				}
 				// #endif
 				uni.navigateTo({
-					url: '/pages/collect/collect'
-				})
+					url: "/pages/collect/collect",
+				});
 			},
 			gocards() {
 				// #ifdef  MP-WEIXIN
-				let token = uni.getStorageSync('token')
+				let token = uni.getStorageSync("token");
 				if (!token) {
-					let url = '/pages/cards/cards'
-					uni.setStorageSync('backurl', url)
+					let url = "/pages/cards/cards";
+					uni.setStorageSync("backurl", url);
 					uni.navigateTo({
-						url: '/pages/login/login'
-					})
-					return
+						url: "/pages/login/login",
+					});
+					return;
 				}
 				// #endif
 				uni.navigateTo({
-					url: '/pages/cards/cards'
-				})
+					url: "/pages/cards/cards",
+				});
 			},
 			gotalk() {
+				// uni.navigateTo({
+				// 	url: "/pages/message/message",
+				// });
+				let id = this.sid
 				uni.navigateTo({
-					url: '/pages/message/message'
+					url: '/pages/talk/talk?id=' + id
 				})
+			},
+			register(pro, type) {
+				let uuid = uni.getStorageSync('uuid')
+				let city = uni.getStorageSync('city')
+				let ip = uni.getStorageSync('ip')
+				let arr = getCurrentPages()
+				let url = arr[arr.length - 1].route
+				let host = this.host
+				let pp = {
+					controller: "Info",
+					action: "register",
+					params: {
+						city: city,
+						project: pro,
+						ip: ip,
+						url: url,
+						uuid: uuid,
+						host: host
+					},
+				};
+				this.$store.state.socket.send({
+					data: JSON.stringify(pp)
+				});
 			},
 			gohelp() {
 				uni.navigateTo({
-					url: '/pages/help/help'
-				})
+					url: "/pages/help/help",
+				});
 			},
 			goyue() {
 				uni.navigateTo({
-					url: '/pages/forward/forward'
-				})
+					url: "/pages/forward/forward",
+				});
 			},
 			gomap() {
 				uni.navigateTo({
-					url: '/pages/map/map'
-				})
+					url: "/pages/map/map",
+				});
 			},
 			gojia() {
 				uni.navigateTo({
-					url: '/pages/alliance/alliance'
-				})
+					url: "/pages/alliance/alliance",
+				});
 			},
 			goabout() {
 				uni.navigateTo({
-					url: '/pages/about/about'
-				})
+					url: "/pages/about/about",
+				});
 			},
 			gocommit() {
 				uni.navigateTo({
-					url: '/pages/feedback/feedback'
-				})
+					url: "/pages/feedback/feedback",
+				});
 			},
 			goban() {
 				uni.navigateTo({
-					url: '/pages/statement/statement'
-				})
+					url: "/pages/statement/statement",
+				});
 			},
 			gomian() {
 				uni.navigateTo({
-					url: '/pages/protocol/protocol'
-				})
+					url: "/pages/protocol/protocol",
+				});
 			},
 			goyin() {
 				uni.navigateTo({
-					url: '/pages/privacy/privacy'
-				})
+					url: "/pages/privacy/privacy",
+				});
 			},
 			gofu() {
 				uni.navigateTo({
-					url: '/pages/serve/serve'
-				})
+					url: "/pages/serve/serve",
+				});
 			},
 			getPhoneNumber(e) {
-				let that = this
-				console.log(e)
+				let that = this;
+				console.log(e);
 				// #ifdef  MP-BAIDU
-				if (e.detail.errMsg == 'getPhoneNumber:fail auth deny') {
-					let url = ''
+				if (e.detail.errMsg == "getPhoneNumber:fail auth deny") {
+					let url = "";
 					switch (that.type) {
 						case 1:
-							url = '/pages/footprint/footprint'
-							uni.setStorageSync('backurl', url)
+							url = "/pages/footprint/footprint";
+							uni.setStorageSync("backurl", url);
 							break;
 						case 2:
-							url = '/pages/collect/collect'
-							uni.setStorageSync('backurl', url)
+							url = "/pages/collect/collect";
+							uni.setStorageSync("backurl", url);
 							break;
 						case 3:
-							url = '/pages/cards/cards'
-							uni.setStorageSync('backurl', url)
+							url = "/pages/cards/cards";
+							uni.setStorageSync("backurl", url);
 							break;
 						case 4:
-							url = '/pages/home/home'
-							uni.setStorageSync('backurl', url)
+							url = "/pages/home/home";
+							uni.setStorageSync("backurl", url);
 							break;
 					}
 					uni.navigateTo({
-						url: '/pages/login/login'
-					})
+						url: "/pages/login/login",
+					});
 				} else {
-					uni.setStorageSync('pass', true)
-					that.pass = true
-					console.log(that.pass)
-					let session = uni.getStorageSync('session')
+					uni.setStorageSync("pass", true);
+					that.pass = true;
+					console.log(that.pass);
+					let session = uni.getStorageSync("session");
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res)
-								let tel = res.data.mobile
-								uni.setStorageSync('phone', tel)
-								let openid = uni.getStorageSync('openid')
-								that.tel = tel.substr(0, 3) + '****' + tel.substr(7)
-								let token = uni.getStorageSync('token')
+								console.log(res);
+								let tel = res.data.data.mobile;
+								uni.setStorageSync("phone", tel);
+								let openid = uni.getStorageSync("openid");
+								that.tel = tel.substr(0, 3) + "****" + tel.substr(7);
+								let token = uni.getStorageSync("token");
 								if (token) {
 									switch (that.type) {
 										case 1:
 											uni.navigateTo({
-												url: '/pages/footprint/footprint'
-											})
+												url: "/pages/footprint/footprint",
+											});
 											break;
 										case 2:
 											uni.navigateTo({
-												url: '/pages/collect/collect'
-											})
+												url: "/pages/collect/collect",
+											});
 											break;
 										case 3:
 											uni.navigateTo({
-												url: '/pages/cards/cards'
-											})
+												url: "/pages/cards/cards",
+											});
 											break;
 									}
 								} else {
 									uni.request({
-										url: "https://api.edefang.net/applets/login",
-										method: 'GET',
+										url: "https://java.edefang.net/applets/jy/login",
+										method: "POST",
+										header: {
+											"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+										},
 										data: {
 											phone: tel,
 											openid: openid,
-											other: uni.getStorageSync('other'),
-											uuid: uni.getStorageSync('uuid')
+											uuid: uni.getStorageSync("uuid"),
+											city: uni.getStorageSync("city"),
 										},
 										success: (res) => {
-											console.log(res)
-											uni.setStorageSync('token', res.data.token)
+											console.log(res);
+											uni.setStorageSync("token", res.data.data);
 											switch (that.type) {
 												case 1:
 													uni.navigateTo({
-														url: '/pages/footprint/footprint'
-													})
+														url: "/pages/footprint/footprint",
+													});
 													break;
 												case 2:
 													uni.navigateTo({
-														url: '/pages/collect/collect'
-													})
+														url: "/pages/collect/collect",
+													});
 													break;
 												case 3:
 													uni.navigateTo({
-														url: '/pages/cards/cards'
-													})
+														url: "/pages/cards/cards",
+													});
 													break;
 											}
-										}
-									})
+										},
+									});
 								}
-
-							}
-						})
+							},
+						});
 					} else {
 						swan.getLoginCode({
-							success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
-												uni.setStorageSync('phone', tel)
+												console.log(res);
+												let tel = res.data.data.mobile;
+												uni.setStorageSync("phone", tel);
 												let openid = uni.getStorageSync(
-													'openid')
-												that.tel = tel.substr(0, 3) + '****' +
-													tel.substr(7)
-												let token = uni.getStorageSync('token')
+													"openid");
+												that.tel = tel.substr(0, 3) + "****" +
+													tel.substr(7);
+												let token = uni.getStorageSync(
+												"token");
 												if (token) {
 													switch (that.type) {
 														case 1:
 															uni.navigateTo({
-																url: '/pages/footprint/footprint'
-															})
+																url: "/pages/footprint/footprint",
+															});
 															break;
 														case 2:
 															uni.navigateTo({
-																url: '/pages/collect/collect'
-															})
+																url: "/pages/collect/collect",
+															});
 															break;
 														case 3:
 															uni.navigateTo({
-																url: '/pages/cards/cards'
-															})
+																url: "/pages/cards/cards",
+															});
 															break;
 													}
 												} else {
 													uni.request({
-														url: "https://api.edefang.net/applets/login",
-														method: 'GET',
+														url: "https://java.edefang.net/applets/jy/login",
+														method: "POST",
+														header: {
+															"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+														},
 														data: {
 															phone: tel,
 															openid: openid,
-															other: uni
-																.getStorageSync(
-																	'other'),
 															uuid: uni
 																.getStorageSync(
-																	'uuid')
+																	"uuid"),
+															city: uni
+																.getStorageSync(
+																	"city"),
 														},
 														success: (res) => {
 															console.log(
-																res)
+																res);
 															uni.setStorageSync(
-																'token',
+																"token",
 																res
 																.data
-																.token)
+																.data);
 															switch (that
 																.type) {
 																case 1:
 																	uni.navigateTo({
-																		url: '/pages/footprint/footprint'
-																	})
+																		url: "/pages/footprint/footprint",
+																	});
 																	break;
 																case 2:
 																	uni.navigateTo({
-																		url: '/pages/collect/collect'
-																	})
+																		url: "/pages/collect/collect",
+																	});
 																	break;
 																case 3:
 																	uni.navigateTo({
-																		url: '/pages/cards/cards'
-																	})
+																		url: "/pages/cards/cards",
+																	});
 																	break;
 															}
-														}
-													})
+														},
+													});
 												}
-											}
-										})
-
-									}
-								})
-							}
+											},
+										});
+									},
+								});
+							},
 						});
-
 					}
 				}
 				// #endif
 				// #ifdef  MP-WEIXIN
-				console.log(e)
+				console.log(e);
 				if (e.detail.errMsg == "getPhoneNumber:ok") {
 					uni.login({
-						provider: 'weixin',
+						provider: "weixin",
 						success: function(res) {
-							console.log(res)
+							console.log(res);
 							uni.request({
-								url: 'https://ll.edefang.net/api/weichat/jscode2session',
-								method: 'get',
+								url: "https://ll.edefang.net/api/weichat/jscode2session",
+								method: "get",
 								data: {
 									code: res.code,
-									other: uni.getStorageSync('other'),
-									uuid: uni.getStorageSync('uuid')
+									other: uni.getStorageSync("other"),
+									uuid: uni.getStorageSync("uuid"),
 								},
 								success: (res) => {
-									console.log(res)
-									uni.setStorageSync('openid', res.data.data.openid)
-									uni.setStorageSync('session', res.data.data.session_key)
+									console.log(res);
+									uni.setStorageSync("openid", res.data.data.openid);
+									uni.setStorageSync("session", res.data.data.session_key);
 									uni.request({
 										url: "https://ll.edefang.net/api/weichat/decryptData",
 										data: {
 											data: e.detail.encryptedData,
 											iv: e.detail.iv,
 											sessionKey: res.data.data.session_key,
-											other: uni.getStorageSync('other'),
-											uuid: uni.getStorageSync('uuid')
+											other: uni.getStorageSync("other"),
+											uuid: uni.getStorageSync("uuid"),
 										},
 										success: (res) => {
-											let data = JSON.parse(res.data.message)
-											let tel = data.purePhoneNumber
-											uni.setStorageSync('phone', tel)
-											let openid = uni.getStorageSync('openid')
-											that.tel = tel.substr(0, 3) + '****' + tel
-												.substr(7)
-											let token = uni.getStorageSync('token')
+											let data = JSON.parse(res.data.message);
+											let tel = data.purePhoneNumber;
+											uni.setStorageSync("phone", tel);
+											let openid = uni.getStorageSync("openid");
+											that.tel = tel.substr(0, 3) + "****" + tel
+												.substr(7);
+											let token = uni.getStorageSync("token");
 											if (token) {
 												switch (that.type) {
 													case 1:
 														uni.navigateTo({
-															url: '/pages/footprint/footprint'
-														})
+															url: "/pages/footprint/footprint",
+														});
 														break;
 													case 2:
 														uni.navigateTo({
-															url: '/pages/collect/collect'
-														})
+															url: "/pages/collect/collect",
+														});
 														break;
 													case 3:
 														uni.navigateTo({
-															url: '/pages/cards/cards'
-														})
+															url: "/pages/cards/cards",
+														});
 														break;
 												}
 											} else {
 												uni.request({
 													url: "https://api.edefang.net/applets/login",
-													method: 'GET',
+													method: "GET",
 													data: {
 														phone: tel,
 														openid: openid,
 														other: uni
 															.getStorageSync(
-																'other'),
+																"other"),
 														uuid: uni
 															.getStorageSync(
-																'uuid')
+																"uuid"),
 													},
 													success: (res) => {
-														console.log(res)
+														console.log(res);
 														uni.setStorageSync(
-															'token',
+															"token",
 															res.data
-															.token)
+															.token);
 														switch (that
 														.type) {
 															case 1:
 																uni.navigateTo({
-																	url: '/pages/footprint/footprint'
-																})
+																	url: "/pages/footprint/footprint",
+																});
 																break;
 															case 2:
 																uni.navigateTo({
-																	url: '/pages/collect/collect'
-																})
+																	url: "/pages/collect/collect",
+																});
 																break;
 															case 3:
 																uni.navigateTo({
-																	url: '/pages/cards/cards'
-																})
+																	url: "/pages/cards/cards",
+																});
 																break;
 														}
-													}
-												})
+													},
+												});
 											}
-										}
-									})
-								}
-							})
-						}
-					})
+										},
+									});
+								},
+							});
+						},
+					});
 				} else {
-					let url = ''
+					let url = "";
 					switch (that.type) {
 						case 1:
-							url = '/pages/footprint/footprint'
-							uni.setStorageSync('backurl', url)
+							url = "/pages/footprint/footprint";
+							uni.setStorageSync("backurl", url);
 							break;
 						case 2:
-							url = '/pages/collect/collect'
-							uni.setStorageSync('backurl', url)
+							url = "/pages/collect/collect";
+							uni.setStorageSync("backurl", url);
 							break;
 						case 3:
-							url = '/pages/cards/cards'
-							uni.setStorageSync('backurl', url)
+							url = "/pages/cards/cards";
+							uni.setStorageSync("backurl", url);
 							break;
 						case 4:
-							url = '/pages/home/home'
-							uni.setStorageSync('backurl', url)
+							url = "/pages/home/home";
+							uni.setStorageSync("backurl", url);
 							break;
 					}
 					uni.navigateTo({
-						url: '/pages/login/login'
-					})
+						url: "/pages/login/login",
+					});
 				}
 				// #endif
-			}
+			},
 		},
 		mounted() {
-			let that = this
-
+			let that = this;
+			this.register(0)
 			this.$store.state.socket.onMessage(function(res) {
-				let data = JSON.parse(res.data)
-				console.log(data)
-				if (data.action == 105) {
-					that.talknum = data.data.length
+				if (res.data.indexOf('{') === -1) {
+					return
 				}
+				let data = JSON.parse(res.data);
+				console.log(data);
+				if (data.action == 302) {
+					that.sid = data.sid
+				}
+				// if (data.action == 105) {
+				// 	that.talknum = data.data.length;
+				// }
 			});
 		},
+		onHide() {
+			clearInterval(this.timer);
+		},
 		beforeDestroy() {
-			clearInterval(this.timer)
-		}
-	}
+			clearInterval(this.timer);
+		},
+	};
 </script>
 
 <style lang="less">
 	.home {
-		background-color: #F5F5F5;
+		background-color: #f5f5f5;
 		// min-height: 100vh;
+		padding-bottom: 68rpx;
 	}
 
 	.toptitle {
-		color: #17181A;
+		color: #17181a;
 		font-size: 29.88rpx;
 		padding: 0 29.88rpx;
 		padding-top: 39.84rpx;
 		line-height: 87.64rpx;
-		background-color: #35ACE7;
+		background-color: #35ace7;
 	}
 
 	button {
@@ -807,7 +822,7 @@
 			}
 
 			text {
-				color: #126D4C;
+				color: #126d4c;
 				font-weight: bold;
 				font-size: 39.84rpx;
 			}
@@ -823,13 +838,13 @@
 				text-align: center;
 
 				.num {
-					color: #126D4C;
+					color: #126d4c;
 					font-size: 35.85rpx;
 					font-weight: bold;
 				}
 
 				.msg {
-					color: #126D4C;
+					color: #126d4c;
 					font-size: 23.9rpx;
 					margin-top: 11.95rpx;
 				}
@@ -844,8 +859,8 @@
 					line-height: 25.89rpx;
 					top: -11.95rpx;
 					right: 0;
-					background-color: #BEE6FF;
-					color: #126D4C;
+					background-color: #bee6ff;
+					color: #126d4c;
 					font-size: 19.92rpx;
 				}
 			}
@@ -949,6 +964,17 @@
 		}
 	}
 
+	.outbtn {
+		margin: 0 30rpx;
+		border-radius: 12rpx;
+		background: #2ac66d;
+		color: #ffffff;
+		font-size: 30rpx;
+		text-align: center;
+		line-height: 80rpx;
+		margin-top: 80rpx;
+	}
+
 	.popup-content {
 		.txt {
 			color: #666666;
@@ -969,7 +995,7 @@
 		.btnbox {
 			display: flex;
 			height: 100rpx;
-			border-top: 1rpx solid #F7F7F7;
+			border-top: 1rpx solid #f7f7f7;
 
 			view {
 				width: 48%;
@@ -983,7 +1009,7 @@
 			}
 
 			.right {
-				color: #3EACF0;
+				color: #3eacf0;
 				font-size: 32rpx;
 			}
 		}

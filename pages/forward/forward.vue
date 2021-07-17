@@ -28,7 +28,7 @@
 		<view class="tit">
 			预约看房时间:
 		</view>
-		<picker mode="date" :value="date" start="starttime" @change="bindDateChange">
+		<picker mode="date" :value="date" start="starttime" @change="bindDateChange" fields="day">
 			<view class="box">
 				<view>{{date}}</view>
 				<image src="../../static/other/help-go.png" mode=""></image>
@@ -49,22 +49,23 @@
 		<view class="btn" v-if="pass||weixin" @tap="show(1)">
 			确定
 		</view>
-		<popup ref="popup" type="center" height="438" width="578" radius="12" closeIconPos="top-right" :showCloseIcon="true"
-		 closeIconSize="32" @hide="setback">
+		<popup ref="popup" type="center" height="438" width="578" radius="12" closeIconPos="top-right"
+			:showCloseIcon="true" closeIconSize="32" @hide="setback">
 			<view class="popup-content">
 				<view class="tit">
 					预约看房
 				</view>
 				<view class="one" v-if="!iscode">
 					<view class="input-box">
-						<input type="text" value="" placeholder="请输入手机号" placeholder-class="txt" maxlength="11" v-model="tel" :disabled="isok == 1" />
+						<input type="text" value="" placeholder="请输入手机号" placeholder-class="txt" maxlength="11"
+							v-model="tel" :disabled="isok == 1" />
 						<view class="close" v-if="isok ==1" @tap="setnull">
 							x
 						</view>
 					</view>
 					<view class="msg">
 						<check :checkBoxSize='20' :fontSize='18' :checked="true" @change="change"></check>
-						<view class="kk">我已阅读并同意<text @tap="goserve">《允家服务协议》</text></view>
+						<view class="kk">我已阅读并同意<text @tap="goserve">《家园服务协议》</text></view>
 					</view>
 					<view class="yes" @tap="send">
 						确定
@@ -75,7 +76,8 @@
 						验证码已发送到{{teltxt}} 请注意查看
 					</view>
 					<view class="input-box">
-						<input type="text" value="" placeholder="请输入验证码" placeholder-class="txt" maxlength="11" v-model="code" />
+						<input type="text" value="" placeholder="请输入验证码" placeholder-class="txt" maxlength="11"
+							v-model="code" />
 						<text @tap="sendmsg">{{timetxt}}</text>
 					</view>
 					<view class="yes" @tap="sure">
@@ -118,7 +120,8 @@
 				date: '',
 				isok: 0,
 				pass: false,
-				weixin: false
+				weixin: false,
+				timer: null
 			}
 		},
 		onLoad() {
@@ -137,9 +140,9 @@
 			}
 			//#ifdef MP-BAIDU
 			swan.setPageInfo({
-				title: '允家新房-预约看房',
-				keywords: '允家新房-预约看房',
-				description: '允家新房-预约看房',
+				title: '家园新房-预约看房',
+				keywords: '家园新房-预约看房',
+				description: '家园新房-预约看房',
 				success: res => {
 					console.log('setPageInfo success', res);
 				},
@@ -173,18 +176,21 @@
 					let session = uni.getStorageSync('session')
 					if (session) {
 						uni.request({
-							url: 'https://api.edefang.net/applets/baidu/decrypt',
-							method: 'get',
+							url: "https://java.edefang.net/applets/jy/decrypt",
+							method: "post",
 							data: {
 								iv: e.detail.iv,
-								data: e.detail.encryptedData,
-								session_key: session,
-								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								ciphertext: e.detail.encryptedData,
+								sessionKey: session,
+								other: uni.getStorageSync("other"),
+								uuid: uni.getStorageSync("uuid"),
+							},
+							header: {
+								"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 							},
 							success: (res) => {
-								console.log(res)
-								let tel = res.data.mobile
+								console.log(res);
+								let tel = res.data.data.mobile;
 								uni.setStorageSync('phone', tel)
 								let openid = uni.getStorageSync('openid')
 								that.tel = tel
@@ -192,35 +198,63 @@
 						})
 					} else {
 						swan.getLoginCode({
-											success: res => {
+							success: (res) => {
 								console.log(res.code);
 								uni.request({
-									url: 'https://api.edefang.net/applets/baidu/get_session_key',
-									method: 'get',
+									url: "https://java.edefang.net/applets/jy/session_key/get",
+									method: "get",
 									data: {
 										code: res.code,
-										other: uni.getStorageSync('other'),
-										uuid: uni.getStorageSync('uuid')
 									},
 									success: (res) => {
-										console.log(res)
-										uni.setStorageSync('openid', res.data.openid)
-										uni.setStorageSync('session', res.data.session_key)
+										console.log(res);
+										uni.setStorageSync("openid", res.data.data.openid);
+										uni.setStorageSync("session", res.data.data
+											.session_key);
 										uni.request({
-											url: "https://api.edefang.net/applets/baidu/decrypt",
+											url: "https://java.edefang.net/applets/jy/decrypt",
 											data: {
-												data: e.detail.encryptedData,
+												ciphertext: e.detail.encryptedData,
 												iv: e.detail.iv,
-												session_key: res.data.session_key,
-												other: uni.getStorageSync('other'),
-												uuid: uni.getStorageSync('uuid')
+												sessionKey: res.data.data.session_key,
+											},
+											method: "POST",
+											header: {
+												"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
 											},
 											success: (res) => {
-												console.log(res)
-												let tel = res.data.mobile
+												console.log(res);
+												let tel = res.data.data.mobile;
 												uni.setStorageSync('phone', tel)
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												that.tel = tel
+												uni.request({
+													url: "https://java.edefang.net/applets/jy/login",
+													method: "POST",
+													header: {
+														"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+													},
+													data: {
+														phone: tel,
+														openid: openid,
+														uuid: uni
+															.getStorageSync(
+																"uuid"),
+														city: uni
+															.getStorageSync(
+																"city"),
+													},
+													success: (res) => {
+														console.log(
+															res);
+														uni.setStorageSync(
+															"token",
+															res
+															.data
+															.data);
+													},
+												})
 											}
 										})
 
@@ -269,19 +303,29 @@
 											let tel = data.purePhoneNumber
 											let token = uni.getStorageSync('token')
 											if (!token) {
-												let openid = uni.getStorageSync('openid')
+												let openid = uni.getStorageSync(
+													'openid')
 												uni.request({
 													url: "https://api.edefang.net/applets/login",
 													method: 'GET',
 													data: {
 														phone: tel,
 														openid: openid,
-														other: uni.getStorageSync('other'),
-														uuid: uni.getStorageSync('uuid')
+														other: uni
+															.getStorageSync(
+																'other'),
+														uuid: uni
+															.getStorageSync(
+																'uuid')
 													},
 													success: (res) => {
-														console.log(res)
-														uni.setStorageSync('token', res.data.token)
+														console.log(
+															res)
+														uni.setStorageSync(
+															'token',
+															res
+															.data
+															.token)
 													}
 												})
 											}
@@ -363,13 +407,15 @@
 								if (res.data.code == 500) {
 									that.toasttxt = res.data.message;
 									that.$refs.toast.show()
-									setTimeout(()=>{
+									setTimeout(() => {
 										that.$refs.popup.hide()
-									},1500)
+									}, 1500)
 								} else {
-									that.teltxt = phone.substr(0, 3) + "****" + phone.substr(7, 11);
+									that.teltxt = phone.substr(0, 3) + "****" + phone.substr(7,
+										11);
 									that.iscode = true
 									that.time = 60
+									clearInterval(that.timer);
 									var fn = function() {
 										that.time--;
 										if (that.time > 0) {
@@ -377,12 +423,12 @@
 											that.timetxt = `等待${that.time}s`
 										} else {
 											that.istime = false
-											clearInterval(interval);
+											clearInterval(that.timer);
 											that.timetxt = `获取验证码`
 										}
 									};
 									fn();
-									var interval = setInterval(fn, 1000);
+									that.timer = setInterval(fn, 1000);
 
 									if (that.isok == 1) {
 										that.toasttxt = "订阅成功";
@@ -402,7 +448,8 @@
 												},
 												success: (res) => {
 													console.log(res)
-													uni.setStorageSync('token', res.data.token)
+													uni.setStorageSync('token', res
+														.data.token)
 												}
 											})
 										}
@@ -499,7 +546,8 @@
 		},
 		mounted() {
 			let date = new Date()
-			this.starttime = date.getFullYear() + '-' + ((date.getMonth() + 1) > 10 ? (date.getMonth() + 1) : '0' + (date.getMonth() +
+			this.starttime = date.getFullYear() + '-' + ((date.getMonth() + 1) > 10 ? (date.getMonth() + 1) : '0' + (date
+				.getMonth() +
 				1)) + '-' + (date.getDate() > 10 ? date.getDate() : '0' + date.getDate())
 			this.date = this.starttime
 			console.log(this.date)
@@ -546,8 +594,8 @@
 	}
 
 	.txt {
-		color: #333333;
-		font-size: 30rpx;
+		color: #16181A;
+		font-size: 32rpx;
 		text-align: center;
 		margin-top: 48rpx;
 		margin-bottom: 90rpx;
@@ -558,10 +606,15 @@
 	}
 
 	.tit {
-		color: #111212;
-		font-size: 26rpx;
+		color: #16181A;
+		font-size: 32rpx;
 		margin-bottom: 32rpx;
 		padding: 0 30rpx;
+
+		text {
+			color: #969799;
+			font-size: 20rpx;
+		}
 	}
 
 	.radio {
@@ -588,7 +641,7 @@
 	}
 
 	.box {
-		border: 2rpx solid #CFD2D4;
+		border: 1rpx solid #CFD2D4;
 		border-radius: 12rpx;
 		background-color: #FAFAFA;
 		display: flex;
@@ -622,12 +675,13 @@
 		margin-left: 4%;
 		height: 80rpx;
 		border-radius: 12rpx;
-		background-color: #3EACF0;
+		background-color: #2AC66D;
 		text-align: center;
 		line-height: 80rpx;
 		color: #FFFFFF;
 		font-weight: bold;
 		font-size: 30rpx;
+		margin-top: 100rpx;
 	}
 
 	.popup-content {
@@ -707,7 +761,7 @@
 			border-radius: 12rpx;
 			text-align: center;
 			line-height: 80rpx;
-			background-color: #3EACF0;
+			background-color: #2AC66D;
 			color: #FFFFFF;
 			font-size: 28rpx;
 			font-weight: bold;
