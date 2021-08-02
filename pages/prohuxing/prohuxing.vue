@@ -41,7 +41,7 @@
 		</view>
 		
 		
-		<bottom :remark="'项目更多户型页+预约看房'" :point="103" :title="'预约看房'" :pid="parseInt(project_id)" :telphone="telphone"></bottom>
+		<bottom :remark="'项目更多户型页+预约看房'" :point="103" :title="'预约看房'" :pid="project_id" :telphone="telphone"></bottom>
 	</view>
 </template>
 

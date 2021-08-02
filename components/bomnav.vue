@@ -89,7 +89,7 @@
 				let url = arr[arr.length - 1].route
 				let host = this.host
 				let pro = this.projectid
-					url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')
+					url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')+'&plan='+uni.getStorageSync('plan')+'&unit='+uni.getStorageSync('unit')+'&semwords='+uni.getStorageSync('semwords')
 				console.log(pro)
 				let pp = {
 					controller: "Info",

@@ -114,7 +114,7 @@
 			</view>
 			<twosee :recommends="recommends"></twosee>
 		</view>
-		<bottom :remark="'项目点评详情页+预约看房'" :point="103" :title="'预约看房'" :pid="parseInt(project_id)" :telphone="telphone">
+		<bottom :remark="'项目点评详情页+预约看房'" :point="103" :title="'预约看房'" :pid="building.id" :telphone="telphone">
 		</bottom>
 
 		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"

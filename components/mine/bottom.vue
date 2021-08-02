@@ -54,6 +54,7 @@
 				type: Number
 			}
 		},
+		// props: ['remark','point','title','pid','telphone','],
 		components: {
 			sign,
 			wybPopup
@@ -74,7 +75,10 @@
 			};
 		},
 		mounted() {
-			console.log(this.$store.state, 78979798789)
+			console.log(this.$store.state, 78979798789,this.pid)
+			if (this.pid) {
+				this.register(this.pid)
+			}
 			let that = this
 			this.pass = uni.getStorageSync('pass')
 			// this.num = uni.getStorageSync('total')
@@ -164,7 +168,7 @@
 				let arr = getCurrentPages()
 				let url = arr[arr.length - 1].route
 				let host = this.host
-					url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')
+				url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')+'&plan='+uni.getStorageSync('plan')+'&unit='+uni.getStorageSync('unit')+'&semwords='+uni.getStorageSync('semwords')
 				let pp = {
 					controller: "Info",
 					action: "register",
@@ -402,9 +406,7 @@
 		watch: {
 			pid(news, val) {
 				console.log(news, val)
-				if (news != val && val == '') {
 					this.register(news)
-				}
 			}
 		}
 	}

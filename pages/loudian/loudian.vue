@@ -90,7 +90,7 @@
 			<image src="../../static/other/white.png" mode=""></image>
 		</view>
 
-		<bottom :remark="'项目楼盘点评页+预约看房'" :point="103" :title="'预约看房'" :pid="parseInt(project_id)" :telphone="telphone">
+		<bottom :remark="'项目楼盘点评页+预约看房'" :point="103" :title="'预约看房'" :pid="project_id" :telphone="telphone">
 		</bottom>
 		<mytoast :txt="msg" ref="msg"></mytoast>
 		<!-- 登录弹框 -->

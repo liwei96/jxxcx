@@ -153,6 +153,30 @@
 			//#endif
 		},
 		methods: {
+			register(pro) {
+				let uuid = uni.getStorageSync('uuid')
+				let city = uni.getStorageSync('city')
+				let ip = uni.getStorageSync('ip')
+				let arr = getCurrentPages()
+				let url = arr[arr.length - 1].route
+				let host = this.host
+					url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')+'&plan='+uni.getStorageSync('plan')+'&unit='+uni.getStorageSync('unit')+'&semwords='+uni.getStorageSync('semwords')
+				let pp = {
+					controller: "Info",
+					action: "register",
+					params: {
+						city: city,
+						project: pro,
+						ip: ip,
+						url: url,
+						uuid: uuid,
+						host: host
+					},
+				};
+				this.$store.state.socket.send({
+					data: JSON.stringify(pp)
+				});
+			},
 			show(n) {
 				// #ifdef  MP-WEIXIN
 				// this.isok = 0
@@ -392,7 +416,7 @@
 								page: 11,
 								project: id,
 								remark: txt,
-								source: '线上推广2',
+								source: '线上推广1',
 								ip: ip,
 								position: 110,
 								tel: phone,
@@ -400,7 +424,9 @@
 								other: other,
 								name: sex,
 								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								uuid: uni.getStorageSync('uuid'),
+								site: 1,
+								device: 3
 							},
 							method: "GET",
 							success: (res) => {
@@ -545,6 +571,7 @@
 			}
 		},
 		mounted() {
+			this.register(0)
 			let date = new Date()
 			this.starttime = date.getFullYear() + '-' + ((date.getMonth() + 1) > 10 ? (date.getMonth() + 1) : '0' + (date
 				.getMonth() +

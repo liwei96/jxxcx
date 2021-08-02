@@ -134,7 +134,7 @@
 			</view>
 			<twosee :recommends="recommends"></twosee>
 		</view>
-		<bottom :remark="'项目问答详情页+预约看房'" :point="103" :title="'预约看房'" :pid="data.bid" :telphone="telphone" ref="bottom"></bottom>
+		<bottom :remark="'项目问答详情页+预约看房'" :point="103" :title="'预约看房'" :pid="pid" :telphone="telphone" ref="bottom"></bottom>
 		<wyb-popup ref="popup" type="center" height="750" width="650" radius="12" :showCloseIcon="true"
 			@hide="setiscode">
 			<sign :type="codenum" @closethis="setpop" :title="title_e" :pid="pid_d" :remark="remark_k"
@@ -179,7 +179,8 @@
 				typebtn: '',
 				cityname: '',
 				wen_id: 0,
-				issure: false
+				issure: false,
+				pid: ''
 			};
 		},
 		components: {
@@ -693,6 +694,7 @@
 							this.relevant = res.data.data.relevant;
 							this.staff = res.data.data.people;
 							this.telphone = res.data.data.phone;
+							this.pid = String(this.building.id)
 							// #ifdef MP-BAIDU
 							let header = res.data.data.header;
 							swan.setPageInfo({

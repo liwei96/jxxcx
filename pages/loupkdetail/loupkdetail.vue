@@ -767,7 +767,7 @@
 				float: left;
 				box-shadow: 0px 0px 19px 1px rgba(0, 0, 0, 0.04);
 				margin-right: 40rpx;
-
+				border-radius: 16rpx;
 				.img_top {
 					image {
 						width: 240rpx;
@@ -896,7 +896,7 @@
 				float: left;
 				box-shadow: 0px 0px 19px 1px rgba(0, 0, 0, 0.04);
 				margin-right: 40rpx;
-
+				border-radius: 12rpx;
 				.btnbox {
 					display: flex;
 					justify-content: space-around;

@@ -85,7 +85,7 @@
 				<image src="../../static/other/loudian.png" mode=""></image>
 			</view>
 
-			<bottom :remark="remark" :point="103" :title="'预约看房'" :pid="parseInt(project_id)" :telphone="telphone" ref="bottom">
+			<bottom :remark="remark" :point="103" :title="'预约看房'" :pid="project_id" :telphone="telphone" ref="bottom">
 			</bottom>
 			<!-- 登录弹框 -->
 			<wyb-popup ref="login" type="bottom" height="570" width="650" radius="0" :showCloseIcon="true"
@@ -122,6 +122,7 @@
 		onLoad(option) {
 			if (option.id == 0 || option.id == undefined || option.id == null) {
 				this.remark = "全部问答页+预约看房"
+				this.register(0)
 			} else {
 				this.remark = "项目问答页+预约看房"
 			}
@@ -140,6 +141,30 @@
 			}
 		},
 		methods: {
+			register(pro) {
+				let uuid = uni.getStorageSync('uuid')
+				let city = uni.getStorageSync('city')
+				let ip = uni.getStorageSync('ip')
+				let arr = getCurrentPages()
+				let url = arr[arr.length - 1].route
+				let host = this.host
+					url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')+'&plan='+uni.getStorageSync('plan')+'&unit='+uni.getStorageSync('unit')+'&semwords='+uni.getStorageSync('semwords')
+				let pp = {
+					controller: "Info",
+					action: "register",
+					params: {
+						city: city,
+						project: pro,
+						ip: ip,
+						url: url,
+						uuid: uuid,
+						host: host
+					},
+				};
+				this.$store.state.socket.send({
+					data: JSON.stringify(pp)
+				});
+			},
 			logined() {
 				this.pass = true;
 				this.$refs.bottom.pass = true

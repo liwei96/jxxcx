@@ -100,7 +100,9 @@
 								kid: kid,
 								other: other,
 								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								uuid: uni.getStorageSync('uuid'),
+								site: 1,
+								device: 3
 							},
 							method: "GET",
 							success: (res) => {

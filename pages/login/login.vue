@@ -94,7 +94,7 @@
 								page: 11,
 								project: "",
 								remark: "登录",
-								source: '线上推广2',
+								source: '线上推广1',
 								name: "",
 								ip: ip,
 								position: "106",
@@ -102,7 +102,9 @@
 								kid: kid,
 								other: other,
 								other: uni.getStorageSync('other'),
-								uuid: uni.getStorageSync('uuid')
+								uuid: uni.getStorageSync('uuid'),
+								device: 3,
+								site: 1
 							},
 							method: "GET",
 							success: (res) => {

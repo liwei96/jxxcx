@@ -328,6 +328,7 @@
 				let ip = uni.getStorageSync('ip')
 				let arr = getCurrentPages()
 				let url = arr[arr.length - 1].route
+				url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')+'&plan='+uni.getStorageSync('plan')+'&unit='+uni.getStorageSync('unit')+'&semwords='+uni.getStorageSync('semwords')
 				let host = this.host
 				let pp = {
 					controller: "Info",

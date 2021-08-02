@@ -986,6 +986,9 @@
 			if (option.kid || option.other) {
 				uni.setStorageSync("kid", option.kid);
 				uni.setStorageSync("other", option.other);
+				uni.setStorageSync('plan', option.plan)
+				uni.setStorageSync('unit', option.unit)
+				uni.setStorageSync('semwords', option.semwords)
 			}
 			this.getinfo(id);
 			this.pass = uni.getStorageSync("pass");

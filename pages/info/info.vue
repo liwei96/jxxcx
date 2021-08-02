@@ -152,6 +152,30 @@
 			login
 		},
 		methods: {
+			register(pro) {
+				let uuid = uni.getStorageSync('uuid')
+				let city = uni.getStorageSync('city')
+				let ip = uni.getStorageSync('ip')
+				let arr = getCurrentPages()
+				let url = arr[arr.length - 1].route
+				let host = this.host
+					url=url+'?id='+pro+'&host='+host+'&uuid='+uuid+'&kid='+uni.getStorageSync('kid')+'&other='+uni.getStorageSync('other')+'&plan='+uni.getStorageSync('plan')+'&unit='+uni.getStorageSync('unit')+'&semwords='+uni.getStorageSync('semwords')
+				let pp = {
+					controller: "Info",
+					action: "register",
+					params: {
+						city: city,
+						project: pro,
+						ip: ip,
+						url: url,
+						uuid: uuid,
+						host: host
+					},
+				};
+				this.$store.state.socket.send({
+					data: JSON.stringify(pp)
+				});
+			},
 			logined() {
 				this.pass = true;
 				this.$refs.login.hide();
@@ -192,6 +216,7 @@
 						uni.setStorageSync('cityname', res.data.data.current_city.name)
 						that.info = res.data.data.article
 						that.build = that.info.building
+						that.register(that.build.id)
 						uni.hideLoading()
 						let data = res.data.data.article.content
 						that.info.content = data.replace(/\<img/gi,

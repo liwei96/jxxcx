@@ -62,7 +62,7 @@
 		
 		<bottom :remark="'楼盘相册页+预约看房'"
 		:point="103" :title="'预约看房'"
-		:pid="parseInt(project_id)"
+		:pid="project_id"
 		:telphone="telphone"></bottom>
 		
 		
